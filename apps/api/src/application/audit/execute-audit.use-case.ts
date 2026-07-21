@@ -1,7 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { DISCOVERY_PORT, DiscoveryPort, DiscoveryResult } from '../../domain/audit/discovery.port';
 
 @Injectable()
 export class ExecuteAuditUseCase {
-  // Placeholder seam for future engines (crawling, discovery, etc.); intentionally a no-op for now.
-  async execute(_auditId: string): Promise<void> {}
+  constructor(@Inject(DISCOVERY_PORT) private readonly discoveryPort: DiscoveryPort) {}
+
+  async execute(auditId: string, url: string): Promise<DiscoveryResult> {
+    return this.discoveryPort.discover(auditId, url);
+  }
 }

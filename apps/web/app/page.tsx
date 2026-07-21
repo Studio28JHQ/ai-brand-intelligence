@@ -22,6 +22,13 @@ export default function Home() {
           <h1>Audit Created</h1>
           <p>Audit ID: {state.result.id}</p>
           <p>Current Status: {state.result.status}</p>
+          {state.result.discovery && (
+            <>
+              <p>Normalized URL: {state.result.discovery.normalizedUrl}</p>
+              <p>robots.txt detected: {state.result.discovery.robotsTxtDetected ? 'Yes' : 'No'}</p>
+              <p>sitemap.xml detected: {state.result.discovery.sitemapDetected ? 'Yes' : 'No'}</p>
+            </>
+          )}
         </div>
       )}
 

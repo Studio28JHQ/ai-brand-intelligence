@@ -12,6 +12,7 @@
     "@ai-visibility/config": "workspace:*",
     "@ai-visibility/contracts": "workspace:*",
     "@ai-visibility/database": "workspace:*",
+    "@ai-visibility/discovery-engine": "workspace:*",
     "@ai-visibility/shared": "workspace:*",
     "@nestjs/common": "^11.1.28",
     "@nestjs/core": "^11.1.28",

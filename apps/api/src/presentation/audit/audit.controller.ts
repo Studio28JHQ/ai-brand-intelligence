@@ -15,8 +15,16 @@ export class AuditController {
     }
 
     try {
-      const audit = await this.createAuditUseCase.execute(dto.url);
-      return { id: audit.id, status: audit.status };
+      const { audit, discovery } = await this.createAuditUseCase.execute(dto.url);
+      return {
+        id: audit.id,
+        status: audit.status,
+        discovery: {
+          normalizedUrl: discovery.normalizedUrl,
+          robotsTxtDetected: discovery.robotsTxtDetected,
+          sitemapDetected: discovery.sitemapDetected,
+        },
+      };
     } catch (error) {
       if (error instanceof InvalidAuditUrlError) {
         throw new BadRequestException(error.message);

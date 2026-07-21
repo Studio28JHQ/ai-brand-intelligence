@@ -24,5 +24,22 @@ model AuditRequest {
   startedAt   DateTime? @map("started_at")
   completedAt DateTime? @map("completed_at")
 
+  discoveryResult DiscoveryResult?
+
   @@map("audit_requests")
+}
+
+model DiscoveryResult {
+  id                String   @id @default(uuid())
+  auditId           String   @unique @map("audit_id")
+  normalizedUrl     String   @map("normalized_url")
+  robotsTxtUrl      String   @map("robots_txt_url")
+  robotsTxtDetected Boolean  @map("robots_txt_detected")
+  sitemapUrl        String   @map("sitemap_url")
+  sitemapDetected   Boolean  @map("sitemap_detected")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  audit AuditRequest @relation(fields: [auditId], references: [id])
+
+  @@map("discovery_results")
 }
