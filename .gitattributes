@@ -1,0 +1,16 @@
+# Normalize line endings across platforms
+* text=auto eol=lf
+
+# Treat common binary formats as binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+
+# Keep generated/vendored files out of diffs and language stats where applicable
+*.lock -diff
+*.min.js -diff linguist-generated
+*.min.css -diff linguist-generated
