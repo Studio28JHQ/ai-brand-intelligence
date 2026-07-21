@@ -11,6 +11,7 @@
   "dependencies": {
     "@ai-visibility/config": "workspace:*",
     "@ai-visibility/contracts": "workspace:*",
+    "@ai-visibility/shared": "workspace:*",
     "@nestjs/common": "^11.1.28",
     "@nestjs/core": "^11.1.28",
     "@nestjs/platform-express": "^11.1.28",
@@ -19,6 +20,7 @@
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.24",
+    "@types/express": "^5.0.0",
     "@types/node": "^22.10.5",
     "typescript": "^5.7.3"
   }
