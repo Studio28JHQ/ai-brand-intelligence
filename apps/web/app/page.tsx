@@ -1,8 +1,10 @@
+import { loadConfig } from '@ai-visibility/config';
+
 async function getBackendStatus(): Promise<string> {
-  const apiUrl = process.env.API_URL ?? 'http://localhost:3001';
+  const config = loadConfig();
 
   try {
-    const response = await fetch(`${apiUrl}/health`, { cache: 'no-store' });
+    const response = await fetch(`${config.API_URL}/health`, { cache: 'no-store' });
     const data = await response.json();
     return data.status;
   } catch {

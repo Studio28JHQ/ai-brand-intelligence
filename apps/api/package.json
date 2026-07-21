@@ -9,6 +9,7 @@
     "start:prod": "node dist/main.js"
   },
   "dependencies": {
+    "@ai-visibility/config": "workspace:*",
     "@nestjs/common": "^11.1.28",
     "@nestjs/core": "^11.1.28",
     "@nestjs/platform-express": "^11.1.28",
