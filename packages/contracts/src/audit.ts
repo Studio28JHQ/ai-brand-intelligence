@@ -1,4 +1,4 @@
-export type AuditStatus = 'pending';
+export type AuditStatus = 'pending' | 'running' | 'completed';
 
 export interface CreateAuditRequest {
   url: string;

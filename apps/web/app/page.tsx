@@ -21,6 +21,7 @@ export default function Home() {
         <div>
           <h1>Audit Created</h1>
           <p>Audit ID: {state.result.id}</p>
+          <p>Current Status: {state.result.status}</p>
         </div>
       )}
 
