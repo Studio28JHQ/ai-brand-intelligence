@@ -11,7 +11,16 @@ datasource db {
 
 model PlatformMeta {
   id             Int      @id @default(autoincrement())
-  bootstrappedAt DateTime @default(now())
+  bootstrappedAt DateTime @default(now()) @map("bootstrapped_at")
 
   @@map("platform_meta")
+}
+
+model AuditRequest {
+  id        String   @id @default(uuid())
+  url       String
+  status    String   @default("pending")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("audit_requests")
 }

@@ -1,25 +1,30 @@
-import { loadConfig } from '@ai-visibility/config';
-import type { HealthResponse } from '@ai-visibility/contracts';
+'use client';
 
-async function getBackendStatus(): Promise<string> {
-  const config = loadConfig();
+import { useActionState } from 'react';
+import { createAudit, CreateAuditState } from './actions';
 
-  try {
-    const response = await fetch(`${config.API_URL}/health`, { cache: 'no-store' });
-    const data: HealthResponse = await response.json();
-    return data.status;
-  } catch {
-    return 'unreachable';
-  }
-}
+const initialState: CreateAuditState = {};
 
-export default async function Home() {
-  const status = await getBackendStatus();
+export default function Home() {
+  const [state, formAction, pending] = useActionState(createAudit, initialState);
 
   return (
     <main>
-      <h1>Backend Status</h1>
-      <p>Status: {status}</p>
+      <form action={formAction}>
+        <input type="url" name="url" placeholder="https://example.com" required />
+        <button type="submit" disabled={pending}>
+          Analyze
+        </button>
+      </form>
+
+      {state.result && (
+        <div>
+          <h1>Audit Created</h1>
+          <p>Audit ID: {state.result.id}</p>
+        </div>
+      )}
+
+      {state.error && <p>{state.error}</p>}
     </main>
   );
 }
