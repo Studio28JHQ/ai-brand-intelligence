@@ -1,11 +1,20 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { DISCOVERY_PORT, DiscoveryPort, DiscoveryResult } from '../../domain/audit/discovery.port';
+import type { AuditContext } from '@ai-visibility/core';
+import { EXECUTION_PIPELINE_PORT, ExecutionPipelinePort } from '../../domain/audit/execution-pipeline.port';
+import { DiscoveryResult } from '../../domain/audit/discovery-result';
+
+export interface ExecuteAuditResult {
+  discovery: DiscoveryResult;
+}
 
 @Injectable()
 export class ExecuteAuditUseCase {
-  constructor(@Inject(DISCOVERY_PORT) private readonly discoveryPort: DiscoveryPort) {}
+  constructor(@Inject(EXECUTION_PIPELINE_PORT) private readonly pipeline: ExecutionPipelinePort) {}
 
-  async execute(auditId: string, url: string): Promise<DiscoveryResult> {
-    return this.discoveryPort.discover(auditId, url);
+  async execute(auditId: string, url: string): Promise<ExecuteAuditResult> {
+    const context: AuditContext = { auditId, url };
+    const results = await this.pipeline.run(context);
+
+    return { discovery: results.discovery as DiscoveryResult };
   }
 }

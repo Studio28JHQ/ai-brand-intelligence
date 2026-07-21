@@ -16,6 +16,9 @@ importers:
       '@ai-visibility/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@ai-visibility/core':
+        specifier: workspace:*
+        version: link:../../packages/core
       '@ai-visibility/database':
         specifier: workspace:*
         version: link:../../packages/database
@@ -104,7 +107,11 @@ importers:
         specifier: ^5.7.3
         version: 5.9.3
 
-  packages/core: {}
+  packages/core:
+    devDependencies:
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
 
   packages/database:
     dependencies:
