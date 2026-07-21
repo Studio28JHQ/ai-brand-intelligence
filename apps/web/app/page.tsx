@@ -1,11 +1,12 @@
 import { loadConfig } from '@ai-visibility/config';
+import type { HealthResponse } from '@ai-visibility/contracts';
 
 async function getBackendStatus(): Promise<string> {
   const config = loadConfig();
 
   try {
     const response = await fetch(`${config.API_URL}/health`, { cache: 'no-store' });
-    const data = await response.json();
+    const data: HealthResponse = await response.json();
     return data.status;
   } catch {
     return 'unreachable';

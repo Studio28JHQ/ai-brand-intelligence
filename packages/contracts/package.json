@@ -1,5 +1,13 @@
 {
   "name": "@ai-visibility/contracts",
   "version": "0.0.0",
-  "private": true
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
 }

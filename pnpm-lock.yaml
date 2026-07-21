@@ -13,6 +13,9 @@ importers:
       '@ai-visibility/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@ai-visibility/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
       '@nestjs/common':
         specifier: ^11.1.28
         version: 11.1.28(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -44,6 +47,9 @@ importers:
       '@ai-visibility/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@ai-visibility/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
       next:
         specifier: ^16.2.10
         version: 16.2.10(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -80,7 +86,11 @@ importers:
         specifier: ^5.7.3
         version: 5.9.3
 
-  packages/contracts: {}
+  packages/contracts:
+    devDependencies:
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
 
   packages/core: {}
 
