@@ -12,6 +12,7 @@
     "@ai-visibility/config": "workspace:*",
     "@ai-visibility/contracts": "workspace:*",
     "@ai-visibility/core": "workspace:*",
+    "@ai-visibility/crawler-engine": "workspace:*",
     "@ai-visibility/database": "workspace:*",
     "@ai-visibility/discovery-engine": "workspace:*",
     "@ai-visibility/shared": "workspace:*",

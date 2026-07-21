@@ -1,7 +1,6 @@
 import { AuditContext } from './audit-context';
 import { Engine } from './engine';
-
-export type PipelineResults = Record<string, unknown>;
+import { PipelineResults } from './pipeline-results';
 
 export class ExecutionPipeline {
   constructor(private readonly engines: ReadonlyArray<Engine>) {}
@@ -10,7 +9,7 @@ export class ExecutionPipeline {
     const results: PipelineResults = {};
 
     for (const engine of this.engines) {
-      results[engine.name] = await engine.run(context);
+      results[engine.name] = await engine.run(context, results);
     }
 
     return results;

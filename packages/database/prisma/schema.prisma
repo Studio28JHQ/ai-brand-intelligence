@@ -25,6 +25,7 @@ model AuditRequest {
   completedAt DateTime? @map("completed_at")
 
   discoveryResult DiscoveryResult?
+  crawlResult     CrawlResult?
 
   @@map("audit_requests")
 }
@@ -42,4 +43,19 @@ model DiscoveryResult {
   audit AuditRequest @relation(fields: [auditId], references: [id])
 
   @@map("discovery_results")
+}
+
+model CrawlResult {
+  id         String   @id @default(uuid())
+  auditId    String   @unique @map("audit_id")
+  finalUrl   String   @map("final_url")
+  httpStatus Int      @map("http_status")
+  headers    Json
+  html       String
+  success    Boolean
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  audit AuditRequest @relation(fields: [auditId], references: [id])
+
+  @@map("crawl_results")
 }

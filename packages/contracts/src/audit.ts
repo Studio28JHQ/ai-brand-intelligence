@@ -1,3 +1,5 @@
+import type { CrawlSummary } from './crawl';
+
 export type AuditStatus = 'pending' | 'running' | 'completed';
 
 export interface CreateAuditRequest {
@@ -14,4 +16,5 @@ export interface CreateAuditResponse {
   id: string;
   status: AuditStatus;
   discovery?: DiscoverySummary;
+  crawl?: CrawlSummary;
 }

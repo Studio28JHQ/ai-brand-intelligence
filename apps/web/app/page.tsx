@@ -29,6 +29,14 @@ export default function Home() {
               <p>sitemap.xml detected: {state.result.discovery.sitemapDetected ? 'Yes' : 'No'}</p>
             </>
           )}
+          {state.result.crawl && (
+            <>
+              <p>HTTP Status: {state.result.crawl.httpStatus}</p>
+              <p>Final URL: {state.result.crawl.finalUrl}</p>
+              <p>HTML Size: {state.result.crawl.htmlSizeBytes} bytes</p>
+              <p>Crawl Success: {state.result.crawl.success ? 'Yes' : 'No'}</p>
+            </>
+          )}
         </div>
       )}
 

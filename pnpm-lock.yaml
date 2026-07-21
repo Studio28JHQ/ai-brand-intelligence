@@ -19,6 +19,9 @@ importers:
       '@ai-visibility/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@ai-visibility/crawler-engine':
+        specifier: workspace:*
+        version: link:../../services/crawler
       '@ai-visibility/database':
         specifier: workspace:*
         version: link:../../packages/database
@@ -151,6 +154,25 @@ importers:
         version: 5.9.3
 
   packages/types: {}
+
+  services/crawler:
+    dependencies:
+      '@ai-visibility/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@ai-visibility/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@ai-visibility/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.20.1
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
 
   services/discovery:
     dependencies:

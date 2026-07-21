@@ -7,6 +7,7 @@ import { CreateAuditUseCase } from '../../application/audit/create-audit.use-cas
 import { ExecuteAuditUseCase } from '../../application/audit/execute-audit.use-case';
 import { PrismaAuditRepository } from '../../infrastructure/audit/prisma-audit.repository';
 import { DiscoveryEngineAdapter } from '../../infrastructure/audit/discovery-engine.adapter';
+import { CrawlerEngineAdapter } from '../../infrastructure/audit/crawler-engine.adapter';
 import { ExecutionPipelineAdapter } from '../../infrastructure/audit/execution-pipeline.adapter';
 import { DatabaseModule } from '../../infrastructure/database/database.module';
 import { AuditController } from './audit.controller';
@@ -20,10 +21,14 @@ import { AuditController } from './audit.controller';
     { provide: AUDIT_REPOSITORY, useClass: PrismaAuditRepository },
     { provide: EXECUTION_PIPELINE_PORT, useClass: ExecutionPipelineAdapter },
     DiscoveryEngineAdapter,
+    CrawlerEngineAdapter,
     {
       provide: AUDIT_ENGINES,
-      useFactory: (discoveryEngineAdapter: DiscoveryEngineAdapter): Engine[] => [discoveryEngineAdapter],
-      inject: [DiscoveryEngineAdapter],
+      useFactory: (
+        discoveryEngineAdapter: DiscoveryEngineAdapter,
+        crawlerEngineAdapter: CrawlerEngineAdapter,
+      ): Engine[] => [discoveryEngineAdapter, crawlerEngineAdapter],
+      inject: [DiscoveryEngineAdapter, CrawlerEngineAdapter],
     },
   ],
 })

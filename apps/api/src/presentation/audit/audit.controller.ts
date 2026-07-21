@@ -15,7 +15,7 @@ export class AuditController {
     }
 
     try {
-      const { audit, discovery } = await this.createAuditUseCase.execute(dto.url);
+      const { audit, discovery, crawl } = await this.createAuditUseCase.execute(dto.url);
       return {
         id: audit.id,
         status: audit.status,
@@ -23,6 +23,12 @@ export class AuditController {
           normalizedUrl: discovery.normalizedUrl,
           robotsTxtDetected: discovery.robotsTxtDetected,
           sitemapDetected: discovery.sitemapDetected,
+        },
+        crawl: {
+          httpStatus: crawl.httpStatus,
+          finalUrl: crawl.finalUrl,
+          htmlSizeBytes: Buffer.byteLength(crawl.html, 'utf8'),
+          success: crawl.success,
         },
       };
     } catch (error) {
