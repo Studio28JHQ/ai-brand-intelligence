@@ -17,6 +17,9 @@ build/
 out/
 *.log
 
+# Generated Prisma Client
+**/src/generated/
+
 # Environment and secrets
 .env
 .env.*

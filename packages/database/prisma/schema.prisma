@@ -1,0 +1,17 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  runtime      = "nodejs"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model PlatformMeta {
+  id             Int      @id @default(autoincrement())
+  bootstrappedAt DateTime @default(now())
+
+  @@map("platform_meta")
+}

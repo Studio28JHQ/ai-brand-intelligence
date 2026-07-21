@@ -15,6 +15,7 @@ async function bootstrap() {
   app.use(correlationIdMiddleware);
   app.useGlobalInterceptors(new LoggingInterceptor());
   app.useGlobalFilters(new GlobalExceptionFilter());
+  app.enableShutdownHooks();
 
   await app.listen(config.PORT);
 }
