@@ -1,14 +1,43 @@
-import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
-import type { CreateAuditResponse, CrawlResult, EngineResult, InventoryResult } from '@ai-visibility/contracts';
+import { BadRequestException, Body, Controller, Get, NotFoundException, Param, Post } from '@nestjs/common';
+import type { AuditMetadata, CreateAuditResponse, CrawlResult, EngineResult, InventoryResult } from '@ai-visibility/contracts';
 import { CreateAuditUseCase } from '../../application/audit/create-audit.use-case';
+import { AuditQueryService } from '../../application/audit/audit-query.service';
 import { InvalidAuditUrlError } from '../../domain/audit/audit.errors';
 import { DiscoveryResult } from '../../domain/audit/discovery-result';
 import { CreateAuditDto } from './dto/create-audit.dto';
 import { generateRecommendations } from './recommendation.service';
+import { toAuditMetadata } from './audit-metadata.mapper';
 
 @Controller('audits')
 export class AuditController {
-  constructor(private readonly createAuditUseCase: CreateAuditUseCase) {}
+  constructor(
+    private readonly createAuditUseCase: CreateAuditUseCase,
+    private readonly auditQueryService: AuditQueryService,
+  ) {}
+
+  @Get()
+  async list(): Promise<AuditMetadata[]> {
+    const audits = await this.auditQueryService.list();
+    return audits.map(toAuditMetadata);
+  }
+
+  @Get('latest')
+  async latest(): Promise<AuditMetadata> {
+    const audit = await this.auditQueryService.getLatest();
+    if (!audit) {
+      throw new NotFoundException('No audits found');
+    }
+    return toAuditMetadata(audit);
+  }
+
+  @Get(':id')
+  async getById(@Param('id') id: string): Promise<AuditMetadata> {
+    const audit = await this.auditQueryService.getById(id);
+    if (!audit) {
+      throw new NotFoundException(`Audit not found: ${id}`);
+    }
+    return toAuditMetadata(audit);
+  }
 
   @Post()
   async create(@Body() dto: CreateAuditDto): Promise<CreateAuditResponse> {

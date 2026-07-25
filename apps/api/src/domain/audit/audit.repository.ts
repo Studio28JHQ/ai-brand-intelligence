@@ -8,4 +8,7 @@ export interface AuditRepository {
   markCompleted(id: string, completedAt: Date): Promise<Audit>;
   markFailed(id: string, failedAt: Date): Promise<Audit>;
   markCancelled(id: string, cancelledAt: Date): Promise<Audit>;
+  findById(id: string): Promise<Audit | null>;
+  findAll(): Promise<Audit[]>;
+  findLatest(): Promise<Audit | null>;
 }

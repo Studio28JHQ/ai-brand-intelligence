@@ -5,6 +5,7 @@ import { WORKFLOW_PORT } from '../../domain/audit/workflow.port';
 import { AUDIT_WORKFLOW_STEPS } from '../../domain/audit/audit-workflow-steps.token';
 import { CreateAuditUseCase } from '../../application/audit/create-audit.use-case';
 import { ExecuteAuditUseCase } from '../../application/audit/execute-audit.use-case';
+import { AuditQueryService } from '../../application/audit/audit-query.service';
 import { PrismaAuditRepository } from '../../infrastructure/audit/prisma-audit.repository';
 import { DiscoveryStep } from '../../infrastructure/audit/discovery.step';
 import { CrawlerStep } from '../../infrastructure/audit/crawler.step';
@@ -23,6 +24,7 @@ import { AuditController } from './audit.controller';
   providers: [
     CreateAuditUseCase,
     ExecuteAuditUseCase,
+    AuditQueryService,
     { provide: AUDIT_REPOSITORY, useClass: PrismaAuditRepository },
     { provide: WORKFLOW_PORT, useClass: WorkflowAdapter },
     DiscoveryStep,

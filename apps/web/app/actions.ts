@@ -1,11 +1,27 @@
 'use server';
 
 import { loadConfig } from '@ai-visibility/config';
-import type { CreateAuditResponse } from '@ai-visibility/contracts';
+import type { AuditMetadata, CreateAuditResponse } from '@ai-visibility/contracts';
 
 export interface CreateAuditState {
   result?: CreateAuditResponse;
   error?: string;
+}
+
+export async function listAudits(): Promise<AuditMetadata[]> {
+  const config = loadConfig();
+
+  try {
+    const response = await fetch(`${config.API_URL}/audits`, { cache: 'no-store' });
+
+    if (!response.ok) {
+      return [];
+    }
+
+    return (await response.json()) as AuditMetadata[];
+  } catch {
+    return [];
+  }
 }
 
 export async function createAudit(

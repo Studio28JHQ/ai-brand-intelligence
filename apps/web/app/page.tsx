@@ -1,12 +1,18 @@
 'use client';
 
-import { useActionState } from 'react';
-import { createAudit, CreateAuditState } from './actions';
+import { useActionState, useEffect, useState } from 'react';
+import type { AuditMetadata } from '@ai-visibility/contracts';
+import { createAudit, CreateAuditState, listAudits } from './actions';
 
 const initialState: CreateAuditState = {};
 
 export default function Home() {
   const [state, formAction, pending] = useActionState(createAudit, initialState);
+  const [audits, setAudits] = useState<AuditMetadata[]>([]);
+
+  useEffect(() => {
+    listAudits().then(setAudits);
+  }, [state.result]);
 
   return (
     <main>
@@ -16,6 +22,21 @@ export default function Home() {
           Analyze
         </button>
       </form>
+
+      <section>
+        <h2>Audits</h2>
+        <ul>
+          {audits.map((audit) => (
+            <li key={audit.id}>
+              <p>Audit ID: {audit.id}</p>
+              <p>URL: {audit.url}</p>
+              <p>Status: {audit.status}</p>
+              <p>Started At: {audit.startedAt ?? 'N/A'}</p>
+              <p>Completed At: {audit.completedAt ?? 'N/A'}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
 
       {state.result && (
         <div>

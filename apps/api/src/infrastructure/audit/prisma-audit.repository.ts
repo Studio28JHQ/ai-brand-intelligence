@@ -49,6 +49,21 @@ export class PrismaAuditRepository implements AuditRepository {
     return this.persist(next);
   }
 
+  async findById(id: string): Promise<Audit | null> {
+    const record = await this.prisma.auditRequest.findUnique({ where: { id } });
+    return record ? this.toDomain(record) : null;
+  }
+
+  async findAll(): Promise<Audit[]> {
+    const records = await this.prisma.auditRequest.findMany({ orderBy: { createdAt: 'desc' } });
+    return records.map((record) => this.toDomain(record));
+  }
+
+  async findLatest(): Promise<Audit | null> {
+    const record = await this.prisma.auditRequest.findFirst({ orderBy: { createdAt: 'desc' } });
+    return record ? this.toDomain(record) : null;
+  }
+
   private async findByIdOrThrow(id: string): Promise<Audit> {
     const record = await this.prisma.auditRequest.findUnique({ where: { id } });
     if (!record) {
