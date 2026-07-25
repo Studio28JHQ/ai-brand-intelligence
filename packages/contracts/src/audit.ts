@@ -1,5 +1,6 @@
 import type { CrawlSummary } from './crawl';
 import type { InventorySummary } from './inventory';
+import type { AnalysisSummary } from './analysis';
 
 export type AuditStatus = 'pending' | 'running' | 'completed';
 
@@ -19,4 +20,5 @@ export interface CreateAuditResponse {
   discovery?: DiscoverySummary;
   crawl?: CrawlSummary;
   inventory?: InventorySummary;
+  analysis?: AnalysisSummary;
 }

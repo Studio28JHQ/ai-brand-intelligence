@@ -9,6 +9,7 @@ import { PrismaAuditRepository } from '../../infrastructure/audit/prisma-audit.r
 import { DiscoveryStep } from '../../infrastructure/audit/discovery.step';
 import { CrawlerStep } from '../../infrastructure/audit/crawler.step';
 import { InventoryStep } from '../../infrastructure/audit/inventory.step';
+import { AnalysisStep } from '../../infrastructure/audit/analysis.step';
 import { WorkflowAdapter } from '../../infrastructure/audit/workflow.adapter';
 import { DatabaseModule } from '../../infrastructure/database/database.module';
 import { AuditController } from './audit.controller';
@@ -24,14 +25,16 @@ import { AuditController } from './audit.controller';
     DiscoveryStep,
     CrawlerStep,
     InventoryStep,
+    AnalysisStep,
     {
       provide: AUDIT_WORKFLOW_STEPS,
       useFactory: (
         discoveryStep: DiscoveryStep,
         crawlerStep: CrawlerStep,
         inventoryStep: InventoryStep,
-      ): WorkflowStep[] => [discoveryStep, crawlerStep, inventoryStep],
-      inject: [DiscoveryStep, CrawlerStep, InventoryStep],
+        analysisStep: AnalysisStep,
+      ): WorkflowStep[] => [discoveryStep, crawlerStep, inventoryStep, analysisStep],
+      inject: [DiscoveryStep, CrawlerStep, InventoryStep, AnalysisStep],
     },
   ],
 })

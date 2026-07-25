@@ -47,6 +47,21 @@ export default function Home() {
               <p>External Links: {state.result.inventory.externalLinkCount}</p>
             </>
           )}
+          {state.result.analysis && (
+            <>
+              <h2>Findings</h2>
+              <ul>
+                {state.result.analysis.findings.map((finding) => (
+                  <li key={finding.id}>
+                    <p>Category: {finding.category}</p>
+                    <p>Finding ID: {finding.id}</p>
+                    <p>Source Engine: {finding.sourceEngine}</p>
+                    <p>Status: {finding.status}</p>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
         </div>
       )}
 

@@ -14,6 +14,7 @@
     "@ai-visibility/core": "workspace:*",
     "@ai-visibility/crawler-engine": "workspace:*",
     "@ai-visibility/database": "workspace:*",
+    "@ai-visibility/analysis-engine": "workspace:*",
     "@ai-visibility/discovery-engine": "workspace:*",
     "@ai-visibility/inventory-engine": "workspace:*",
     "@ai-visibility/shared": "workspace:*",

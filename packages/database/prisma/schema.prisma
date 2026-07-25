@@ -27,6 +27,7 @@ model AuditRequest {
   discoveryResult DiscoveryResult?
   crawlResult     CrawlResult?
   inventoryResult InventoryResult?
+  findings        Finding[]
 
   @@map("audit_requests")
 }
@@ -77,4 +78,17 @@ model InventoryResult {
   audit AuditRequest @relation(fields: [auditId], references: [id])
 
   @@map("inventory_results")
+}
+
+model Finding {
+  id           String   @id
+  auditId      String   @map("audit_id")
+  category     String
+  sourceEngine String   @map("source_engine")
+  status       String
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  audit AuditRequest @relation(fields: [auditId], references: [id])
+
+  @@map("findings")
 }
