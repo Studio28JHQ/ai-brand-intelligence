@@ -6,6 +6,7 @@ export interface Finding {
   id: string;
   auditId: string;
   ruleId: string;
+  ruleVersion: string;
   category: string;
   sourceEngine: string;
   outcome: RuleOutcome;
@@ -15,11 +16,13 @@ export interface Finding {
 
 export interface AnalysisResult {
   findings: Finding[];
+  ruleSetVersion: string;
 }
 
 export interface FindingSummary {
   id: string;
   ruleId: string;
+  ruleVersion: string;
   category: string;
   sourceEngine: string;
   outcome: RuleOutcome;
@@ -29,4 +32,5 @@ export interface FindingSummary {
 
 export interface AnalysisSummary {
   findings: FindingSummary[];
+  ruleSetVersion: string;
 }

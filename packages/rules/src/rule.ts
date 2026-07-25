@@ -7,6 +7,7 @@ export interface RuleEvaluation {
 
 export interface Rule<TInput> {
   readonly id: string;
+  readonly version: string;
   readonly category: string;
   readonly sourceEngine: string;
   evaluate(input: TInput): RuleEvaluation;

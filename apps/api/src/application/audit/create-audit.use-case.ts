@@ -57,6 +57,7 @@ export class CreateAuditUseCase {
       progress,
       history,
       findings: analysis.output!.findings,
+      ruleSetVersion: analysis.output!.ruleSetVersion,
       entities: entity.output!.entities,
       knowledgeGraph: knowledgeGraph.output!,
       aiVisibility: aiVisibility.output!.assessment,

@@ -91,6 +91,7 @@ model Finding {
   id           String   @id
   auditId      String   @map("audit_id")
   ruleId       String   @map("rule_id")
+  ruleVersion  String   @map("rule_version")
   category     String
   sourceEngine String   @map("source_engine")
   outcome      String

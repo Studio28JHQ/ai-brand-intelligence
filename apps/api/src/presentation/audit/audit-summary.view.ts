@@ -34,12 +34,14 @@ export function buildAuditSummary(snapshot: AuditSnapshot): CreateAuditResponse 
       findings: snapshot.findings.map((finding) => ({
         id: finding.id,
         ruleId: finding.ruleId,
+        ruleVersion: finding.ruleVersion,
         category: finding.category,
         sourceEngine: finding.sourceEngine,
         outcome: finding.outcome,
         severity: finding.severity,
         evidence: finding.evidence,
       })),
+      ruleSetVersion: snapshot.ruleSetVersion,
     },
     entity: {
       entities: snapshot.entities.map((item) => ({

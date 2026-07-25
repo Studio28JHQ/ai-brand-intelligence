@@ -2,6 +2,7 @@ import { Rule, RuleOutcome } from './rule';
 
 export interface RuleEvaluationResult {
   ruleId: string;
+  ruleVersion: string;
   category: string;
   sourceEngine: string;
   outcome: RuleOutcome;
@@ -15,6 +16,7 @@ export class RuleEvaluator<TInput> {
 
       return {
         ruleId: rule.id,
+        ruleVersion: rule.version,
         category: rule.category,
         sourceEngine: rule.sourceEngine,
         outcome,

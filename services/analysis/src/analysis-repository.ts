@@ -13,6 +13,7 @@ export async function saveFindings(findings: Finding[]): Promise<void> {
         id: finding.id,
         auditId: finding.auditId,
         ruleId: finding.ruleId,
+        ruleVersion: finding.ruleVersion,
         category: finding.category,
         sourceEngine: finding.sourceEngine,
         outcome: finding.outcome,
@@ -21,6 +22,7 @@ export async function saveFindings(findings: Finding[]): Promise<void> {
       },
       update: {
         ruleId: finding.ruleId,
+        ruleVersion: finding.ruleVersion,
         category: finding.category,
         sourceEngine: finding.sourceEngine,
         outcome: finding.outcome,

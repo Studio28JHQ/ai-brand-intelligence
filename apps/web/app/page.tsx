@@ -142,12 +142,14 @@ export default function Home() {
           {state.result.analysis && (
             <>
               <h2>Findings</h2>
+              <p>Rule Set Version: {state.result.analysis.ruleSetVersion}</p>
               <ul>
                 {state.result.analysis.findings.map((finding) => (
                   <li key={finding.id}>
                     <p>Category: {finding.category}</p>
                     <p>Finding ID: {finding.id}</p>
                     <p>Rule: {finding.ruleId}</p>
+                    <p>Rule Version: {finding.ruleVersion}</p>
                     <p>Source Engine: {finding.sourceEngine}</p>
                     <p>Outcome: {finding.outcome}</p>
                     <p>Severity: {finding.severity}</p>

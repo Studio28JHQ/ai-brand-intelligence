@@ -15,6 +15,7 @@ export interface AuditSnapshotProps {
   progress: WorkflowProgress[];
   history: WorkflowExecutionRecord[];
   findings: Finding[];
+  ruleSetVersion: string;
   entities: Entity[];
   knowledgeGraph: KnowledgeGraphResult;
   aiVisibility: AiVisibilityAssessment;
@@ -27,6 +28,7 @@ export class AuditSnapshot {
     public readonly progress: ReadonlyArray<WorkflowProgress>,
     public readonly history: ReadonlyArray<WorkflowExecutionRecord>,
     public readonly findings: ReadonlyArray<Finding>,
+    public readonly ruleSetVersion: string,
     public readonly entities: ReadonlyArray<Entity>,
     public readonly knowledgeGraph: KnowledgeGraphResult,
     public readonly aiVisibility: AiVisibilityAssessment,
@@ -41,6 +43,7 @@ export class AuditSnapshot {
       props.progress,
       props.history,
       props.findings,
+      props.ruleSetVersion,
       props.entities,
       props.knowledgeGraph,
       props.aiVisibility,
