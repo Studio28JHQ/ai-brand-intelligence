@@ -3,6 +3,10 @@ import type { WorkflowStep } from '@ai-visibility/core';
 import { AUDIT_REPOSITORY } from '../../domain/audit/audit.repository';
 import { WORKFLOW_PORT } from '../../domain/audit/workflow.port';
 import { AUDIT_WORKFLOW_STEPS } from '../../domain/audit/audit-workflow-steps.token';
+import { CapabilityRegistry } from '../../domain/audit/capability-registry';
+import { ExecutionPlanBuilder } from '../../domain/audit/execution-plan-builder';
+import { toCapability } from '../../domain/audit/capability';
+import { FULL_AUDIT_TYPE } from '../../domain/audit/full-audit.type';
 import { CreateAuditUseCase } from '../../application/audit/create-audit.use-case';
 import { ExecuteAuditUseCase } from '../../application/audit/execute-audit.use-case';
 import { AuditQueryService } from '../../application/audit/audit-query.service';
@@ -48,15 +52,20 @@ import { AuditController } from './audit.controller';
         entityStep: EntityStep,
         knowledgeGraphStep: KnowledgeGraphStep,
         aiVisibilityStep: AiVisibilityStep,
-      ): WorkflowStep[] => [
-        discoveryStep,
-        crawlerStep,
-        inventoryStep,
-        analysisStep,
-        entityStep,
-        knowledgeGraphStep,
-        aiVisibilityStep,
-      ],
+      ): WorkflowStep[] => {
+        const registry = new CapabilityRegistry();
+        [
+          discoveryStep,
+          crawlerStep,
+          inventoryStep,
+          analysisStep,
+          entityStep,
+          knowledgeGraphStep,
+          aiVisibilityStep,
+        ].forEach((step) => registry.register(toCapability(step)));
+
+        return new ExecutionPlanBuilder(registry).build(FULL_AUDIT_TYPE);
+      },
       inject: [
         DiscoveryStep,
         CrawlerStep,

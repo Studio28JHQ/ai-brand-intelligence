@@ -20,3 +20,10 @@ export class AuditNotFoundError extends Error {
     this.name = 'AuditNotFoundError';
   }
 }
+
+export class UnknownCapabilityError extends Error {
+  constructor(capabilityId: string) {
+    super(`Unknown capability: ${capabilityId}`);
+    this.name = 'UnknownCapabilityError';
+  }
+}
