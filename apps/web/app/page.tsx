@@ -2,8 +2,8 @@
 
 import { useActionState, useEffect, useState } from 'react';
 import Link from 'next/link';
-import type { AuditMetadata, ProjectMetadata } from '@ai-visibility/contracts';
-import { createAudit, CreateAuditState, listAudits, listProjects, setProjectBaseline } from './actions';
+import type { AuditComparisonResult, AuditMetadata, ProjectMetadata } from '@ai-visibility/contracts';
+import { compareAudits, createAudit, CreateAuditState, listAudits, listProjects, setProjectBaseline } from './actions';
 
 const initialState: CreateAuditState = {};
 
@@ -11,6 +11,8 @@ export default function Home() {
   const [state, formAction, pending] = useActionState(createAudit, initialState);
   const [audits, setAudits] = useState<AuditMetadata[]>([]);
   const [projects, setProjects] = useState<ProjectMetadata[]>([]);
+  const [compareTargets, setCompareTargets] = useState<Record<string, string>>({});
+  const [comparisons, setComparisons] = useState<Record<string, AuditComparisonResult | null>>({});
 
   const refresh = () => {
     listAudits().then(setAudits);
@@ -22,6 +24,15 @@ export default function Home() {
   const handleSetBaseline = async (projectId: string, auditId: string) => {
     await setProjectBaseline(projectId, auditId);
     refresh();
+  };
+
+  const handleCompare = async (projectId: string, baselineAuditId: string) => {
+    const targetAuditId = compareTargets[projectId];
+    if (!targetAuditId) {
+      return;
+    }
+    const result = await compareAudits(baselineAuditId, targetAuditId);
+    setComparisons((prev) => ({ ...prev, [projectId]: result }));
   };
 
   return (
@@ -90,6 +101,103 @@ export default function Home() {
                   </li>
                 ))}
             </ul>
+
+            {project.baselineAuditId && (
+              <div>
+                <h4>Compare to Baseline</h4>
+                <p>Baseline Audit: {project.baselineAuditId}</p>
+                <select
+                  value={compareTargets[project.id] ?? ''}
+                  onChange={(event) =>
+                    setCompareTargets((prev) => ({ ...prev, [project.id]: event.target.value }))
+                  }
+                >
+                  <option value="">Select an audit to compare</option>
+                  {audits
+                    .filter(
+                      (audit) =>
+                        audit.projectId === project.id &&
+                        audit.status === 'completed' &&
+                        audit.id !== project.baselineAuditId,
+                    )
+                    .map((audit) => (
+                      <option key={audit.id} value={audit.id}>
+                        {audit.id} ({audit.url})
+                      </option>
+                    ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => handleCompare(project.id, project.baselineAuditId as string)}
+                >
+                  Compare
+                </button>
+
+                {comparisons[project.id] && (
+                  <div>
+                    <p>Baseline Audit: {comparisons[project.id]?.baselineAuditId}</p>
+                    <p>Compared Audit: {comparisons[project.id]?.targetAuditId}</p>
+
+                    <h5>Findings</h5>
+                    <p>New: {comparisons[project.id]?.findings.newFindings.length}</p>
+                    <ul>
+                      {comparisons[project.id]?.findings.newFindings.map((entry) => (
+                        <li key={`new-${entry.ruleId}`}>{entry.ruleId} ({entry.category})</li>
+                      ))}
+                    </ul>
+                    <p>Resolved: {comparisons[project.id]?.findings.resolvedFindings.length}</p>
+                    <ul>
+                      {comparisons[project.id]?.findings.resolvedFindings.map((entry) => (
+                        <li key={`resolved-${entry.ruleId}`}>{entry.ruleId} ({entry.category})</li>
+                      ))}
+                    </ul>
+                    <p>Unchanged: {comparisons[project.id]?.findings.unchangedFindings.length}</p>
+
+                    <h5>Entities</h5>
+                    <p>Added: {comparisons[project.id]?.entities.added.length}</p>
+                    <ul>
+                      {comparisons[project.id]?.entities.added.map((entry) => (
+                        <li key={`added-${entry.type}-${entry.name}`}>{entry.name} ({entry.type})</li>
+                      ))}
+                    </ul>
+                    <p>Removed: {comparisons[project.id]?.entities.removed.length}</p>
+                    <ul>
+                      {comparisons[project.id]?.entities.removed.map((entry) => (
+                        <li key={`removed-${entry.type}-${entry.name}`}>{entry.name} ({entry.type})</li>
+                      ))}
+                    </ul>
+                    <p>Unchanged: {comparisons[project.id]?.entities.unchanged.length}</p>
+
+                    <h5>AI Visibility</h5>
+                    <p>
+                      Status: {comparisons[project.id]?.aiVisibility.baselineStatus} →{' '}
+                      {comparisons[project.id]?.aiVisibility.targetStatus}
+                      {comparisons[project.id]?.aiVisibility.statusChanged ? ' (changed)' : ' (unchanged)'}
+                    </p>
+                    <p>
+                      Graph Completeness: {comparisons[project.id]?.aiVisibility.baselineGraphCompleteness} →{' '}
+                      {comparisons[project.id]?.aiVisibility.targetGraphCompleteness}
+                    </p>
+                    <p>
+                      Entity Coverage: {comparisons[project.id]?.aiVisibility.baselineEntityCoverage} →{' '}
+                      {comparisons[project.id]?.aiVisibility.targetEntityCoverage}
+                    </p>
+                    <p>
+                      Relationship Coverage: {comparisons[project.id]?.aiVisibility.baselineRelationshipCoverage} →{' '}
+                      {comparisons[project.id]?.aiVisibility.targetRelationshipCoverage}
+                    </p>
+                    <p>
+                      New Missing Signals:{' '}
+                      {comparisons[project.id]?.aiVisibility.newMissingSignals.join(', ') || 'None'}
+                    </p>
+                    <p>
+                      Resolved Missing Signals:{' '}
+                      {comparisons[project.id]?.aiVisibility.resolvedMissingSignals.join(', ') || 'None'}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         ))}
       </section>

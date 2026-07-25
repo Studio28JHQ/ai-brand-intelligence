@@ -21,6 +21,13 @@ export class AuditNotFoundError extends Error {
   }
 }
 
+export class AuditNotCompletedError extends Error {
+  constructor(id: string) {
+    super(`Audit is not completed: ${id}`);
+    this.name = 'AuditNotCompletedError';
+  }
+}
+
 export class UnknownCapabilityError extends Error {
   constructor(capabilityId: string) {
     super(`Unknown capability: ${capabilityId}`);

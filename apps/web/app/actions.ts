@@ -1,7 +1,7 @@
 'use server';
 
 import { loadConfig } from '@ai-visibility/config';
-import type { AuditMetadata, CreateAuditResponse, ProjectMetadata } from '@ai-visibility/contracts';
+import type { AuditComparisonResult, AuditMetadata, CreateAuditResponse, ProjectMetadata } from '@ai-visibility/contracts';
 
 export interface CreateAuditState {
   result?: CreateAuditResponse;
@@ -53,6 +53,28 @@ export async function setProjectBaseline(projectId: string, auditId: string): Pr
     return response.ok;
   } catch {
     return false;
+  }
+}
+
+export async function compareAudits(
+  baselineAuditId: string,
+  targetAuditId: string,
+): Promise<AuditComparisonResult | null> {
+  const config = loadConfig();
+
+  try {
+    const response = await fetch(
+      `${config.API_URL}/audits/compare?baselineAuditId=${baselineAuditId}&targetAuditId=${targetAuditId}`,
+      { cache: 'no-store' },
+    );
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return (await response.json()) as AuditComparisonResult;
+  } catch {
+    return null;
   }
 }
 
