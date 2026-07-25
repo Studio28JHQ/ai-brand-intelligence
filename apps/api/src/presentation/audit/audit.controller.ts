@@ -3,6 +3,7 @@ import type { CreateAuditResponse } from '@ai-visibility/contracts';
 import { CreateAuditUseCase } from '../../application/audit/create-audit.use-case';
 import { InvalidAuditUrlError } from '../../domain/audit/audit.errors';
 import { CreateAuditDto } from './dto/create-audit.dto';
+import { generateRecommendations } from './recommendation.service';
 
 @Controller('audits')
 export class AuditController {
@@ -15,7 +16,7 @@ export class AuditController {
     }
 
     try {
-      const { audit, discovery, crawl, inventory, analysis, entity, knowledgeGraph, aiVisibility, recommendation } =
+      const { audit, discovery, crawl, inventory, analysis, entity, knowledgeGraph, aiVisibility } =
         await this.createAuditUseCase.execute(dto.url);
       return {
         id: audit.id,
@@ -73,13 +74,7 @@ export class AuditController {
           assessedAt: aiVisibility.assessment.assessedAt,
         },
         recommendation: {
-          recommendations: recommendation.recommendations.map((item) => ({
-            title: item.title,
-            rationale: item.rationale,
-            priority: item.priority,
-            status: item.status,
-            relatedFindingIds: item.relatedFindingIds,
-          })),
+          recommendations: generateRecommendations(analysis.findings, aiVisibility.assessment),
         },
       };
     } catch (error) {

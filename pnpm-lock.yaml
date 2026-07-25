@@ -43,9 +43,6 @@ importers:
       '@ai-visibility/knowledge-graph-engine':
         specifier: workspace:*
         version: link:../../services/knowledge-graph
-      '@ai-visibility/recommendation-engine':
-        specifier: workspace:*
-        version: link:../../services/recommendation
       '@ai-visibility/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -298,25 +295,6 @@ importers:
         version: 5.9.3
 
   services/knowledge-graph:
-    dependencies:
-      '@ai-visibility/config':
-        specifier: workspace:*
-        version: link:../../packages/config
-      '@ai-visibility/contracts':
-        specifier: workspace:*
-        version: link:../../packages/contracts
-      '@ai-visibility/database':
-        specifier: workspace:*
-        version: link:../../packages/database
-    devDependencies:
-      '@types/node':
-        specifier: ^22.10.5
-        version: 22.20.1
-      typescript:
-        specifier: ^5.7.3
-        version: 5.9.3
-
-  services/recommendation:
     dependencies:
       '@ai-visibility/config':
         specifier: workspace:*

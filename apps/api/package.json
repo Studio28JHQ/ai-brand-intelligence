@@ -20,7 +20,6 @@
     "@ai-visibility/entity-engine": "workspace:*",
     "@ai-visibility/inventory-engine": "workspace:*",
     "@ai-visibility/knowledge-graph-engine": "workspace:*",
-    "@ai-visibility/recommendation-engine": "workspace:*",
     "@ai-visibility/shared": "workspace:*",
     "@nestjs/common": "^11.1.28",
     "@nestjs/core": "^11.1.28",

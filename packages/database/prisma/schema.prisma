@@ -32,7 +32,6 @@ model AuditRequest {
   graphNodes              GraphNode[]
   graphRelationships      GraphRelationship[]
   aiVisibilityAssessment  AiVisibilityAssessment?
-  recommendations         Recommendation[]
 
   @@map("audit_requests")
 }
@@ -159,19 +158,4 @@ model AiVisibilityAssessment {
   audit AuditRequest @relation(fields: [auditId], references: [id])
 
   @@map("ai_visibility_assessments")
-}
-
-model Recommendation {
-  id                String   @id
-  auditId           String   @map("audit_id")
-  title             String
-  rationale         String
-  priority          String
-  status            String
-  relatedFindingIds Json     @map("related_finding_ids")
-  createdAt         DateTime @default(now()) @map("created_at")
-
-  audit AuditRequest @relation(fields: [auditId], references: [id])
-
-  @@map("recommendations")
 }

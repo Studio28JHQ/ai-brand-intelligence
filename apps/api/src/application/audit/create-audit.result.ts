@@ -5,7 +5,6 @@ import type {
   EntityResult,
   InventoryResult,
   KnowledgeGraphResult,
-  RecommendationResult,
 } from '@ai-visibility/contracts';
 import { Audit } from '../../domain/audit/audit.entity';
 import { DiscoveryResult } from '../../domain/audit/discovery-result';
@@ -19,5 +18,4 @@ export interface CreateAuditResult {
   entity: EntityResult;
   knowledgeGraph: KnowledgeGraphResult;
   aiVisibility: AiVisibilityResult;
-  recommendation: RecommendationResult;
 }
