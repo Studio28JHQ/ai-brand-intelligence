@@ -7,6 +7,7 @@ import { CreateAuditUseCase } from '../../application/audit/create-audit.use-cas
 import { ExecuteAuditUseCase } from '../../application/audit/execute-audit.use-case';
 import { AuditQueryService } from '../../application/audit/audit-query.service';
 import { PrismaAuditRepository } from '../../infrastructure/audit/prisma-audit.repository';
+import { AiVisibilityStatusRepository } from '../../infrastructure/audit/ai-visibility-status.repository';
 import { DiscoveryStep } from '../../infrastructure/audit/discovery.step';
 import { CrawlerStep } from '../../infrastructure/audit/crawler.step';
 import { InventoryStep } from '../../infrastructure/audit/inventory.step';
@@ -25,6 +26,7 @@ import { AuditController } from './audit.controller';
     CreateAuditUseCase,
     ExecuteAuditUseCase,
     AuditQueryService,
+    AiVisibilityStatusRepository,
     { provide: AUDIT_REPOSITORY, useClass: PrismaAuditRepository },
     { provide: WORKFLOW_PORT, useClass: WorkflowAdapter },
     DiscoveryStep,

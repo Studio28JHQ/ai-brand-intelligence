@@ -1,4 +1,5 @@
 import type { AuditStatus } from './audit';
+import type { VisibilityStatus } from './ai-visibility';
 
 export interface AuditMetadata {
   id: string;
@@ -7,4 +8,5 @@ export interface AuditMetadata {
   startedAt: string | null;
   completedAt: string | null;
   snapshotId: string | null;
+  aiVisibilityStatus: VisibilityStatus | null;
 }

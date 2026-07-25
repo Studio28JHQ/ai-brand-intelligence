@@ -1,6 +1,7 @@
 'use client';
 
 import { useActionState, useEffect, useState } from 'react';
+import Link from 'next/link';
 import type { AuditMetadata } from '@ai-visibility/contracts';
 import { createAudit, CreateAuditState, listAudits } from './actions';
 
@@ -16,6 +17,8 @@ export default function Home() {
 
   return (
     <main>
+      <h1>Audit Workspace</h1>
+
       <form action={formAction}>
         <input type="url" name="url" placeholder="https://example.com" required />
         <button type="submit" disabled={pending}>
@@ -33,6 +36,10 @@ export default function Home() {
               <p>Status: {audit.status}</p>
               <p>Started At: {audit.startedAt ?? 'N/A'}</p>
               <p>Completed At: {audit.completedAt ?? 'N/A'}</p>
+              <p>Latest AI Visibility Status: {audit.aiVisibilityStatus ?? 'N/A'}</p>
+              <p>
+                <Link href={`/audits/${audit.id}`}>Open</Link>
+              </p>
             </li>
           ))}
         </ul>
@@ -40,7 +47,7 @@ export default function Home() {
 
       {state.result && (
         <div>
-          <h1>Audit Created</h1>
+          <h2>Audit Created</h2>
           <p>Audit ID: {state.result.id}</p>
           <p>Current Status: {state.result.status}</p>
           {state.result.discovery && (

@@ -24,6 +24,22 @@ export async function listAudits(): Promise<AuditMetadata[]> {
   }
 }
 
+export async function getAudit(id: string): Promise<AuditMetadata | null> {
+  const config = loadConfig();
+
+  try {
+    const response = await fetch(`${config.API_URL}/audits/${id}`, { cache: 'no-store' });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return (await response.json()) as AuditMetadata;
+  } catch {
+    return null;
+  }
+}
+
 export async function createAudit(
   _prevState: CreateAuditState,
   formData: FormData,
