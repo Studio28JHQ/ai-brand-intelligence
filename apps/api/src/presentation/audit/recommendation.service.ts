@@ -20,7 +20,10 @@ function buildRecommendation(finding: Finding, priority: RecommendationPriority)
   };
 }
 
-export function generateRecommendations(findings: Finding[], assessment: AiVisibilityAssessment): Recommendation[] {
+export function generateRecommendations(
+  findings: ReadonlyArray<Finding>,
+  assessment: AiVisibilityAssessment,
+): Recommendation[] {
   const priority = derivePriority(assessment.status);
   const actionableFindings = findings.filter((finding) => finding.severity !== 'none');
 

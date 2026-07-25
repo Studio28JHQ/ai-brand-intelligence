@@ -1,7 +1,8 @@
 import { BadRequestException, Body, Controller, Post } from '@nestjs/common';
-import type { CreateAuditResponse } from '@ai-visibility/contracts';
+import type { CreateAuditResponse, CrawlResult, EngineResult, InventoryResult } from '@ai-visibility/contracts';
 import { CreateAuditUseCase } from '../../application/audit/create-audit.use-case';
 import { InvalidAuditUrlError } from '../../domain/audit/audit.errors';
+import { DiscoveryResult } from '../../domain/audit/discovery-result';
 import { CreateAuditDto } from './dto/create-audit.dto';
 import { generateRecommendations } from './recommendation.service';
 
@@ -16,11 +17,15 @@ export class AuditController {
     }
 
     try {
-      const { audit, discovery, crawl, inventory, analysis, entity, knowledgeGraph, aiVisibility } =
-        await this.createAuditUseCase.execute(dto.url);
+      const snapshot = await this.createAuditUseCase.execute(dto.url);
+
+      const discovery = (snapshot.engineResults.discovery as EngineResult<DiscoveryResult>).output!;
+      const crawl = (snapshot.engineResults.crawl as EngineResult<CrawlResult>).output!;
+      const inventory = (snapshot.engineResults.inventory as EngineResult<InventoryResult>).output!;
+
       return {
-        id: audit.id,
-        status: audit.status,
+        id: snapshot.audit.id,
+        status: snapshot.audit.status,
         discovery: {
           normalizedUrl: discovery.normalizedUrl,
           robotsTxtDetected: discovery.robotsTxtDetected,
@@ -41,7 +46,7 @@ export class AuditController {
           externalLinkCount: inventory.externalLinkCount,
         },
         analysis: {
-          findings: analysis.findings.map((finding) => ({
+          findings: snapshot.findings.map((finding) => ({
             id: finding.id,
             ruleId: finding.ruleId,
             category: finding.category,
@@ -52,7 +57,7 @@ export class AuditController {
           })),
         },
         entity: {
-          entities: entity.entities.map((item) => ({
+          entities: snapshot.entities.map((item) => ({
             name: item.name,
             type: item.type,
             sourceLocation: item.sourceLocation,
@@ -60,21 +65,23 @@ export class AuditController {
           })),
         },
         knowledgeGraph: {
-          totalEntities: knowledgeGraph.nodes.length,
-          totalRelationships: knowledgeGraph.relationships.length,
-          entityTypes: [...new Set(knowledgeGraph.nodes.map((node) => node.type))],
-          relationshipTypes: [...new Set(knowledgeGraph.relationships.map((relationship) => relationship.type))],
+          totalEntities: snapshot.knowledgeGraph.nodes.length,
+          totalRelationships: snapshot.knowledgeGraph.relationships.length,
+          entityTypes: [...new Set(snapshot.knowledgeGraph.nodes.map((node) => node.type))],
+          relationshipTypes: [
+            ...new Set(snapshot.knowledgeGraph.relationships.map((relationship) => relationship.type)),
+          ],
         },
         aiVisibility: {
-          status: aiVisibility.assessment.status,
-          graphCompleteness: aiVisibility.assessment.graphCompleteness,
-          entityCoverage: aiVisibility.assessment.entityCoverage,
-          relationshipCoverage: aiVisibility.assessment.relationshipCoverage,
-          missingSignals: aiVisibility.assessment.missingSignals,
-          assessedAt: aiVisibility.assessment.assessedAt,
+          status: snapshot.aiVisibility.status,
+          graphCompleteness: snapshot.aiVisibility.graphCompleteness,
+          entityCoverage: snapshot.aiVisibility.entityCoverage,
+          relationshipCoverage: snapshot.aiVisibility.relationshipCoverage,
+          missingSignals: snapshot.aiVisibility.missingSignals,
+          assessedAt: snapshot.aiVisibility.assessedAt,
         },
         recommendation: {
-          recommendations: generateRecommendations(analysis.findings, aiVisibility.assessment),
+          recommendations: generateRecommendations(snapshot.findings, snapshot.aiVisibility),
         },
       };
     } catch (error) {

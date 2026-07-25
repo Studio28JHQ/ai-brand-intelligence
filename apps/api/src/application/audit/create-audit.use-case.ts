@@ -1,7 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
+import type { AiVisibilityResult, AnalysisResult, EngineResult, EntityResult, KnowledgeGraphResult } from '@ai-visibility/contracts';
 import { AuditUrl } from '../../domain/audit/audit-url.vo';
 import { AUDIT_REPOSITORY, AuditRepository } from '../../domain/audit/audit.repository';
-import { CreateAuditResult } from './create-audit.result';
+import { AuditSnapshot } from '../../domain/audit/audit-snapshot';
 import { ExecuteAuditUseCase } from './execute-audit.use-case';
 
 @Injectable()
@@ -11,24 +12,26 @@ export class CreateAuditUseCase {
     private readonly executeAuditUseCase: ExecuteAuditUseCase,
   ) {}
 
-  async execute(rawUrl: string): Promise<CreateAuditResult> {
+  async execute(rawUrl: string): Promise<AuditSnapshot> {
     const url = AuditUrl.create(rawUrl);
     const audit = await this.auditRepository.create(url.value);
 
     await this.auditRepository.markRunning(audit.id, new Date());
-    const { discovery, crawl, inventory, analysis, entity, knowledgeGraph, aiVisibility } =
-      await this.executeAuditUseCase.execute(audit.id, url.value);
+    const engineResults = await this.executeAuditUseCase.execute(audit.id, url.value);
     const completedAudit = await this.auditRepository.markCompleted(audit.id, new Date());
 
-    return {
+    const analysis = engineResults.analysis as EngineResult<AnalysisResult>;
+    const entity = engineResults.entity as EngineResult<EntityResult>;
+    const knowledgeGraph = engineResults.knowledgeGraph as EngineResult<KnowledgeGraphResult>;
+    const aiVisibility = engineResults.aiVisibility as EngineResult<AiVisibilityResult>;
+
+    return AuditSnapshot.create({
       audit: completedAudit,
-      discovery,
-      crawl,
-      inventory,
-      analysis,
-      entity,
-      knowledgeGraph,
-      aiVisibility,
-    };
+      engineResults,
+      findings: analysis.output!.findings,
+      entities: entity.output!.entities,
+      knowledgeGraph: knowledgeGraph.output!,
+      aiVisibility: aiVisibility.output!.assessment,
+    });
   }
 }
