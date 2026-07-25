@@ -34,6 +34,7 @@ model AuditRequest {
   graphNodes              GraphNode[]
   graphRelationships      GraphRelationship[]
   aiVisibilityAssessment  AiVisibilityAssessment?
+  workflowExecutionRecords WorkflowExecutionRecord[]
 
   @@map("audit_requests")
 }
@@ -160,4 +161,21 @@ model AiVisibilityAssessment {
   audit AuditRequest @relation(fields: [auditId], references: [id])
 
   @@map("ai_visibility_assessments")
+}
+
+model WorkflowExecutionRecord {
+  id           String   @id @default(uuid())
+  auditId      String   @map("audit_id")
+  stepId       String   @map("step_id")
+  status       String
+  startedAt    DateTime @map("started_at")
+  completedAt  DateTime @map("completed_at")
+  durationMs   Int      @map("duration_ms")
+  errorCode    String?  @map("error_code")
+  errorMessage String?  @map("error_message")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  audit AuditRequest @relation(fields: [auditId], references: [id])
+
+  @@map("workflow_execution_records")
 }

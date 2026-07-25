@@ -1,0 +1,11 @@
+import type { EngineExecutionStatus } from './engine-result';
+
+export interface WorkflowExecutionRecord {
+  stepId: string;
+  status: EngineExecutionStatus;
+  startedAt: string;
+  completedAt: string;
+  durationMs: number;
+  errorCode?: string;
+  errorMessage?: string;
+}

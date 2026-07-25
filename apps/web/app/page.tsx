@@ -40,6 +40,21 @@ export default function Home() {
               <p>
                 <Link href={`/audits/${audit.id}`}>Open</Link>
               </p>
+              {audit.executionHistory.length > 0 && (
+                <>
+                  <p>Execution Timeline:</p>
+                  <ul>
+                    {audit.executionHistory.map((record, index) => (
+                      <li key={`${record.stepId}-${index}`}>
+                        <p>
+                          {record.stepId}: {record.status}
+                          {record.errorMessage ? ` (${record.errorCode}: ${record.errorMessage})` : ''}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
             </li>
           ))}
         </ul>
@@ -76,6 +91,24 @@ export default function Home() {
                     <p>Started At: {step.startedAt}</p>
                     <p>Completed At: {step.completedAt}</p>
                     <p>Duration: {step.durationMs}ms</p>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+          {state.result.executionHistory && (
+            <>
+              <h2>Execution Timeline</h2>
+              <ul>
+                {state.result.executionHistory.map((record, index) => (
+                  <li key={`${record.stepId}-${index}`}>
+                    <p>Step: {record.stepId}</p>
+                    <p>Status: {record.status}</p>
+                    <p>Started At: {record.startedAt}</p>
+                    <p>Completed At: {record.completedAt}</p>
+                    <p>Duration: {record.durationMs}ms</p>
+                    {record.errorCode && <p>Error Code: {record.errorCode}</p>}
+                    {record.errorMessage && <p>Error Message: {record.errorMessage}</p>}
                   </li>
                 ))}
               </ul>

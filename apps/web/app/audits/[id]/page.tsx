@@ -23,6 +23,22 @@ export default async function AuditDetailPage({ params }: { params: Promise<{ id
           <p>Started At: {audit.startedAt ?? 'N/A'}</p>
           <p>Completed At: {audit.completedAt ?? 'N/A'}</p>
           <p>Latest AI Visibility Status: {audit.aiVisibilityStatus ?? 'N/A'}</p>
+
+          <h2>Execution Timeline</h2>
+          {audit.executionHistory.length === 0 && <p>No execution history recorded.</p>}
+          <ul>
+            {audit.executionHistory.map((record, index) => (
+              <li key={`${record.stepId}-${index}`}>
+                <p>Step: {record.stepId}</p>
+                <p>Status: {record.status}</p>
+                <p>Started At: {record.startedAt}</p>
+                <p>Completed At: {record.completedAt}</p>
+                <p>Duration: {record.durationMs}ms</p>
+                {record.errorCode && <p>Error Code: {record.errorCode}</p>}
+                {record.errorMessage && <p>Error Message: {record.errorMessage}</p>}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </main>

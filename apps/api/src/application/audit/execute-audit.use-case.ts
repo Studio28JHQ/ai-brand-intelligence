@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
-import type { WorkflowContext } from '@ai-visibility/core';
+import type { WorkflowContext, WorkflowHistoryListener } from '@ai-visibility/core';
 import type { WorkflowProgress, WorkflowResult } from '@ai-visibility/contracts';
 import { WORKFLOW_PORT, WorkflowPort } from '../../domain/audit/workflow.port';
 
@@ -13,7 +13,7 @@ export interface ExecuteAuditOutcome {
 export class ExecuteAuditUseCase {
   constructor(@Inject(WORKFLOW_PORT) private readonly workflow: WorkflowPort) {}
 
-  async execute(auditId: string, url: string): Promise<ExecuteAuditOutcome> {
+  async execute(auditId: string, url: string, onHistory?: WorkflowHistoryListener): Promise<ExecuteAuditOutcome> {
     const context: WorkflowContext = {
       auditId,
       url,
@@ -23,7 +23,7 @@ export class ExecuteAuditUseCase {
     };
 
     const progress: WorkflowProgress[] = [];
-    const { results } = await this.workflow.run(context, (step) => progress.push(step));
+    const { results } = await this.workflow.run(context, (step) => progress.push(step), onHistory);
 
     return { results, progress };
   }

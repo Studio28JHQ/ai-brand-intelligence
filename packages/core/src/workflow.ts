@@ -1,19 +1,42 @@
-import type { WorkflowProgress } from '@ai-visibility/contracts';
+import type { WorkflowExecutionRecord, WorkflowProgress } from '@ai-visibility/contracts';
 import { WorkflowContext } from './workflow-context';
 import { WorkflowStep } from './workflow-step';
 
 export type WorkflowProgressListener = (progress: WorkflowProgress) => void;
+export type WorkflowHistoryListener = (record: WorkflowExecutionRecord) => void;
 
 export class Workflow {
   constructor(private readonly steps: ReadonlyArray<WorkflowStep>) {}
 
-  async run(context: WorkflowContext, onProgress?: WorkflowProgressListener): Promise<WorkflowContext> {
+  async run(
+    context: WorkflowContext,
+    onProgress?: WorkflowProgressListener,
+    onHistory?: WorkflowHistoryListener,
+  ): Promise<WorkflowContext> {
     let current = context;
 
     for (const step of this.steps) {
-      current = await step.run(current);
+      const startedAt = new Date();
 
+      try {
+        current = await step.run(current);
+      } catch (error) {
+        const completedAt = new Date();
+        onHistory?.({
+          stepId: step.name,
+          status: 'failure',
+          startedAt: startedAt.toISOString(),
+          completedAt: completedAt.toISOString(),
+          durationMs: completedAt.getTime() - startedAt.getTime(),
+          errorCode: error instanceof Error ? error.name : 'UnknownError',
+          errorMessage: error instanceof Error ? error.message : String(error),
+        });
+        throw error;
+      }
+
+      const completedAt = new Date();
       const result = current.results[step.name];
+
       if (onProgress && result) {
         onProgress({
           stepId: step.name,
@@ -23,6 +46,14 @@ export class Workflow {
           durationMs: result.durationMs,
         });
       }
+
+      onHistory?.({
+        stepId: step.name,
+        status: 'success',
+        startedAt: startedAt.toISOString(),
+        completedAt: completedAt.toISOString(),
+        durationMs: completedAt.getTime() - startedAt.getTime(),
+      });
     }
 
     return current;

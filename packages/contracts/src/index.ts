@@ -13,3 +13,4 @@ export * from './ai-visibility';
 export * from './recommendation';
 export * from './audit-metadata';
 export * from './workflow-progress';
+export * from './workflow-execution-history';

@@ -5,12 +5,14 @@ import type {
   EngineResult,
   EntityResult,
   KnowledgeGraphResult,
+  WorkflowExecutionRecord,
   WorkflowProgress,
   WorkflowResult,
 } from '@ai-visibility/contracts';
 import { AuditUrl } from '../../domain/audit/audit-url.vo';
 import { AUDIT_REPOSITORY, AuditRepository } from '../../domain/audit/audit.repository';
 import { AuditSnapshot } from '../../domain/audit/audit-snapshot';
+import { WorkflowExecutionHistoryRepository } from '../../infrastructure/audit/workflow-execution-history.repository';
 import { ExecuteAuditUseCase } from './execute-audit.use-case';
 
 @Injectable()
@@ -18,6 +20,7 @@ export class CreateAuditUseCase {
   constructor(
     @Inject(AUDIT_REPOSITORY) private readonly auditRepository: AuditRepository,
     private readonly executeAuditUseCase: ExecuteAuditUseCase,
+    private readonly workflowExecutionHistoryRepository: WorkflowExecutionHistoryRepository,
   ) {}
 
   async execute(rawUrl: string): Promise<AuditSnapshot> {
@@ -26,16 +29,20 @@ export class CreateAuditUseCase {
 
     await this.auditRepository.markRunning(audit.id, new Date());
 
+    const history: WorkflowExecutionRecord[] = [];
     let engineResults: WorkflowResult;
     let progress: WorkflowProgress[];
     try {
-      const outcome = await this.executeAuditUseCase.execute(audit.id, url.value);
+      const outcome = await this.executeAuditUseCase.execute(audit.id, url.value, (record) => history.push(record));
       engineResults = outcome.results;
       progress = outcome.progress;
     } catch (error) {
+      await this.workflowExecutionHistoryRepository.saveAll(audit.id, history);
       await this.auditRepository.markFailed(audit.id, new Date());
       throw error;
     }
+
+    await this.workflowExecutionHistoryRepository.saveAll(audit.id, history);
 
     const completedAudit = await this.auditRepository.markCompleted(audit.id, new Date());
 
@@ -48,6 +55,7 @@ export class CreateAuditUseCase {
       audit: completedAudit,
       engineResults,
       progress,
+      history,
       findings: analysis.output!.findings,
       entities: entity.output!.entities,
       knowledgeGraph: knowledgeGraph.output!,

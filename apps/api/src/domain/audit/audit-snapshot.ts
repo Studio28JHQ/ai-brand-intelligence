@@ -3,6 +3,7 @@ import type {
   Entity,
   Finding,
   KnowledgeGraphResult,
+  WorkflowExecutionRecord,
   WorkflowProgress,
   WorkflowResult,
 } from '@ai-visibility/contracts';
@@ -12,6 +13,7 @@ export interface AuditSnapshotProps {
   audit: Audit;
   engineResults: WorkflowResult;
   progress: WorkflowProgress[];
+  history: WorkflowExecutionRecord[];
   findings: Finding[];
   entities: Entity[];
   knowledgeGraph: KnowledgeGraphResult;
@@ -23,6 +25,7 @@ export class AuditSnapshot {
     public readonly audit: Audit,
     public readonly engineResults: WorkflowResult,
     public readonly progress: ReadonlyArray<WorkflowProgress>,
+    public readonly history: ReadonlyArray<WorkflowExecutionRecord>,
     public readonly findings: ReadonlyArray<Finding>,
     public readonly entities: ReadonlyArray<Entity>,
     public readonly knowledgeGraph: KnowledgeGraphResult,
@@ -36,6 +39,7 @@ export class AuditSnapshot {
       props.audit,
       props.engineResults,
       props.progress,
+      props.history,
       props.findings,
       props.entities,
       props.knowledgeGraph,

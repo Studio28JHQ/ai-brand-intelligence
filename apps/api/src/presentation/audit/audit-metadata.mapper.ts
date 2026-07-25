@@ -1,7 +1,7 @@
 import type { AuditMetadata } from '@ai-visibility/contracts';
 import { AuditQueryResult } from '../../application/audit/audit-query.service';
 
-export function toAuditMetadata({ audit, aiVisibilityStatus }: AuditQueryResult): AuditMetadata {
+export function toAuditMetadata({ audit, aiVisibilityStatus, executionHistory }: AuditQueryResult): AuditMetadata {
   return {
     id: audit.id,
     url: audit.url,
@@ -10,5 +10,6 @@ export function toAuditMetadata({ audit, aiVisibilityStatus }: AuditQueryResult)
     completedAt: audit.completedAt ? audit.completedAt.toISOString() : null,
     snapshotId: audit.status === 'completed' ? audit.id : null,
     aiVisibilityStatus,
+    executionHistory,
   };
 }
