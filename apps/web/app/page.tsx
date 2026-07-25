@@ -64,6 +64,21 @@ export default function Home() {
               </ul>
             </>
           )}
+          {state.result.entity && (
+            <>
+              <h2>Entities</h2>
+              <ul>
+                {state.result.entity.entities.map((item) => (
+                  <li key={`${item.type}:${item.name}`}>
+                    <p>Entity Name: {item.name}</p>
+                    <p>Entity Type: {item.type}</p>
+                    <p>Source Location: {item.sourceLocation}</p>
+                    <p>Confidence: {item.confidence}</p>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
         </div>
       )}
 

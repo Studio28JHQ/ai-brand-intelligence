@@ -1,4 +1,4 @@
-import type { AnalysisResult, CrawlResult, InventoryResult } from '@ai-visibility/contracts';
+import type { AnalysisResult, CrawlResult, EntityResult, InventoryResult } from '@ai-visibility/contracts';
 import { Audit } from '../../domain/audit/audit.entity';
 import { DiscoveryResult } from '../../domain/audit/discovery-result';
 
@@ -8,4 +8,5 @@ export interface CreateAuditResult {
   crawl: CrawlResult;
   inventory: InventoryResult;
   analysis: AnalysisResult;
+  entity: EntityResult;
 }

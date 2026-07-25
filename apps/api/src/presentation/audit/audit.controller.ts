@@ -15,7 +15,9 @@ export class AuditController {
     }
 
     try {
-      const { audit, discovery, crawl, inventory, analysis } = await this.createAuditUseCase.execute(dto.url);
+      const { audit, discovery, crawl, inventory, analysis, entity } = await this.createAuditUseCase.execute(
+        dto.url,
+      );
       return {
         id: audit.id,
         status: audit.status,
@@ -47,6 +49,14 @@ export class AuditController {
             outcome: finding.outcome,
             severity: finding.severity,
             evidence: finding.evidence,
+          })),
+        },
+        entity: {
+          entities: entity.entities.map((item) => ({
+            name: item.name,
+            type: item.type,
+            sourceLocation: item.sourceLocation,
+            confidence: item.confidence,
           })),
         },
       };

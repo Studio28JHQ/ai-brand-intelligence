@@ -28,6 +28,7 @@ model AuditRequest {
   crawlResult     CrawlResult?
   inventoryResult InventoryResult?
   findings        Finding[]
+  entities        Entity[]
 
   @@map("audit_requests")
 }
@@ -94,4 +95,18 @@ model Finding {
   audit AuditRequest @relation(fields: [auditId], references: [id])
 
   @@map("findings")
+}
+
+model Entity {
+  id             String   @id
+  auditId        String   @map("audit_id")
+  name           String
+  type           String
+  sourceLocation String   @map("source_location")
+  confidence     Float
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  audit AuditRequest @relation(fields: [auditId], references: [id])
+
+  @@map("entities")
 }

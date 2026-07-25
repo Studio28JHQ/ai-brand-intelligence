@@ -16,6 +16,7 @@
     "@ai-visibility/database": "workspace:*",
     "@ai-visibility/analysis-engine": "workspace:*",
     "@ai-visibility/discovery-engine": "workspace:*",
+    "@ai-visibility/entity-engine": "workspace:*",
     "@ai-visibility/inventory-engine": "workspace:*",
     "@ai-visibility/shared": "workspace:*",
     "@nestjs/common": "^11.1.28",

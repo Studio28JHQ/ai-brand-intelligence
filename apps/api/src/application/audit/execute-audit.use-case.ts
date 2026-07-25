@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { WorkflowContext } from '@ai-visibility/core';
-import type { AnalysisResult, CrawlResult, EngineResult, InventoryResult } from '@ai-visibility/contracts';
+import type { AnalysisResult, CrawlResult, EngineResult, EntityResult, InventoryResult } from '@ai-visibility/contracts';
 import { WORKFLOW_PORT, WorkflowPort } from '../../domain/audit/workflow.port';
 import { DiscoveryResult } from '../../domain/audit/discovery-result';
 
@@ -9,6 +9,7 @@ export interface ExecuteAuditResult {
   crawl: CrawlResult;
   inventory: InventoryResult;
   analysis: AnalysisResult;
+  entity: EntityResult;
 }
 
 @Injectable()
@@ -23,12 +24,14 @@ export class ExecuteAuditUseCase {
     const crawl = results.crawl as EngineResult<CrawlResult>;
     const inventory = results.inventory as EngineResult<InventoryResult>;
     const analysis = results.analysis as EngineResult<AnalysisResult>;
+    const entity = results.entity as EngineResult<EntityResult>;
 
     return {
       discovery: discovery.output!,
       crawl: crawl.output!,
       inventory: inventory.output!,
       analysis: analysis.output!,
+      entity: entity.output!,
     };
   }
 }
