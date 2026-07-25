@@ -4,3 +4,4 @@ export * from './health';
 export * from './audit';
 export * from './crawl';
 export * from './inventory';
+export * from './engine-result';

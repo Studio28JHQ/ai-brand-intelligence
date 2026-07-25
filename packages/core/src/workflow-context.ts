@@ -1,6 +1,6 @@
 import { AuditContext } from './audit-context';
-import { PipelineResults } from './pipeline-results';
+import { WorkflowResult } from './workflow-result';
 
 export interface WorkflowContext extends AuditContext {
-  readonly results: PipelineResults;
+  readonly results: WorkflowResult;
 }
