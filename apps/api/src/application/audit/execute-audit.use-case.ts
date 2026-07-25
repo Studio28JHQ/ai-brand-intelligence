@@ -8,6 +8,7 @@ import type {
   EntityResult,
   InventoryResult,
   KnowledgeGraphResult,
+  RecommendationResult,
 } from '@ai-visibility/contracts';
 import { WORKFLOW_PORT, WorkflowPort } from '../../domain/audit/workflow.port';
 import { DiscoveryResult } from '../../domain/audit/discovery-result';
@@ -20,6 +21,7 @@ export interface ExecuteAuditResult {
   entity: EntityResult;
   knowledgeGraph: KnowledgeGraphResult;
   aiVisibility: AiVisibilityResult;
+  recommendation: RecommendationResult;
 }
 
 @Injectable()
@@ -37,6 +39,7 @@ export class ExecuteAuditUseCase {
     const entity = results.entity as EngineResult<EntityResult>;
     const knowledgeGraph = results.knowledgeGraph as EngineResult<KnowledgeGraphResult>;
     const aiVisibility = results.aiVisibility as EngineResult<AiVisibilityResult>;
+    const recommendation = results.recommendation as EngineResult<RecommendationResult>;
 
     return {
       discovery: discovery.output!,
@@ -46,6 +49,7 @@ export class ExecuteAuditUseCase {
       entity: entity.output!,
       knowledgeGraph: knowledgeGraph.output!,
       aiVisibility: aiVisibility.output!,
+      recommendation: recommendation.output!,
     };
   }
 }

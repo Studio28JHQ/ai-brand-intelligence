@@ -15,7 +15,7 @@ export class AuditController {
     }
 
     try {
-      const { audit, discovery, crawl, inventory, analysis, entity, knowledgeGraph, aiVisibility } =
+      const { audit, discovery, crawl, inventory, analysis, entity, knowledgeGraph, aiVisibility, recommendation } =
         await this.createAuditUseCase.execute(dto.url);
       return {
         id: audit.id,
@@ -71,6 +71,15 @@ export class AuditController {
           relationshipCoverage: aiVisibility.assessment.relationshipCoverage,
           missingSignals: aiVisibility.assessment.missingSignals,
           assessedAt: aiVisibility.assessment.assessedAt,
+        },
+        recommendation: {
+          recommendations: recommendation.recommendations.map((item) => ({
+            title: item.title,
+            rationale: item.rationale,
+            priority: item.priority,
+            status: item.status,
+            relatedFindingIds: item.relatedFindingIds,
+          })),
         },
       };
     } catch (error) {

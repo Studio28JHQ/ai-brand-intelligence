@@ -98,6 +98,22 @@ export default function Home() {
               <p>Assessed At: {state.result.aiVisibility.assessedAt}</p>
             </>
           )}
+          {state.result.recommendation && (
+            <>
+              <h2>Recommendations</h2>
+              <ul>
+                {state.result.recommendation.recommendations.map((item) => (
+                  <li key={item.title + item.relatedFindingIds.join(',')}>
+                    <p>Title: {item.title}</p>
+                    <p>Rationale: {item.rationale}</p>
+                    <p>Priority: {item.priority}</p>
+                    <p>Related Findings: {item.relatedFindingIds.join(', ') || 'None'}</p>
+                    <p>Status: {item.status}</p>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
         </div>
       )}
 

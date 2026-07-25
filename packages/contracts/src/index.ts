@@ -10,3 +10,4 @@ export * from './analysis';
 export * from './entity';
 export * from './knowledge-graph';
 export * from './ai-visibility';
+export * from './recommendation';

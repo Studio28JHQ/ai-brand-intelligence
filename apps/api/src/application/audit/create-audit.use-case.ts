@@ -16,10 +16,20 @@ export class CreateAuditUseCase {
     const audit = await this.auditRepository.create(url.value);
 
     await this.auditRepository.markRunning(audit.id, new Date());
-    const { discovery, crawl, inventory, analysis, entity, knowledgeGraph, aiVisibility } =
+    const { discovery, crawl, inventory, analysis, entity, knowledgeGraph, aiVisibility, recommendation } =
       await this.executeAuditUseCase.execute(audit.id, url.value);
     const completedAudit = await this.auditRepository.markCompleted(audit.id, new Date());
 
-    return { audit: completedAudit, discovery, crawl, inventory, analysis, entity, knowledgeGraph, aiVisibility };
+    return {
+      audit: completedAudit,
+      discovery,
+      crawl,
+      inventory,
+      analysis,
+      entity,
+      knowledgeGraph,
+      aiVisibility,
+      recommendation,
+    };
   }
 }
