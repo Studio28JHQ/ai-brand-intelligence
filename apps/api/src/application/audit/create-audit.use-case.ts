@@ -5,6 +5,7 @@ import type {
   EngineResult,
   EntityResult,
   KnowledgeGraphResult,
+  WorkflowProgress,
   WorkflowResult,
 } from '@ai-visibility/contracts';
 import { AuditUrl } from '../../domain/audit/audit-url.vo';
@@ -26,8 +27,11 @@ export class CreateAuditUseCase {
     await this.auditRepository.markRunning(audit.id, new Date());
 
     let engineResults: WorkflowResult;
+    let progress: WorkflowProgress[];
     try {
-      engineResults = await this.executeAuditUseCase.execute(audit.id, url.value);
+      const outcome = await this.executeAuditUseCase.execute(audit.id, url.value);
+      engineResults = outcome.results;
+      progress = outcome.progress;
     } catch (error) {
       await this.auditRepository.markFailed(audit.id, new Date());
       throw error;
@@ -43,6 +47,7 @@ export class CreateAuditUseCase {
     return AuditSnapshot.create({
       audit: completedAudit,
       engineResults,
+      progress,
       findings: analysis.output!.findings,
       entities: entity.output!.entities,
       knowledgeGraph: knowledgeGraph.output!,

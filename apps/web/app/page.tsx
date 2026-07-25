@@ -50,6 +50,37 @@ export default function Home() {
           <h2>Audit Created</h2>
           <p>Audit ID: {state.result.id}</p>
           <p>Current Status: {state.result.status}</p>
+          {state.result.progress && (
+            <>
+              <h2>Workflow Progress</h2>
+              <p>Current Step: {state.result.progress.at(-1)?.stepId ?? 'N/A'}</p>
+              <p>Completed Steps: {state.result.progress.filter((step) => step.status === 'success').length}</p>
+              <p>
+                Remaining Steps:{' '}
+                {state.result.progress.length - state.result.progress.filter((step) => step.status === 'success').length}
+              </p>
+              <p>
+                Overall Progress:{' '}
+                {Math.round(
+                  (state.result.progress.filter((step) => step.status === 'success').length /
+                    state.result.progress.length) *
+                    100,
+                )}
+                %
+              </p>
+              <ul>
+                {state.result.progress.map((step) => (
+                  <li key={step.stepId}>
+                    <p>Step: {step.stepId}</p>
+                    <p>Status: {step.status}</p>
+                    <p>Started At: {step.startedAt}</p>
+                    <p>Completed At: {step.completedAt}</p>
+                    <p>Duration: {step.durationMs}ms</p>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
           {state.result.discovery && (
             <>
               <p>Normalized URL: {state.result.discovery.normalizedUrl}</p>

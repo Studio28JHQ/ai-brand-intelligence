@@ -12,3 +12,4 @@ export * from './knowledge-graph';
 export * from './ai-visibility';
 export * from './recommendation';
 export * from './audit-metadata';
+export * from './workflow-progress';

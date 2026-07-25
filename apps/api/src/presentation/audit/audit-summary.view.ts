@@ -66,5 +66,6 @@ export function buildAuditSummary(snapshot: AuditSnapshot): CreateAuditResponse 
     recommendation: {
       recommendations: generateRecommendations(snapshot.findings, snapshot.aiVisibility),
     },
+    progress: [...snapshot.progress],
   };
 }

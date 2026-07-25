@@ -5,6 +5,7 @@ import type { EntitySummary } from './entity';
 import type { KnowledgeGraphSummary } from './knowledge-graph';
 import type { AiVisibilitySummary } from './ai-visibility';
 import type { RecommendationSummary } from './recommendation';
+import type { WorkflowProgress } from './workflow-progress';
 
 export type AuditStatus = 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
 
@@ -29,4 +30,5 @@ export interface CreateAuditResponse {
   knowledgeGraph?: KnowledgeGraphSummary;
   aiVisibility?: AiVisibilitySummary;
   recommendation?: RecommendationSummary;
+  progress?: WorkflowProgress[];
 }

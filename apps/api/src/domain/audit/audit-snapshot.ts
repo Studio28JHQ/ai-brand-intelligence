@@ -1,9 +1,17 @@
-import type { AiVisibilityAssessment, Entity, Finding, KnowledgeGraphResult, WorkflowResult } from '@ai-visibility/contracts';
+import type {
+  AiVisibilityAssessment,
+  Entity,
+  Finding,
+  KnowledgeGraphResult,
+  WorkflowProgress,
+  WorkflowResult,
+} from '@ai-visibility/contracts';
 import { Audit } from './audit.entity';
 
 export interface AuditSnapshotProps {
   audit: Audit;
   engineResults: WorkflowResult;
+  progress: WorkflowProgress[];
   findings: Finding[];
   entities: Entity[];
   knowledgeGraph: KnowledgeGraphResult;
@@ -14,6 +22,7 @@ export class AuditSnapshot {
   private constructor(
     public readonly audit: Audit,
     public readonly engineResults: WorkflowResult,
+    public readonly progress: ReadonlyArray<WorkflowProgress>,
     public readonly findings: ReadonlyArray<Finding>,
     public readonly entities: ReadonlyArray<Entity>,
     public readonly knowledgeGraph: KnowledgeGraphResult,
@@ -26,6 +35,7 @@ export class AuditSnapshot {
     return new AuditSnapshot(
       props.audit,
       props.engineResults,
+      props.progress,
       props.findings,
       props.entities,
       props.knowledgeGraph,

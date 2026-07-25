@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Workflow } from '@ai-visibility/core';
-import type { WorkflowContext, WorkflowStep } from '@ai-visibility/core';
+import type { WorkflowContext, WorkflowProgressListener, WorkflowStep } from '@ai-visibility/core';
 import { WorkflowPort } from '../../domain/audit/workflow.port';
 import { AUDIT_WORKFLOW_STEPS } from '../../domain/audit/audit-workflow-steps.token';
 
@@ -12,7 +12,7 @@ export class WorkflowAdapter implements WorkflowPort {
     this.workflow = new Workflow(steps);
   }
 
-  async run(context: WorkflowContext): Promise<WorkflowContext> {
-    return this.workflow.run(context);
+  async run(context: WorkflowContext, onProgress?: WorkflowProgressListener): Promise<WorkflowContext> {
+    return this.workflow.run(context, onProgress);
   }
 }
