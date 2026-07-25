@@ -37,6 +37,16 @@ export default function Home() {
               <p>Crawl Success: {state.result.crawl.success ? 'Yes' : 'No'}</p>
             </>
           )}
+          {state.result.inventory && (
+            <>
+              <p>Page Title: {state.result.inventory.title ?? 'N/A'}</p>
+              <p>Canonical URL: {state.result.inventory.canonicalUrl ?? 'N/A'}</p>
+              <p>Language: {state.result.inventory.language ?? 'N/A'}</p>
+              <p>H1 Count: {state.result.inventory.h1Count}</p>
+              <p>Internal Links: {state.result.inventory.internalLinkCount}</p>
+              <p>External Links: {state.result.inventory.externalLinkCount}</p>
+            </>
+          )}
         </div>
       )}
 

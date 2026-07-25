@@ -1,12 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { AuditContext } from '@ai-visibility/core';
-import type { CrawlResult } from '@ai-visibility/contracts';
+import type { CrawlResult, InventoryResult } from '@ai-visibility/contracts';
 import { EXECUTION_PIPELINE_PORT, ExecutionPipelinePort } from '../../domain/audit/execution-pipeline.port';
 import { DiscoveryResult } from '../../domain/audit/discovery-result';
 
 export interface ExecuteAuditResult {
   discovery: DiscoveryResult;
   crawl: CrawlResult;
+  inventory: InventoryResult;
 }
 
 @Injectable()
@@ -20,6 +21,7 @@ export class ExecuteAuditUseCase {
     return {
       discovery: results.discovery as DiscoveryResult,
       crawl: results.crawl as CrawlResult,
+      inventory: results.inventory as InventoryResult,
     };
   }
 }

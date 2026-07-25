@@ -26,6 +26,7 @@ model AuditRequest {
 
   discoveryResult DiscoveryResult?
   crawlResult     CrawlResult?
+  inventoryResult InventoryResult?
 
   @@map("audit_requests")
 }
@@ -58,4 +59,22 @@ model CrawlResult {
   audit AuditRequest @relation(fields: [auditId], references: [id])
 
   @@map("crawl_results")
+}
+
+model InventoryResult {
+  id                 String   @id @default(uuid())
+  auditId            String   @unique @map("audit_id")
+  title              String?
+  metaDescription    String?  @map("meta_description")
+  canonicalUrl       String?  @map("canonical_url")
+  language           String?
+  charset            String?
+  h1Count            Int      @map("h1_count")
+  internalLinkCount  Int      @map("internal_link_count")
+  externalLinkCount  Int      @map("external_link_count")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  audit AuditRequest @relation(fields: [auditId], references: [id])
+
+  @@map("inventory_results")
 }

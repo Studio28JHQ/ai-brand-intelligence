@@ -15,6 +15,7 @@ vendor/
 dist/
 build/
 out/
+.next/
 *.log
 
 # Generated Prisma Client
