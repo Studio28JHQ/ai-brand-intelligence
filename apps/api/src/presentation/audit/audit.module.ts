@@ -10,6 +10,7 @@ import { DiscoveryStep } from '../../infrastructure/audit/discovery.step';
 import { CrawlerStep } from '../../infrastructure/audit/crawler.step';
 import { InventoryStep } from '../../infrastructure/audit/inventory.step';
 import { AnalysisStep } from '../../infrastructure/audit/analysis.step';
+import { ClassificationStep } from '../../infrastructure/audit/classification.step';
 import { WorkflowAdapter } from '../../infrastructure/audit/workflow.adapter';
 import { DatabaseModule } from '../../infrastructure/database/database.module';
 import { AuditController } from './audit.controller';
@@ -26,6 +27,7 @@ import { AuditController } from './audit.controller';
     CrawlerStep,
     InventoryStep,
     AnalysisStep,
+    ClassificationStep,
     {
       provide: AUDIT_WORKFLOW_STEPS,
       useFactory: (
@@ -33,8 +35,9 @@ import { AuditController } from './audit.controller';
         crawlerStep: CrawlerStep,
         inventoryStep: InventoryStep,
         analysisStep: AnalysisStep,
-      ): WorkflowStep[] => [discoveryStep, crawlerStep, inventoryStep, analysisStep],
-      inject: [DiscoveryStep, CrawlerStep, InventoryStep, AnalysisStep],
+        classificationStep: ClassificationStep,
+      ): WorkflowStep[] => [discoveryStep, crawlerStep, inventoryStep, analysisStep, classificationStep],
+      inject: [DiscoveryStep, CrawlerStep, InventoryStep, AnalysisStep, ClassificationStep],
     },
   ],
 })

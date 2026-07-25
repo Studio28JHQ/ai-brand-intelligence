@@ -7,3 +7,4 @@ export * from './inventory';
 export * from './engine-result';
 export * from './workflow-result';
 export * from './analysis';
+export * from './classification';
