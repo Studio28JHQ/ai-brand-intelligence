@@ -12,6 +12,8 @@ import type {
 import { AuditUrl } from '../../domain/audit/audit-url.vo';
 import { AUDIT_REPOSITORY, AuditRepository } from '../../domain/audit/audit.repository';
 import { AuditSnapshot } from '../../domain/audit/audit-snapshot';
+import { PROJECT_REPOSITORY, ProjectRepository } from '../../domain/project/project.repository';
+import { deriveCanonicalWebsite, deriveProjectName } from '../../domain/project/canonical-website';
 import { WorkflowExecutionHistoryRepository } from '../../infrastructure/audit/workflow-execution-history.repository';
 import { ExecuteAuditUseCase } from './execute-audit.use-case';
 
@@ -19,13 +21,21 @@ import { ExecuteAuditUseCase } from './execute-audit.use-case';
 export class CreateAuditUseCase {
   constructor(
     @Inject(AUDIT_REPOSITORY) private readonly auditRepository: AuditRepository,
+    @Inject(PROJECT_REPOSITORY) private readonly projectRepository: ProjectRepository,
     private readonly executeAuditUseCase: ExecuteAuditUseCase,
     private readonly workflowExecutionHistoryRepository: WorkflowExecutionHistoryRepository,
   ) {}
 
   async execute(rawUrl: string): Promise<AuditSnapshot> {
     const url = AuditUrl.create(rawUrl);
-    const audit = await this.auditRepository.create(url.value);
+    const canonicalWebsite = deriveCanonicalWebsite(url.value);
+
+    const project =
+      (await this.projectRepository.findByCanonicalWebsite(canonicalWebsite)) ??
+      (await this.projectRepository.create(deriveProjectName(canonicalWebsite), canonicalWebsite));
+
+    const audit = await this.auditRepository.create(project.id, url.value);
+    await this.projectRepository.updateLastAudit(project.id, audit.id);
 
     await this.auditRepository.markRunning(audit.id, new Date());
 

@@ -1,7 +1,7 @@
 'use server';
 
 import { loadConfig } from '@ai-visibility/config';
-import type { AuditMetadata, CreateAuditResponse } from '@ai-visibility/contracts';
+import type { AuditMetadata, CreateAuditResponse, ProjectMetadata } from '@ai-visibility/contracts';
 
 export interface CreateAuditState {
   result?: CreateAuditResponse;
@@ -19,6 +19,22 @@ export async function listAudits(): Promise<AuditMetadata[]> {
     }
 
     return (await response.json()) as AuditMetadata[];
+  } catch {
+    return [];
+  }
+}
+
+export async function listProjects(): Promise<ProjectMetadata[]> {
+  const config = loadConfig();
+
+  try {
+    const response = await fetch(`${config.API_URL}/projects`, { cache: 'no-store' });
+
+    if (!response.ok) {
+      return [];
+    }
+
+    return (await response.json()) as ProjectMetadata[];
   } catch {
     return [];
   }

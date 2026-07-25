@@ -4,6 +4,7 @@ export type AuditStatus = 'pending' | 'running' | 'completed' | 'failed' | 'canc
 
 export interface AuditProps {
   id: string;
+  projectId: string;
   url: string;
   status: AuditStatus;
   createdAt: Date;
@@ -24,6 +25,7 @@ const VALID_TRANSITIONS: Record<AuditStatus, ReadonlyArray<AuditStatus>> = {
 export class Audit {
   private constructor(
     public readonly id: string,
+    public readonly projectId: string,
     public readonly url: string,
     public readonly status: AuditStatus,
     public readonly createdAt: Date,
@@ -36,6 +38,7 @@ export class Audit {
   static fromPersistence(props: AuditProps): Audit {
     return new Audit(
       props.id,
+      props.projectId,
       props.url,
       props.status,
       props.createdAt,
@@ -56,6 +59,7 @@ export class Audit {
     this.assertTransition('running');
     return new Audit(
       this.id,
+      this.projectId,
       this.url,
       'running',
       this.createdAt,
@@ -70,6 +74,7 @@ export class Audit {
     this.assertTransition('completed');
     return new Audit(
       this.id,
+      this.projectId,
       this.url,
       'completed',
       this.createdAt,
@@ -84,6 +89,7 @@ export class Audit {
     this.assertTransition('failed');
     return new Audit(
       this.id,
+      this.projectId,
       this.url,
       'failed',
       this.createdAt,
@@ -98,6 +104,7 @@ export class Audit {
     this.assertTransition('cancelled');
     return new Audit(
       this.id,
+      this.projectId,
       this.url,
       'cancelled',
       this.createdAt,

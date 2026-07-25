@@ -2,17 +2,19 @@
 
 import { useActionState, useEffect, useState } from 'react';
 import Link from 'next/link';
-import type { AuditMetadata } from '@ai-visibility/contracts';
-import { createAudit, CreateAuditState, listAudits } from './actions';
+import type { AuditMetadata, ProjectMetadata } from '@ai-visibility/contracts';
+import { createAudit, CreateAuditState, listAudits, listProjects } from './actions';
 
 const initialState: CreateAuditState = {};
 
 export default function Home() {
   const [state, formAction, pending] = useActionState(createAudit, initialState);
   const [audits, setAudits] = useState<AuditMetadata[]>([]);
+  const [projects, setProjects] = useState<ProjectMetadata[]>([]);
 
   useEffect(() => {
     listAudits().then(setAudits);
+    listProjects().then(setProjects);
   }, [state.result]);
 
   return (
@@ -27,37 +29,48 @@ export default function Home() {
       </form>
 
       <section>
-        <h2>Audits</h2>
-        <ul>
-          {audits.map((audit) => (
-            <li key={audit.id}>
-              <p>Audit ID: {audit.id}</p>
-              <p>URL: {audit.url}</p>
-              <p>Status: {audit.status}</p>
-              <p>Started At: {audit.startedAt ?? 'N/A'}</p>
-              <p>Completed At: {audit.completedAt ?? 'N/A'}</p>
-              <p>Latest AI Visibility Status: {audit.aiVisibilityStatus ?? 'N/A'}</p>
-              <p>
-                <Link href={`/audits/${audit.id}`}>Open</Link>
-              </p>
-              {audit.executionHistory.length > 0 && (
-                <>
-                  <p>Execution Timeline:</p>
-                  <ul>
-                    {audit.executionHistory.map((record, index) => (
-                      <li key={`${record.stepId}-${index}`}>
-                        <p>
-                          {record.stepId}: {record.status}
-                          {record.errorMessage ? ` (${record.errorCode}: ${record.errorMessage})` : ''}
-                        </p>
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              )}
-            </li>
-          ))}
-        </ul>
+        <h2>Projects</h2>
+        {projects.map((project) => (
+          <div key={project.id}>
+            <h3>{project.name}</h3>
+            <p>Project ID: {project.id}</p>
+            <p>Canonical Website: {project.canonicalWebsite}</p>
+            <p>Created At: {project.createdAt}</p>
+            <p>Last Audit: {project.lastAuditId ?? 'N/A'}</p>
+            <ul>
+              {audits
+                .filter((audit) => audit.projectId === project.id)
+                .map((audit) => (
+                  <li key={audit.id}>
+                    <p>Audit ID: {audit.id}</p>
+                    <p>URL: {audit.url}</p>
+                    <p>Status: {audit.status}</p>
+                    <p>Started At: {audit.startedAt ?? 'N/A'}</p>
+                    <p>Completed At: {audit.completedAt ?? 'N/A'}</p>
+                    <p>Latest AI Visibility Status: {audit.aiVisibilityStatus ?? 'N/A'}</p>
+                    <p>
+                      <Link href={`/audits/${audit.id}`}>Open</Link>
+                    </p>
+                    {audit.executionHistory.length > 0 && (
+                      <>
+                        <p>Execution Timeline:</p>
+                        <ul>
+                          {audit.executionHistory.map((record, index) => (
+                            <li key={`${record.stepId}-${index}`}>
+                              <p>
+                                {record.stepId}: {record.status}
+                                {record.errorMessage ? ` (${record.errorCode}: ${record.errorMessage})` : ''}
+                              </p>
+                            </li>
+                          ))}
+                        </ul>
+                      </>
+                    )}
+                  </li>
+                ))}
+            </ul>
+          </div>
+        ))}
       </section>
 
       {state.result && (
