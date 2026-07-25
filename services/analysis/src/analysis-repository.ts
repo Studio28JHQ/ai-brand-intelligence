@@ -12,14 +12,18 @@ export async function saveFindings(findings: Finding[]): Promise<void> {
       create: {
         id: finding.id,
         auditId: finding.auditId,
+        ruleId: finding.ruleId,
         category: finding.category,
         sourceEngine: finding.sourceEngine,
-        status: finding.status,
+        outcome: finding.outcome,
+        evidence: finding.evidence as object,
       },
       update: {
+        ruleId: finding.ruleId,
         category: finding.category,
         sourceEngine: finding.sourceEngine,
-        status: finding.status,
+        outcome: finding.outcome,
+        evidence: finding.evidence as object,
       },
     });
   }

@@ -154,6 +154,12 @@ importers:
         specifier: ^5.7.3
         version: 5.9.3
 
+  packages/rules:
+    devDependencies:
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
   packages/shared:
     devDependencies:
       '@types/node':
@@ -176,6 +182,9 @@ importers:
       '@ai-visibility/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@ai-visibility/rules':
+        specifier: workspace:*
+        version: link:../../packages/rules
     devDependencies:
       '@types/node':
         specifier: ^22.10.5

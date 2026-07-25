@@ -1,11 +1,13 @@
-export type FindingStatus = 'success' | 'failure';
+export type RuleOutcome = 'pass' | 'fail';
 
 export interface Finding {
   id: string;
   auditId: string;
+  ruleId: string;
   category: string;
   sourceEngine: string;
-  status: FindingStatus;
+  outcome: RuleOutcome;
+  evidence: Record<string, unknown>;
 }
 
 export interface AnalysisResult {
@@ -14,9 +16,11 @@ export interface AnalysisResult {
 
 export interface FindingSummary {
   id: string;
+  ruleId: string;
   category: string;
   sourceEngine: string;
-  status: FindingStatus;
+  outcome: RuleOutcome;
+  evidence: Record<string, unknown>;
 }
 
 export interface AnalysisSummary {

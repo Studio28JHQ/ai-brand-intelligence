@@ -41,9 +41,11 @@ export class AuditController {
         analysis: {
           findings: analysis.findings.map((finding) => ({
             id: finding.id,
+            ruleId: finding.ruleId,
             category: finding.category,
             sourceEngine: finding.sourceEngine,
-            status: finding.status,
+            outcome: finding.outcome,
+            evidence: finding.evidence,
           })),
         },
       };

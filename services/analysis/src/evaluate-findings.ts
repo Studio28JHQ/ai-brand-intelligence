@@ -1,13 +1,19 @@
+import { RuleEvaluator } from '@ai-visibility/rules';
 import type { Finding, WorkflowResult } from '@ai-visibility/contracts';
-
-const EXECUTION_CATEGORY = 'execution';
+import { buildRuleRegistry } from './rules/rule-registry';
 
 export function evaluateFindings(auditId: string, workflowResult: WorkflowResult): Finding[] {
-  return Object.values(workflowResult).map((engineResult) => ({
-    id: `${auditId}:${engineResult.engine}`,
+  const registry = buildRuleRegistry();
+  const evaluator = new RuleEvaluator<WorkflowResult>();
+  const evaluations = evaluator.evaluate(registry.getAll(), workflowResult);
+
+  return evaluations.map((evaluation) => ({
+    id: `${auditId}:${evaluation.ruleId}`,
     auditId,
-    category: EXECUTION_CATEGORY,
-    sourceEngine: engineResult.engine,
-    status: engineResult.status,
+    ruleId: evaluation.ruleId,
+    category: evaluation.category,
+    sourceEngine: evaluation.sourceEngine,
+    outcome: evaluation.outcome,
+    evidence: evaluation.evidence,
   }));
 }

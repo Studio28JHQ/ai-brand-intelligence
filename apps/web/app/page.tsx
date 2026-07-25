@@ -55,8 +55,9 @@ export default function Home() {
                   <li key={finding.id}>
                     <p>Category: {finding.category}</p>
                     <p>Finding ID: {finding.id}</p>
+                    <p>Rule: {finding.ruleId}</p>
                     <p>Source Engine: {finding.sourceEngine}</p>
-                    <p>Status: {finding.status}</p>
+                    <p>Outcome: {finding.outcome}</p>
                   </li>
                 ))}
               </ul>

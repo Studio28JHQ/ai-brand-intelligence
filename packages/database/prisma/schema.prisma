@@ -83,9 +83,11 @@ model InventoryResult {
 model Finding {
   id           String   @id
   auditId      String   @map("audit_id")
+  ruleId       String   @map("rule_id")
   category     String
   sourceEngine String   @map("source_engine")
-  status       String
+  outcome      String
+  evidence     Json
   createdAt    DateTime @default(now()) @map("created_at")
 
   audit AuditRequest @relation(fields: [auditId], references: [id])
