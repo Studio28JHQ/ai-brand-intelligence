@@ -1,4 +1,4 @@
 export interface AuditType {
   readonly id: string;
-  readonly capabilityIds: ReadonlyArray<string>;
+  readonly productCapabilityIds: ReadonlyArray<string>;
 }

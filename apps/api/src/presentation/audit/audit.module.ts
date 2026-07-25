@@ -6,6 +6,7 @@ import { AUDIT_EXECUTION_PLAN } from '../../domain/audit/audit-execution-plan.to
 import { CapabilityRegistry } from '../../domain/audit/capability-registry';
 import { ExecutionPlanBuilder } from '../../domain/audit/execution-plan-builder';
 import { toCapability } from '../../domain/audit/capability';
+import { buildFullAuditCapabilityCatalog } from '../../domain/audit/full-audit-capability-catalog';
 import { FULL_AUDIT_TYPE } from '../../domain/audit/full-audit.type';
 import { CreateAuditUseCase } from '../../application/audit/create-audit.use-case';
 import { ExecuteAuditUseCase } from '../../application/audit/execute-audit.use-case';
@@ -64,7 +65,9 @@ import { AuditController } from './audit.controller';
           aiVisibilityStep,
         ].forEach((step) => registry.register(toCapability(step)));
 
-        return new ExecutionPlanBuilder(registry).build(FULL_AUDIT_TYPE);
+        const catalog = buildFullAuditCapabilityCatalog();
+
+        return new ExecutionPlanBuilder(catalog, registry).build(FULL_AUDIT_TYPE);
       },
       inject: [
         DiscoveryStep,

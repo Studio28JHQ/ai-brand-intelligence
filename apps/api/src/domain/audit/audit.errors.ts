@@ -27,3 +27,10 @@ export class UnknownCapabilityError extends Error {
     this.name = 'UnknownCapabilityError';
   }
 }
+
+export class UnknownProductCapabilityError extends Error {
+  constructor(productCapabilityId: string) {
+    super(`Unknown product capability: ${productCapabilityId}`);
+    this.name = 'UnknownProductCapabilityError';
+  }
+}
