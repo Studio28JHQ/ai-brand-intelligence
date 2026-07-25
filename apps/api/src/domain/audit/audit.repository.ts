@@ -6,4 +6,6 @@ export interface AuditRepository {
   create(url: string): Promise<Audit>;
   markRunning(id: string, startedAt: Date): Promise<Audit>;
   markCompleted(id: string, completedAt: Date): Promise<Audit>;
+  markFailed(id: string, failedAt: Date): Promise<Audit>;
+  markCancelled(id: string, cancelledAt: Date): Promise<Audit>;
 }

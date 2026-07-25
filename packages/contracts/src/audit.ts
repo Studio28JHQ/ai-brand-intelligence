@@ -6,7 +6,7 @@ import type { KnowledgeGraphSummary } from './knowledge-graph';
 import type { AiVisibilitySummary } from './ai-visibility';
 import type { RecommendationSummary } from './recommendation';
 
-export type AuditStatus = 'pending' | 'running' | 'completed';
+export type AuditStatus = 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
 
 export interface CreateAuditRequest {
   url: string;

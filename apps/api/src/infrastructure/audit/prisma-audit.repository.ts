@@ -1,8 +1,20 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { PrismaClient } from '@ai-visibility/database';
 import { Audit, AuditStatus } from '../../domain/audit/audit.entity';
+import { AuditNotFoundError } from '../../domain/audit/audit.errors';
 import { AuditRepository } from '../../domain/audit/audit.repository';
 import { PRISMA_CLIENT } from '../database/database.module';
+
+interface AuditRecord {
+  id: string;
+  url: string;
+  status: string;
+  createdAt: Date;
+  startedAt: Date | null;
+  completedAt: Date | null;
+  failedAt: Date | null;
+  cancelledAt: Date | null;
+}
 
 @Injectable()
 export class PrismaAuditRepository implements AuditRepository {
@@ -14,29 +26,52 @@ export class PrismaAuditRepository implements AuditRepository {
   }
 
   async markRunning(id: string, startedAt: Date): Promise<Audit> {
-    const record = await this.prisma.auditRequest.update({
-      where: { id },
-      data: { status: 'running', startedAt },
-    });
-    return this.toDomain(record);
+    const current = await this.findByIdOrThrow(id);
+    const next = current.start(startedAt);
+    return this.persist(next);
   }
 
   async markCompleted(id: string, completedAt: Date): Promise<Audit> {
+    const current = await this.findByIdOrThrow(id);
+    const next = current.complete(completedAt);
+    return this.persist(next);
+  }
+
+  async markFailed(id: string, failedAt: Date): Promise<Audit> {
+    const current = await this.findByIdOrThrow(id);
+    const next = current.fail(failedAt);
+    return this.persist(next);
+  }
+
+  async markCancelled(id: string, cancelledAt: Date): Promise<Audit> {
+    const current = await this.findByIdOrThrow(id);
+    const next = current.cancel(cancelledAt);
+    return this.persist(next);
+  }
+
+  private async findByIdOrThrow(id: string): Promise<Audit> {
+    const record = await this.prisma.auditRequest.findUnique({ where: { id } });
+    if (!record) {
+      throw new AuditNotFoundError(id);
+    }
+    return this.toDomain(record);
+  }
+
+  private async persist(audit: Audit): Promise<Audit> {
     const record = await this.prisma.auditRequest.update({
-      where: { id },
-      data: { status: 'completed', completedAt },
+      where: { id: audit.id },
+      data: {
+        status: audit.status,
+        startedAt: audit.startedAt,
+        completedAt: audit.completedAt,
+        failedAt: audit.failedAt,
+        cancelledAt: audit.cancelledAt,
+      },
     });
     return this.toDomain(record);
   }
 
-  private toDomain(record: {
-    id: string;
-    url: string;
-    status: string;
-    createdAt: Date;
-    startedAt: Date | null;
-    completedAt: Date | null;
-  }): Audit {
+  private toDomain(record: AuditRecord): Audit {
     return Audit.fromPersistence({
       id: record.id,
       url: record.url,
@@ -44,6 +79,8 @@ export class PrismaAuditRepository implements AuditRepository {
       createdAt: record.createdAt,
       startedAt: record.startedAt,
       completedAt: record.completedAt,
+      failedAt: record.failedAt,
+      cancelledAt: record.cancelledAt,
     });
   }
 }
