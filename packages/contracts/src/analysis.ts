@@ -1,5 +1,7 @@
 export type RuleOutcome = 'pass' | 'fail';
 
+export type FindingSeverity = 'none' | 'warning';
+
 export interface Finding {
   id: string;
   auditId: string;
@@ -7,6 +9,7 @@ export interface Finding {
   category: string;
   sourceEngine: string;
   outcome: RuleOutcome;
+  severity: FindingSeverity;
   evidence: Record<string, unknown>;
 }
 
@@ -20,6 +23,7 @@ export interface FindingSummary {
   category: string;
   sourceEngine: string;
   outcome: RuleOutcome;
+  severity: FindingSeverity;
   evidence: Record<string, unknown>;
 }
 

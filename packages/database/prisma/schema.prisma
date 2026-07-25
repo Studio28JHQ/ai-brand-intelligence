@@ -28,7 +28,6 @@ model AuditRequest {
   crawlResult     CrawlResult?
   inventoryResult InventoryResult?
   findings        Finding[]
-  classifications FindingClassification[]
 
   @@map("audit_requests")
 }
@@ -88,25 +87,11 @@ model Finding {
   category     String
   sourceEngine String   @map("source_engine")
   outcome      String
+  severity     String
   evidence     Json
   createdAt    DateTime @default(now()) @map("created_at")
 
-  audit          AuditRequest            @relation(fields: [auditId], references: [id])
-  classification FindingClassification?
+  audit AuditRequest @relation(fields: [auditId], references: [id])
 
   @@map("findings")
-}
-
-model FindingClassification {
-  id             String   @id
-  findingId      String   @unique @map("finding_id")
-  auditId        String   @map("audit_id")
-  classification String
-  rationale      String
-  createdAt      DateTime @default(now()) @map("created_at")
-
-  finding Finding      @relation(fields: [findingId], references: [id])
-  audit   AuditRequest @relation(fields: [auditId], references: [id])
-
-  @@map("finding_classifications")
 }

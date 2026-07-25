@@ -16,6 +16,7 @@ export async function saveFindings(findings: Finding[]): Promise<void> {
         category: finding.category,
         sourceEngine: finding.sourceEngine,
         outcome: finding.outcome,
+        severity: finding.severity,
         evidence: finding.evidence as object,
       },
       update: {
@@ -23,6 +24,7 @@ export async function saveFindings(findings: Finding[]): Promise<void> {
         category: finding.category,
         sourceEngine: finding.sourceEngine,
         outcome: finding.outcome,
+        severity: finding.severity,
         evidence: finding.evidence as object,
       },
     });

@@ -51,27 +51,16 @@ export default function Home() {
             <>
               <h2>Findings</h2>
               <ul>
-                {state.result.analysis.findings.map((finding) => {
-                  const classification = state.result?.classification?.classifications.find(
-                    (entry) => entry.findingId === finding.id,
-                  );
-
-                  return (
-                    <li key={finding.id}>
-                      <p>Category: {finding.category}</p>
-                      <p>Finding ID: {finding.id}</p>
-                      <p>Rule: {finding.ruleId}</p>
-                      <p>Source Engine: {finding.sourceEngine}</p>
-                      <p>Outcome: {finding.outcome}</p>
-                      {classification && (
-                        <>
-                          <p>Classification: {classification.classification}</p>
-                          <p>Classification Rationale: {classification.rationale}</p>
-                        </>
-                      )}
-                    </li>
-                  );
-                })}
+                {state.result.analysis.findings.map((finding) => (
+                  <li key={finding.id}>
+                    <p>Category: {finding.category}</p>
+                    <p>Finding ID: {finding.id}</p>
+                    <p>Rule: {finding.ruleId}</p>
+                    <p>Source Engine: {finding.sourceEngine}</p>
+                    <p>Outcome: {finding.outcome}</p>
+                    <p>Severity: {finding.severity}</p>
+                  </li>
+                ))}
               </ul>
             </>
           )}

@@ -15,9 +15,7 @@ export class AuditController {
     }
 
     try {
-      const { audit, discovery, crawl, inventory, analysis, classification } = await this.createAuditUseCase.execute(
-        dto.url,
-      );
+      const { audit, discovery, crawl, inventory, analysis } = await this.createAuditUseCase.execute(dto.url);
       return {
         id: audit.id,
         status: audit.status,
@@ -47,14 +45,8 @@ export class AuditController {
             category: finding.category,
             sourceEngine: finding.sourceEngine,
             outcome: finding.outcome,
+            severity: finding.severity,
             evidence: finding.evidence,
-          })),
-        },
-        classification: {
-          classifications: classification.classifications.map((entry) => ({
-            findingId: entry.findingId,
-            classification: entry.classification,
-            rationale: entry.rationale,
           })),
         },
       };

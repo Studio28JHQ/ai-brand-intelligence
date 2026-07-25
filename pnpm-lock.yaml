@@ -13,9 +13,6 @@ importers:
       '@ai-visibility/analysis-engine':
         specifier: workspace:*
         version: link:../../services/analysis
-      '@ai-visibility/classification-engine':
-        specifier: workspace:*
-        version: link:../../services/classification
       '@ai-visibility/config':
         specifier: workspace:*
         version: link:../../packages/config
@@ -175,28 +172,6 @@ importers:
   packages/types: {}
 
   services/analysis:
-    dependencies:
-      '@ai-visibility/config':
-        specifier: workspace:*
-        version: link:../../packages/config
-      '@ai-visibility/contracts':
-        specifier: workspace:*
-        version: link:../../packages/contracts
-      '@ai-visibility/database':
-        specifier: workspace:*
-        version: link:../../packages/database
-      '@ai-visibility/rules':
-        specifier: workspace:*
-        version: link:../../packages/rules
-    devDependencies:
-      '@types/node':
-        specifier: ^22.10.5
-        version: 22.20.1
-      typescript:
-        specifier: ^5.7.3
-        version: 5.9.3
-
-  services/classification:
     dependencies:
       '@ai-visibility/config':
         specifier: workspace:*
