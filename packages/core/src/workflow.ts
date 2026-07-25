@@ -1,12 +1,12 @@
 import type { WorkflowExecutionRecord, WorkflowProgress } from '@ai-visibility/contracts';
+import { ExecutionPlan } from './execution-plan';
 import { WorkflowContext } from './workflow-context';
-import { WorkflowStep } from './workflow-step';
 
 export type WorkflowProgressListener = (progress: WorkflowProgress) => void;
 export type WorkflowHistoryListener = (record: WorkflowExecutionRecord) => void;
 
 export class Workflow {
-  constructor(private readonly steps: ReadonlyArray<WorkflowStep>) {}
+  constructor(private readonly plan: ExecutionPlan) {}
 
   async run(
     context: WorkflowContext,
@@ -15,7 +15,7 @@ export class Workflow {
   ): Promise<WorkflowContext> {
     let current = context;
 
-    for (const step of this.steps) {
+    for (const step of this.plan.steps) {
       const startedAt = new Date();
 
       try {

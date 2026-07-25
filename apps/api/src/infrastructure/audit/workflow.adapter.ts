@@ -1,15 +1,15 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Workflow } from '@ai-visibility/core';
-import type { WorkflowContext, WorkflowHistoryListener, WorkflowProgressListener, WorkflowStep } from '@ai-visibility/core';
+import type { ExecutionPlan, WorkflowContext, WorkflowHistoryListener, WorkflowProgressListener } from '@ai-visibility/core';
 import { WorkflowPort } from '../../domain/audit/workflow.port';
-import { AUDIT_WORKFLOW_STEPS } from '../../domain/audit/audit-workflow-steps.token';
+import { AUDIT_EXECUTION_PLAN } from '../../domain/audit/audit-execution-plan.token';
 
 @Injectable()
 export class WorkflowAdapter implements WorkflowPort {
   private readonly workflow: Workflow;
 
-  constructor(@Inject(AUDIT_WORKFLOW_STEPS) steps: WorkflowStep[]) {
-    this.workflow = new Workflow(steps);
+  constructor(@Inject(AUDIT_EXECUTION_PLAN) plan: ExecutionPlan) {
+    this.workflow = new Workflow(plan);
   }
 
   async run(

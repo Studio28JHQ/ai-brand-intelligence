@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import type { WorkflowStep } from '@ai-visibility/core';
+import type { ExecutionPlan } from '@ai-visibility/core';
 import { AUDIT_REPOSITORY } from '../../domain/audit/audit.repository';
 import { WORKFLOW_PORT } from '../../domain/audit/workflow.port';
-import { AUDIT_WORKFLOW_STEPS } from '../../domain/audit/audit-workflow-steps.token';
+import { AUDIT_EXECUTION_PLAN } from '../../domain/audit/audit-execution-plan.token';
 import { CapabilityRegistry } from '../../domain/audit/capability-registry';
 import { ExecutionPlanBuilder } from '../../domain/audit/execution-plan-builder';
 import { toCapability } from '../../domain/audit/capability';
@@ -43,7 +43,7 @@ import { AuditController } from './audit.controller';
     KnowledgeGraphStep,
     AiVisibilityStep,
     {
-      provide: AUDIT_WORKFLOW_STEPS,
+      provide: AUDIT_EXECUTION_PLAN,
       useFactory: (
         discoveryStep: DiscoveryStep,
         crawlerStep: CrawlerStep,
@@ -52,7 +52,7 @@ import { AuditController } from './audit.controller';
         entityStep: EntityStep,
         knowledgeGraphStep: KnowledgeGraphStep,
         aiVisibilityStep: AiVisibilityStep,
-      ): WorkflowStep[] => {
+      ): ExecutionPlan => {
         const registry = new CapabilityRegistry();
         [
           discoveryStep,
