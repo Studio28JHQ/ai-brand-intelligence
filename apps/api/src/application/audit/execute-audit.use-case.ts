@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
-import type { AuditContext } from '@ai-visibility/core';
+import type { WorkflowContext } from '@ai-visibility/core';
 import type { CrawlResult, InventoryResult } from '@ai-visibility/contracts';
-import { EXECUTION_PIPELINE_PORT, ExecutionPipelinePort } from '../../domain/audit/execution-pipeline.port';
+import { WORKFLOW_PORT, WorkflowPort } from '../../domain/audit/workflow.port';
 import { DiscoveryResult } from '../../domain/audit/discovery-result';
 
 export interface ExecuteAuditResult {
@@ -12,11 +12,11 @@ export interface ExecuteAuditResult {
 
 @Injectable()
 export class ExecuteAuditUseCase {
-  constructor(@Inject(EXECUTION_PIPELINE_PORT) private readonly pipeline: ExecutionPipelinePort) {}
+  constructor(@Inject(WORKFLOW_PORT) private readonly workflow: WorkflowPort) {}
 
   async execute(auditId: string, url: string): Promise<ExecuteAuditResult> {
-    const context: AuditContext = { auditId, url };
-    const results = await this.pipeline.run(context);
+    const context: WorkflowContext = { auditId, url, results: {} };
+    const { results } = await this.workflow.run(context);
 
     return {
       discovery: results.discovery as DiscoveryResult,

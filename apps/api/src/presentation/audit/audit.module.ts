@@ -1,15 +1,15 @@
 import { Module } from '@nestjs/common';
-import type { Engine } from '@ai-visibility/core';
+import type { WorkflowStep } from '@ai-visibility/core';
 import { AUDIT_REPOSITORY } from '../../domain/audit/audit.repository';
-import { EXECUTION_PIPELINE_PORT } from '../../domain/audit/execution-pipeline.port';
-import { AUDIT_ENGINES } from '../../domain/audit/audit-engines.token';
+import { WORKFLOW_PORT } from '../../domain/audit/workflow.port';
+import { AUDIT_WORKFLOW_STEPS } from '../../domain/audit/audit-workflow-steps.token';
 import { CreateAuditUseCase } from '../../application/audit/create-audit.use-case';
 import { ExecuteAuditUseCase } from '../../application/audit/execute-audit.use-case';
 import { PrismaAuditRepository } from '../../infrastructure/audit/prisma-audit.repository';
-import { DiscoveryEngineAdapter } from '../../infrastructure/audit/discovery-engine.adapter';
-import { CrawlerEngineAdapter } from '../../infrastructure/audit/crawler-engine.adapter';
-import { InventoryEngineAdapter } from '../../infrastructure/audit/inventory-engine.adapter';
-import { ExecutionPipelineAdapter } from '../../infrastructure/audit/execution-pipeline.adapter';
+import { DiscoveryStep } from '../../infrastructure/audit/discovery.step';
+import { CrawlerStep } from '../../infrastructure/audit/crawler.step';
+import { InventoryStep } from '../../infrastructure/audit/inventory.step';
+import { WorkflowAdapter } from '../../infrastructure/audit/workflow.adapter';
 import { DatabaseModule } from '../../infrastructure/database/database.module';
 import { AuditController } from './audit.controller';
 
@@ -20,18 +20,18 @@ import { AuditController } from './audit.controller';
     CreateAuditUseCase,
     ExecuteAuditUseCase,
     { provide: AUDIT_REPOSITORY, useClass: PrismaAuditRepository },
-    { provide: EXECUTION_PIPELINE_PORT, useClass: ExecutionPipelineAdapter },
-    DiscoveryEngineAdapter,
-    CrawlerEngineAdapter,
-    InventoryEngineAdapter,
+    { provide: WORKFLOW_PORT, useClass: WorkflowAdapter },
+    DiscoveryStep,
+    CrawlerStep,
+    InventoryStep,
     {
-      provide: AUDIT_ENGINES,
+      provide: AUDIT_WORKFLOW_STEPS,
       useFactory: (
-        discoveryEngineAdapter: DiscoveryEngineAdapter,
-        crawlerEngineAdapter: CrawlerEngineAdapter,
-        inventoryEngineAdapter: InventoryEngineAdapter,
-      ): Engine[] => [discoveryEngineAdapter, crawlerEngineAdapter, inventoryEngineAdapter],
-      inject: [DiscoveryEngineAdapter, CrawlerEngineAdapter, InventoryEngineAdapter],
+        discoveryStep: DiscoveryStep,
+        crawlerStep: CrawlerStep,
+        inventoryStep: InventoryStep,
+      ): WorkflowStep[] => [discoveryStep, crawlerStep, inventoryStep],
+      inject: [DiscoveryStep, CrawlerStep, InventoryStep],
     },
   ],
 })
