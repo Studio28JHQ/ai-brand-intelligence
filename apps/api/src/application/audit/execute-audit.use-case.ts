@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import type { WorkflowContext } from '@ai-visibility/core';
 import type { WorkflowResult } from '@ai-visibility/contracts';
@@ -8,7 +9,13 @@ export class ExecuteAuditUseCase {
   constructor(@Inject(WORKFLOW_PORT) private readonly workflow: WorkflowPort) {}
 
   async execute(auditId: string, url: string): Promise<WorkflowResult> {
-    const context: WorkflowContext = { auditId, url, results: {} };
+    const context: WorkflowContext = {
+      auditId,
+      url,
+      workflowId: randomUUID(),
+      metadata: { startedAt: new Date().toISOString() },
+      results: {},
+    };
     const { results } = await this.workflow.run(context);
 
     return results;
