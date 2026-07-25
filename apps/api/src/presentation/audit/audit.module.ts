@@ -12,6 +12,7 @@ import { InventoryStep } from '../../infrastructure/audit/inventory.step';
 import { AnalysisStep } from '../../infrastructure/audit/analysis.step';
 import { EntityStep } from '../../infrastructure/audit/entity.step';
 import { KnowledgeGraphStep } from '../../infrastructure/audit/knowledge-graph.step';
+import { AiVisibilityStep } from '../../infrastructure/audit/ai-visibility.step';
 import { WorkflowAdapter } from '../../infrastructure/audit/workflow.adapter';
 import { DatabaseModule } from '../../infrastructure/database/database.module';
 import { AuditController } from './audit.controller';
@@ -30,6 +31,7 @@ import { AuditController } from './audit.controller';
     AnalysisStep,
     EntityStep,
     KnowledgeGraphStep,
+    AiVisibilityStep,
     {
       provide: AUDIT_WORKFLOW_STEPS,
       useFactory: (
@@ -39,6 +41,7 @@ import { AuditController } from './audit.controller';
         analysisStep: AnalysisStep,
         entityStep: EntityStep,
         knowledgeGraphStep: KnowledgeGraphStep,
+        aiVisibilityStep: AiVisibilityStep,
       ): WorkflowStep[] => [
         discoveryStep,
         crawlerStep,
@@ -46,8 +49,17 @@ import { AuditController } from './audit.controller';
         analysisStep,
         entityStep,
         knowledgeGraphStep,
+        aiVisibilityStep,
       ],
-      inject: [DiscoveryStep, CrawlerStep, InventoryStep, AnalysisStep, EntityStep, KnowledgeGraphStep],
+      inject: [
+        DiscoveryStep,
+        CrawlerStep,
+        InventoryStep,
+        AnalysisStep,
+        EntityStep,
+        KnowledgeGraphStep,
+        AiVisibilityStep,
+      ],
     },
   ],
 })

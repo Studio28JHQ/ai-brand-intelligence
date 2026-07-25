@@ -24,13 +24,14 @@ model AuditRequest {
   startedAt   DateTime? @map("started_at")
   completedAt DateTime? @map("completed_at")
 
-  discoveryResult DiscoveryResult?
-  crawlResult     CrawlResult?
-  inventoryResult InventoryResult?
-  findings        Finding[]
-  entities        Entity[]
-  graphNodes      GraphNode[]
-  graphRelationships GraphRelationship[]
+  discoveryResult         DiscoveryResult?
+  crawlResult             CrawlResult?
+  inventoryResult         InventoryResult?
+  findings                Finding[]
+  entities                Entity[]
+  graphNodes              GraphNode[]
+  graphRelationships      GraphRelationship[]
+  aiVisibilityAssessment  AiVisibilityAssessment?
 
   @@map("audit_requests")
 }
@@ -141,4 +142,20 @@ model GraphRelationship {
   targetNode GraphNode    @relation("TargetNode", fields: [targetNodeId], references: [id])
 
   @@map("graph_relationships")
+}
+
+model AiVisibilityAssessment {
+  id                   String   @id @default(uuid())
+  auditId              String   @unique @map("audit_id")
+  status               String
+  graphCompleteness    String   @map("graph_completeness")
+  entityCoverage       String   @map("entity_coverage")
+  relationshipCoverage String   @map("relationship_coverage")
+  missingSignals       Json     @map("missing_signals")
+  assessedAt           DateTime @map("assessed_at")
+  createdAt            DateTime @default(now()) @map("created_at")
+
+  audit AuditRequest @relation(fields: [auditId], references: [id])
+
+  @@map("ai_visibility_assessments")
 }

@@ -1,4 +1,5 @@
 import type {
+  AiVisibilityResult,
   AnalysisResult,
   CrawlResult,
   EntityResult,
@@ -16,4 +17,5 @@ export interface CreateAuditResult {
   analysis: AnalysisResult;
   entity: EntityResult;
   knowledgeGraph: KnowledgeGraphResult;
+  aiVisibility: AiVisibilityResult;
 }

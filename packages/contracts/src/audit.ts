@@ -3,6 +3,7 @@ import type { InventorySummary } from './inventory';
 import type { AnalysisSummary } from './analysis';
 import type { EntitySummary } from './entity';
 import type { KnowledgeGraphSummary } from './knowledge-graph';
+import type { AiVisibilitySummary } from './ai-visibility';
 
 export type AuditStatus = 'pending' | 'running' | 'completed';
 
@@ -25,4 +26,5 @@ export interface CreateAuditResponse {
   analysis?: AnalysisSummary;
   entity?: EntitySummary;
   knowledgeGraph?: KnowledgeGraphSummary;
+  aiVisibility?: AiVisibilitySummary;
 }

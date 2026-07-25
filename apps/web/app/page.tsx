@@ -88,6 +88,16 @@ export default function Home() {
               <p>Relationship Types: {state.result.knowledgeGraph.relationshipTypes.join(', ') || 'None'}</p>
             </>
           )}
+          {state.result.aiVisibility && (
+            <>
+              <h2>AI Visibility</h2>
+              <p>Overall Status: {state.result.aiVisibility.status}</p>
+              <p>Graph Completeness: {state.result.aiVisibility.graphCompleteness}</p>
+              <p>Entity Coverage: {state.result.aiVisibility.entityCoverage}</p>
+              <p>Relationship Coverage: {state.result.aiVisibility.relationshipCoverage}</p>
+              <p>Assessed At: {state.result.aiVisibility.assessedAt}</p>
+            </>
+          )}
         </div>
       )}
 

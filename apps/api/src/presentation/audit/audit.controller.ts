@@ -15,7 +15,7 @@ export class AuditController {
     }
 
     try {
-      const { audit, discovery, crawl, inventory, analysis, entity, knowledgeGraph } =
+      const { audit, discovery, crawl, inventory, analysis, entity, knowledgeGraph, aiVisibility } =
         await this.createAuditUseCase.execute(dto.url);
       return {
         id: audit.id,
@@ -63,6 +63,14 @@ export class AuditController {
           totalRelationships: knowledgeGraph.relationships.length,
           entityTypes: [...new Set(knowledgeGraph.nodes.map((node) => node.type))],
           relationshipTypes: [...new Set(knowledgeGraph.relationships.map((relationship) => relationship.type))],
+        },
+        aiVisibility: {
+          status: aiVisibility.assessment.status,
+          graphCompleteness: aiVisibility.assessment.graphCompleteness,
+          entityCoverage: aiVisibility.assessment.entityCoverage,
+          relationshipCoverage: aiVisibility.assessment.relationshipCoverage,
+          missingSignals: aiVisibility.assessment.missingSignals,
+          assessedAt: aiVisibility.assessment.assessedAt,
         },
       };
     } catch (error) {

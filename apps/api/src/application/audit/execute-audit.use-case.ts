@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { WorkflowContext } from '@ai-visibility/core';
 import type {
+  AiVisibilityResult,
   AnalysisResult,
   CrawlResult,
   EngineResult,
@@ -18,6 +19,7 @@ export interface ExecuteAuditResult {
   analysis: AnalysisResult;
   entity: EntityResult;
   knowledgeGraph: KnowledgeGraphResult;
+  aiVisibility: AiVisibilityResult;
 }
 
 @Injectable()
@@ -34,6 +36,7 @@ export class ExecuteAuditUseCase {
     const analysis = results.analysis as EngineResult<AnalysisResult>;
     const entity = results.entity as EngineResult<EntityResult>;
     const knowledgeGraph = results.knowledgeGraph as EngineResult<KnowledgeGraphResult>;
+    const aiVisibility = results.aiVisibility as EngineResult<AiVisibilityResult>;
 
     return {
       discovery: discovery.output!,
@@ -42,6 +45,7 @@ export class ExecuteAuditUseCase {
       analysis: analysis.output!,
       entity: entity.output!,
       knowledgeGraph: knowledgeGraph.output!,
+      aiVisibility: aiVisibility.output!,
     };
   }
 }
