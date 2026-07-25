@@ -1,4 +1,5 @@
-import { BadRequestException, Body, Controller, Get, NotFoundException, Param, Post, Query } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, NotFoundException, Param, Post, Query, Req } from '@nestjs/common';
+import type { Request } from 'express';
 import type { AuditComparisonResult, AuditMetadata, CreateAuditResponse } from '@ai-visibility/contracts';
 import { CreateAuditUseCase } from '../../application/audit/create-audit.use-case';
 import { AuditQueryService } from '../../application/audit/audit-query.service';
@@ -66,13 +67,13 @@ export class AuditController {
   }
 
   @Post()
-  async create(@Body() dto: CreateAuditDto): Promise<CreateAuditResponse> {
+  async create(@Body() dto: CreateAuditDto, @Req() req: Request): Promise<CreateAuditResponse> {
     if (typeof dto?.url !== 'string' || dto.url.trim().length === 0) {
       throw new BadRequestException('url is required');
     }
 
     try {
-      const snapshot = await this.createAuditUseCase.execute(dto.url);
+      const snapshot = await this.createAuditUseCase.execute(dto.url, req.correlationId);
       return buildAuditSummary(snapshot);
     } catch (error) {
       if (error instanceof InvalidAuditUrlError) {

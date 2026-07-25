@@ -13,10 +13,16 @@ export interface ExecuteAuditOutcome {
 export class ExecuteAuditUseCase {
   constructor(@Inject(WORKFLOW_PORT) private readonly workflow: WorkflowPort) {}
 
-  async execute(auditId: string, url: string, onHistory?: WorkflowHistoryListener): Promise<ExecuteAuditOutcome> {
+  async execute(
+    auditId: string,
+    url: string,
+    correlationId: string,
+    onHistory?: WorkflowHistoryListener,
+  ): Promise<ExecuteAuditOutcome> {
     const context: WorkflowContext = {
       auditId,
       url,
+      correlationId,
       workflowId: randomUUID(),
       metadata: { startedAt: new Date().toISOString() },
       results: {},

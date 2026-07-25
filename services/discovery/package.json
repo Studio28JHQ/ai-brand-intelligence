@@ -9,7 +9,8 @@
   },
   "dependencies": {
     "@ai-visibility/config": "workspace:*",
-    "@ai-visibility/database": "workspace:*"
+    "@ai-visibility/database": "workspace:*",
+    "@ai-visibility/shared": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",

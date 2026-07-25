@@ -11,7 +11,8 @@
     "@ai-visibility/config": "workspace:*",
     "@ai-visibility/contracts": "workspace:*",
     "@ai-visibility/database": "workspace:*",
-    "@ai-visibility/rules": "workspace:*"
+    "@ai-visibility/rules": "workspace:*",
+    "@ai-visibility/shared": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.10.5",

@@ -11,7 +11,7 @@ export class EntityStep implements WorkflowStep {
     const inventoryResult = context.results.inventory as EngineResult<InventoryResult>;
 
     const startedAt = new Date();
-    const output = await runEntityExtraction(context.auditId, inventoryResult.output!);
+    const output = await runEntityExtraction(context.auditId, inventoryResult.output!, context.correlationId);
     const completedAt = new Date();
 
     const entity: EngineResult<EntityResult> = {

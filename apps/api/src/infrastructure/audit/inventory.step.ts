@@ -11,7 +11,12 @@ export class InventoryStep implements WorkflowStep {
     const crawlResult = context.results.crawl as EngineResult<CrawlResult>;
 
     const startedAt = new Date();
-    const output = await runInventory(context.auditId, crawlResult.output!.html, crawlResult.output!.finalUrl);
+    const output = await runInventory(
+      context.auditId,
+      crawlResult.output!.html,
+      crawlResult.output!.finalUrl,
+      context.correlationId,
+    );
     const completedAt = new Date();
 
     const inventory: EngineResult<InventoryResult> = {

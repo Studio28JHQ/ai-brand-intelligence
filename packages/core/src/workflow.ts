@@ -1,3 +1,4 @@
+import { emitTelemetryEvent } from '@ai-visibility/shared';
 import type { WorkflowExecutionRecord, WorkflowProgress } from '@ai-visibility/contracts';
 import { ExecutionPlan } from './execution-plan';
 import { WorkflowContext } from './workflow-context';
@@ -15,13 +16,45 @@ export class Workflow {
   ): Promise<WorkflowContext> {
     let current = context;
 
+    emitTelemetryEvent({
+      name: 'workflow.started',
+      category: 'workflow',
+      severity: 'info',
+      correlationId: context.correlationId,
+      source: 'workflow-runtime',
+      data: { workflowId: context.workflowId, planId: this.plan.id, auditId: context.auditId },
+    });
+
     for (const step of this.plan.steps) {
       const startedAt = new Date();
+
+      emitTelemetryEvent({
+        name: 'workflow.step.started',
+        category: 'workflow',
+        severity: 'info',
+        correlationId: context.correlationId,
+        source: step.name,
+        data: { workflowId: context.workflowId, planId: this.plan.id, auditId: context.auditId },
+      });
 
       try {
         current = await step.run(current);
       } catch (error) {
         const completedAt = new Date();
+        emitTelemetryEvent({
+          name: 'workflow.step.failed',
+          category: 'workflow',
+          severity: 'error',
+          correlationId: context.correlationId,
+          source: step.name,
+          data: {
+            workflowId: context.workflowId,
+            planId: this.plan.id,
+            auditId: context.auditId,
+            durationMs: completedAt.getTime() - startedAt.getTime(),
+            errorMessage: error instanceof Error ? error.message : String(error),
+          },
+        });
         onHistory?.({
           stepId: step.name,
           status: 'failure',
@@ -47,6 +80,20 @@ export class Workflow {
         });
       }
 
+      emitTelemetryEvent({
+        name: 'workflow.step.completed',
+        category: 'workflow',
+        severity: 'info',
+        correlationId: context.correlationId,
+        source: step.name,
+        data: {
+          workflowId: context.workflowId,
+          planId: this.plan.id,
+          auditId: context.auditId,
+          durationMs: completedAt.getTime() - startedAt.getTime(),
+        },
+      });
+
       onHistory?.({
         stepId: step.name,
         status: 'success',
@@ -55,6 +102,15 @@ export class Workflow {
         durationMs: completedAt.getTime() - startedAt.getTime(),
       });
     }
+
+    emitTelemetryEvent({
+      name: 'workflow.completed',
+      category: 'workflow',
+      severity: 'info',
+      correlationId: context.correlationId,
+      source: 'workflow-runtime',
+      data: { workflowId: context.workflowId, planId: this.plan.id, auditId: context.auditId },
+    });
 
     return current;
   }

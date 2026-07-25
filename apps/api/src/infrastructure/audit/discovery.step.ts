@@ -10,7 +10,7 @@ export class DiscoveryStep implements WorkflowStep {
 
   async run(context: WorkflowContext): Promise<WorkflowContext> {
     const startedAt = new Date();
-    const output = await runDiscovery(context.auditId, context.url);
+    const output = await runDiscovery(context.auditId, context.url, context.correlationId);
     const completedAt = new Date();
 
     const discovery: EngineResult<DiscoveryResult> = {

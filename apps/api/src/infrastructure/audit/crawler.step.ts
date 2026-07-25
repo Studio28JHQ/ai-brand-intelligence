@@ -12,7 +12,7 @@ export class CrawlerStep implements WorkflowStep {
     const discoveryResult = context.results.discovery as EngineResult<DiscoveryResult>;
 
     const startedAt = new Date();
-    const output = await runCrawl(context.auditId, discoveryResult.output!.normalizedUrl);
+    const output = await runCrawl(context.auditId, discoveryResult.output!.normalizedUrl, context.correlationId);
     const completedAt = new Date();
 
     const crawl: EngineResult<CrawlResult> = {

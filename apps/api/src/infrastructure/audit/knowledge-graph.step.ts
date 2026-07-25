@@ -11,7 +11,7 @@ export class KnowledgeGraphStep implements WorkflowStep {
     const entityResult = context.results.entity as EngineResult<EntityResult>;
 
     const startedAt = new Date();
-    const output = await runKnowledgeGraph(context.auditId, entityResult.output!.entities);
+    const output = await runKnowledgeGraph(context.auditId, entityResult.output!.entities, context.correlationId);
     const completedAt = new Date();
 
     const knowledgeGraph: EngineResult<KnowledgeGraphResult> = {

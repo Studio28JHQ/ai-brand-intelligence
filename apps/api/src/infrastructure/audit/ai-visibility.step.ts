@@ -11,7 +11,11 @@ export class AiVisibilityStep implements WorkflowStep {
     const knowledgeGraphResult = context.results.knowledgeGraph as EngineResult<KnowledgeGraphResult>;
 
     const startedAt = new Date();
-    const output = await runAiVisibilityAssessment(context.auditId, knowledgeGraphResult.output!);
+    const output = await runAiVisibilityAssessment(
+      context.auditId,
+      knowledgeGraphResult.output!,
+      context.correlationId,
+    );
     const completedAt = new Date();
 
     const aiVisibility: EngineResult<AiVisibilityResult> = {

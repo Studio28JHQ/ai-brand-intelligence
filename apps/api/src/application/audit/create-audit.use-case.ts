@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { emitTelemetryEvent } from '@ai-visibility/shared';
 import type {
   AiVisibilityResult,
   AnalysisResult,
@@ -26,7 +27,7 @@ export class CreateAuditUseCase {
     private readonly workflowExecutionHistoryRepository: WorkflowExecutionHistoryRepository,
   ) {}
 
-  async execute(rawUrl: string): Promise<AuditSnapshot> {
+  async execute(rawUrl: string, correlationId: string): Promise<AuditSnapshot> {
     const url = AuditUrl.create(rawUrl);
     const canonicalWebsite = deriveCanonicalWebsite(url.value);
 
@@ -37,24 +38,63 @@ export class CreateAuditUseCase {
     const audit = await this.auditRepository.create(project.id, url.value);
     await this.projectRepository.updateLastAudit(project.id, audit.id);
 
+    emitTelemetryEvent({
+      name: 'audit.created',
+      category: 'audit',
+      severity: 'info',
+      correlationId,
+      source: 'audit-lifecycle',
+      data: { auditId: audit.id, projectId: project.id },
+    });
+
     await this.auditRepository.markRunning(audit.id, new Date());
+
+    emitTelemetryEvent({
+      name: 'audit.started',
+      category: 'audit',
+      severity: 'info',
+      correlationId,
+      source: 'audit-lifecycle',
+      data: { auditId: audit.id },
+    });
 
     const history: WorkflowExecutionRecord[] = [];
     let engineResults: WorkflowResult;
     let progress: WorkflowProgress[];
     try {
-      const outcome = await this.executeAuditUseCase.execute(audit.id, url.value, (record) => history.push(record));
+      const outcome = await this.executeAuditUseCase.execute(audit.id, url.value, correlationId, (record) =>
+        history.push(record),
+      );
       engineResults = outcome.results;
       progress = outcome.progress;
     } catch (error) {
       await this.workflowExecutionHistoryRepository.saveAll(audit.id, history);
       await this.auditRepository.markFailed(audit.id, new Date());
+
+      emitTelemetryEvent({
+        name: 'audit.failed',
+        category: 'audit',
+        severity: 'error',
+        correlationId,
+        source: 'audit-lifecycle',
+        data: { auditId: audit.id, errorMessage: error instanceof Error ? error.message : String(error) },
+      });
+
       throw error;
     }
 
     await this.workflowExecutionHistoryRepository.saveAll(audit.id, history);
 
     const completedAudit = await this.auditRepository.markCompleted(audit.id, new Date());
+
+    emitTelemetryEvent({
+      name: 'audit.completed',
+      category: 'audit',
+      severity: 'info',
+      correlationId,
+      source: 'audit-lifecycle',
+      data: { auditId: audit.id },
+    });
 
     const analysis = engineResults.analysis as EngineResult<AnalysisResult>;
     const entity = engineResults.entity as EngineResult<EntityResult>;

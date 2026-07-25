@@ -11,6 +11,7 @@ export class WorkflowRuntimeChecker {
       const context: WorkflowContext = {
         auditId: 'health-check',
         url: 'health-check',
+        correlationId: 'health-check',
         workflowId: 'health-check',
         metadata: { startedAt: new Date().toISOString() },
         results: {},
