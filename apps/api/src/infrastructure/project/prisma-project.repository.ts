@@ -11,6 +11,8 @@ interface ProjectRecord {
   canonicalWebsite: string;
   createdAt: Date;
   lastAuditId: string | null;
+  baselineAuditId: string | null;
+  baselineSetAt: Date | null;
 }
 
 @Injectable()
@@ -50,6 +52,25 @@ export class PrismaProjectRepository implements ProjectRepository {
     return this.toDomain(record);
   }
 
+  async setBaseline(id: string, auditId: string): Promise<Project> {
+    const existing = await this.prisma.project.findUnique({ where: { id } });
+    if (!existing) {
+      throw new ProjectNotFoundError(id);
+    }
+
+    const baselineSetAt = new Date();
+    const [record] = await this.prisma.$transaction([
+      this.prisma.project.update({
+        where: { id },
+        data: { baselineAuditId: auditId, baselineSetAt },
+      }),
+      this.prisma.projectBaselineHistory.create({
+        data: { projectId: id, auditId, setAt: baselineSetAt },
+      }),
+    ]);
+    return this.toDomain(record);
+  }
+
   private toDomain(record: ProjectRecord): Project {
     return Project.fromPersistence({
       id: record.id,
@@ -57,6 +78,8 @@ export class PrismaProjectRepository implements ProjectRepository {
       canonicalWebsite: record.canonicalWebsite,
       createdAt: record.createdAt,
       lastAuditId: record.lastAuditId,
+      baselineAuditId: record.baselineAuditId,
+      baselineSetAt: record.baselineSetAt,
     });
   }
 }

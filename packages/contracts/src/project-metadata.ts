@@ -4,4 +4,6 @@ export interface ProjectMetadata {
   canonicalWebsite: string;
   createdAt: string;
   lastAuditId: string | null;
+  baselineAuditId: string | null;
+  baselineSetAt: string | null;
 }

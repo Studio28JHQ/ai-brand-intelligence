@@ -8,4 +8,5 @@ export interface ProjectRepository {
   findById(id: string): Promise<Project | null>;
   findAll(): Promise<Project[]>;
   updateLastAudit(id: string, auditId: string): Promise<Project>;
+  setBaseline(id: string, auditId: string): Promise<Project>;
 }

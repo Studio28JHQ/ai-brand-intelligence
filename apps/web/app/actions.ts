@@ -40,6 +40,22 @@ export async function listProjects(): Promise<ProjectMetadata[]> {
   }
 }
 
+export async function setProjectBaseline(projectId: string, auditId: string): Promise<boolean> {
+  const config = loadConfig();
+
+  try {
+    const response = await fetch(`${config.API_URL}/projects/${projectId}/baseline`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ auditId }),
+    });
+
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
 export async function getAudit(id: string): Promise<AuditMetadata | null> {
   const config = loadConfig();
 

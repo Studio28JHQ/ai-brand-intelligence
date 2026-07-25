@@ -8,5 +8,7 @@ export function toProjectMetadata(project: Project): ProjectMetadata {
     canonicalWebsite: project.canonicalWebsite,
     createdAt: project.createdAt.toISOString(),
     lastAuditId: project.lastAuditId,
+    baselineAuditId: project.baselineAuditId,
+    baselineSetAt: project.baselineSetAt ? project.baselineSetAt.toISOString() : null,
   };
 }

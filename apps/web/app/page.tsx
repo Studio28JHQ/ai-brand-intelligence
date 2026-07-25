@@ -3,7 +3,7 @@
 import { useActionState, useEffect, useState } from 'react';
 import Link from 'next/link';
 import type { AuditMetadata, ProjectMetadata } from '@ai-visibility/contracts';
-import { createAudit, CreateAuditState, listAudits, listProjects } from './actions';
+import { createAudit, CreateAuditState, listAudits, listProjects, setProjectBaseline } from './actions';
 
 const initialState: CreateAuditState = {};
 
@@ -12,10 +12,17 @@ export default function Home() {
   const [audits, setAudits] = useState<AuditMetadata[]>([]);
   const [projects, setProjects] = useState<ProjectMetadata[]>([]);
 
-  useEffect(() => {
+  const refresh = () => {
     listAudits().then(setAudits);
     listProjects().then(setProjects);
-  }, [state.result]);
+  };
+
+  useEffect(refresh, [state.result]);
+
+  const handleSetBaseline = async (projectId: string, auditId: string) => {
+    await setProjectBaseline(projectId, auditId);
+    refresh();
+  };
 
   return (
     <main>
@@ -37,6 +44,9 @@ export default function Home() {
             <p>Canonical Website: {project.canonicalWebsite}</p>
             <p>Created At: {project.createdAt}</p>
             <p>Last Audit: {project.lastAuditId ?? 'N/A'}</p>
+            <p>Current Baseline: {project.baselineAuditId ?? 'N/A'}</p>
+            <p>Baseline Set At: {project.baselineSetAt ?? 'N/A'}</p>
+            <p>Baseline Status: {project.baselineAuditId ? 'Set' : 'Not Set'}</p>
             <ul>
               {audits
                 .filter((audit) => audit.projectId === project.id)
@@ -51,6 +61,17 @@ export default function Home() {
                     <p>
                       <Link href={`/audits/${audit.id}`}>Open</Link>
                     </p>
+                    {audit.status === 'completed' && (
+                      <p>
+                        {project.baselineAuditId === audit.id ? (
+                          'Current Baseline'
+                        ) : (
+                          <button type="button" onClick={() => handleSetBaseline(project.id, audit.id)}>
+                            Set as Baseline
+                          </button>
+                        )}
+                      </p>
+                    )}
                     {audit.executionHistory.length > 0 && (
                       <>
                         <p>Execution Timeline:</p>
