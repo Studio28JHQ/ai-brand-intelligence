@@ -29,6 +29,8 @@ model AuditRequest {
   inventoryResult InventoryResult?
   findings        Finding[]
   entities        Entity[]
+  graphNodes      GraphNode[]
+  graphRelationships GraphRelationship[]
 
   @@map("audit_requests")
 }
@@ -109,4 +111,34 @@ model Entity {
   audit AuditRequest @relation(fields: [auditId], references: [id])
 
   @@map("entities")
+}
+
+model GraphNode {
+  id        String   @id
+  auditId   String   @map("audit_id")
+  entityId  String   @map("entity_id")
+  name      String
+  type      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  audit                 AuditRequest        @relation(fields: [auditId], references: [id])
+  outgoingRelationships GraphRelationship[] @relation("SourceNode")
+  incomingRelationships GraphRelationship[] @relation("TargetNode")
+
+  @@map("graph_nodes")
+}
+
+model GraphRelationship {
+  id           String   @id
+  auditId      String   @map("audit_id")
+  type         String
+  sourceNodeId String   @map("source_node_id")
+  targetNodeId String   @map("target_node_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  audit      AuditRequest @relation(fields: [auditId], references: [id])
+  sourceNode GraphNode    @relation("SourceNode", fields: [sourceNodeId], references: [id])
+  targetNode GraphNode    @relation("TargetNode", fields: [targetNodeId], references: [id])
+
+  @@map("graph_relationships")
 }

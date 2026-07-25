@@ -79,6 +79,15 @@ export default function Home() {
               </ul>
             </>
           )}
+          {state.result.knowledgeGraph && (
+            <>
+              <h2>Knowledge Graph</h2>
+              <p>Total Entities: {state.result.knowledgeGraph.totalEntities}</p>
+              <p>Total Relationships: {state.result.knowledgeGraph.totalRelationships}</p>
+              <p>Entity Types: {state.result.knowledgeGraph.entityTypes.join(', ') || 'None'}</p>
+              <p>Relationship Types: {state.result.knowledgeGraph.relationshipTypes.join(', ') || 'None'}</p>
+            </>
+          )}
         </div>
       )}
 

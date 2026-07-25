@@ -2,6 +2,7 @@ import type { CrawlSummary } from './crawl';
 import type { InventorySummary } from './inventory';
 import type { AnalysisSummary } from './analysis';
 import type { EntitySummary } from './entity';
+import type { KnowledgeGraphSummary } from './knowledge-graph';
 
 export type AuditStatus = 'pending' | 'running' | 'completed';
 
@@ -23,4 +24,5 @@ export interface CreateAuditResponse {
   inventory?: InventorySummary;
   analysis?: AnalysisSummary;
   entity?: EntitySummary;
+  knowledgeGraph?: KnowledgeGraphSummary;
 }
