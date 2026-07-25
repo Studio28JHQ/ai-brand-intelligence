@@ -12,7 +12,7 @@ This file is the only entry point for Claude Code in this repository. Every task
 
 # Document Loading Policy
 
-Load only the minimum documents the Execution Engine's classification requires for the task at hand. Never load the full `docs/` tree unless the task is explicitly foundational. Approved documents are immutable — read them, do not rewrite them, unless a task explicitly instructs otherwise.
+Load only the minimum documents the Execution Engine's classification requires for the task at hand. Never load the full `docs/` tree unless the task is explicitly foundational. Approved documents are immutable — read them, do not rewrite them, unless a task explicitly instructs otherwise. When a task requires architecture documentation, load it through `docs/01_ARCHITECTURE/ARCHITECTURE_INDEX.md` rather than referencing an individual architecture document directly.
 
 # Role Selection
 
