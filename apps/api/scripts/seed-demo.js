@@ -100,9 +100,19 @@ async function main() {
     const verificationAudit = await api('POST', '/audits', { url: DEMO_URL, clientId: client.id });
     console.log(`Created Verification Audit: ${verificationAudit.id}`);
 
+    // The Cycle is a per-Project singleton reused across re-runs (unlike the Client/Project
+    // themselves, it has no "create a new one" path here) — a prior run, or manual advancement
+    // through the UI, may have already moved it past 'running'. Only 'running' -> 'verification'
+    // is a valid forward transition; anything else means this step is already done, and repeating
+    // it would throw (`InvalidCycleStateTransitionError`) and abort the whole script under
+    // `start-alpha.sh`'s `set -e`, taking down the Backend/Frontend it had just started.
     const cycle = await api('GET', `/projects/${projectId}/cycles/current`);
-    await api('POST', `/cycles/${cycle.id}/status`, { status: 'verification' });
-    console.log(`Optimization Cycle ${cycle.id} advanced to 'verification'.`);
+    if (cycle.status === 'running') {
+      await api('POST', `/cycles/${cycle.id}/status`, { status: 'verification' });
+      console.log(`Optimization Cycle ${cycle.id} advanced to 'verification'.`);
+    } else {
+      console.log(`Optimization Cycle ${cycle.id} is already '${cycle.status}' — skipping transition.`);
+    }
 
     console.log('\nDemo workspace ready:');
     console.log(`  Client ID:   ${client.id}`);

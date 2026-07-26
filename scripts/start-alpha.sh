@@ -78,7 +78,12 @@ WEB_PID=$!
 wait_for_http "http://localhost:$WEB_PORT" "Frontend"
 
 log "Seeding demo data..."
-API_URL="http://localhost:$API_PORT" node "$ROOT_DIR/apps/api/scripts/seed-demo.js"
+# Demo data is a convenience, not a requirement for the Backend/Frontend to be considered
+# "running" — under `set -e`, letting this fail would trigger the cleanup trap and kill the two
+# servers that just started successfully, even though they themselves are perfectly healthy.
+if ! API_URL="http://localhost:$API_PORT" node "$ROOT_DIR/apps/api/scripts/seed-demo.js"; then
+  log "Demo seed failed — continuing anyway; the Backend and Frontend are still up. See the error above."
+fi
 
 cat <<'BANNER'
 

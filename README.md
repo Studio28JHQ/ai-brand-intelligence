@@ -87,6 +87,7 @@ Health checks: `GET /health`, `GET /health/live`, `GET /health/ready` (the last 
 - **`pnpm install` fails with `ERR_PNPM_IGNORED_BUILDS`** — a new dependency introduced a postinstall script pnpm doesn't yet have a policy for. Run `pnpm approve-builds`, or add an explicit `true`/`false` entry under `allowBuilds` in `pnpm-workspace.yaml`.
 - **Prisma migration errors** — confirm `DATABASE_URL` points at a reachable Postgres instance and that no other process is holding conflicting schema locks; `pnpm --filter @ai-visibility/database run migrate:deploy` is safe to re-run.
 - **Want a clean slate** — `docker compose -f docker/docker-compose.yml down -v` removes all containers and volumes (this deletes all local data, including the demo workspace); re-run `./scripts/start-alpha.sh` afterward to rebuild everything from scratch.
+- **Frontend can't reach the Backend at all (`ECONNREFUSED` on port 3001)** — the Backend process itself isn't running. If you started it via `./scripts/start-alpha.sh`, check that script's own output: a demo-seed failure used to silently take the whole script (Backend and Frontend included) down with it (fixed — see `docs/04_PROJECT/DECISION_LOG.md#cto-086` — a seed failure now logs a warning and leaves both servers running). Confirm with `lsof -i :3001` / `curl http://localhost:3001/health`.
 
 ## Production
 
