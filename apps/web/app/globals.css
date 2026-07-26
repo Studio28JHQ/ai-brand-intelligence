@@ -763,3 +763,232 @@ textarea {
   color: var(--color-text);
   font-weight: 650;
 }
+
+/* Grid utilities (3-column, extends .grid-2) */
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+@media (max-width: 900px) {
+  .grid-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Marketing header */
+.marketing-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  padding: var(--space-3) var(--space-6);
+}
+
+.marketing-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.marketing-nav a {
+  color: var(--color-text-secondary);
+}
+
+.marketing-nav a:hover {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+@media (max-width: 900px) {
+  .marketing-header {
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .marketing-nav {
+    order: 3;
+    width: 100%;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+  }
+}
+
+/* Marketing page */
+.marketing {
+  display: flex;
+  flex-direction: column;
+}
+
+.marketing-section {
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  width: 100%;
+  padding: var(--space-7) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.marketing-section h2 {
+  font-size: var(--text-2xl);
+}
+
+.marketing-section__intro {
+  color: var(--color-text-secondary);
+  font-size: var(--text-lg);
+  max-width: 60ch;
+}
+
+.marketing-prose {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: 72ch;
+  font-size: var(--text-lg);
+  color: var(--color-text-secondary);
+}
+
+@media (max-width: 900px) {
+  .marketing-section {
+    padding: var(--space-6) var(--space-4);
+  }
+}
+
+/* Hero */
+.hero {
+  padding: var(--space-7) var(--space-5);
+  background: linear-gradient(180deg, var(--color-primary-surface), var(--color-bg));
+  border-bottom: 1px solid var(--color-border);
+}
+
+.hero__content {
+  max-width: 760px;
+  margin: 0 auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.hero h1 {
+  font-size: 44px;
+  line-height: 1.12;
+}
+
+.hero__subheadline {
+  font-size: var(--text-xl);
+  color: var(--color-text-secondary);
+  max-width: 56ch;
+}
+
+@media (max-width: 900px) {
+  .hero {
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .hero h1 {
+    font-size: var(--text-3xl);
+  }
+
+  .hero__subheadline {
+    font-size: var(--text-lg);
+  }
+}
+
+/* Product workflow */
+.workflow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.workflow__step {
+  display: flex;
+  gap: var(--space-4);
+  align-items: flex-start;
+}
+
+.workflow__number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: var(--color-primary-surface);
+  color: var(--color-primary);
+  font-weight: 700;
+  font-size: var(--text-base);
+  flex-shrink: 0;
+}
+
+/* Executive dashboard preview */
+.preview-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-1);
+}
+
+/* Final CTA band */
+.marketing-final-cta {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  text-align: center;
+  padding: var(--space-7) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.marketing-final-cta h2 {
+  color: var(--color-on-primary);
+  max-width: 40ch;
+}
+
+.marketing-final-cta .btn-secondary {
+  background: transparent;
+  color: var(--color-on-primary);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.marketing-final-cta .btn-secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Marketing footer */
+.marketing-footer {
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  width: 100%;
+  padding: var(--space-6) var(--space-5) var(--space-7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  text-align: center;
+}
+
+.marketing-footer__links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-5);
+  font-size: var(--text-sm);
+}
+
+.marketing-footer__links a {
+  color: var(--color-text-secondary);
+}
+
+.marketing-footer__inert {
+  color: var(--color-text-tertiary);
+  cursor: default;
+}

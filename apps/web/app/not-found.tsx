@@ -10,7 +10,7 @@ export default function NotFound() {
           title="We couldn't find that page"
           description="It may have been moved, or the link may be incorrect."
           action={
-            <Link href="/" className="btn btn-primary">
+            <Link href="/workspace" className="btn btn-primary">
               Back to Workspace
             </Link>
           }

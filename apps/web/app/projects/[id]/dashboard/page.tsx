@@ -10,7 +10,7 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
 
   return (
     <main className="page">
-      <Breadcrumbs items={[{ label: 'Workspace', href: '/' }, { label: dashboard?.project.projectName ?? 'Project' }]} />
+      <Breadcrumbs items={[{ label: 'Workspace', href: '/workspace' }, { label: dashboard?.project.projectName ?? 'Project' }]} />
 
       <PageHeader
         title="Executive Dashboard"

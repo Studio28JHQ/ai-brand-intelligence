@@ -19,7 +19,7 @@ export function computeNextStep(dashboard: ExecutiveDashboard, projectId: string
       description:
         "A Baseline is the reference Audit every future comparison and Impact Assessment measures against. Set one from the Workspace to unlock Optimization tracking for this Project.",
       ctaLabel: 'Go to Workspace',
-      href: '/',
+      href: '/workspace',
     };
   }
 
@@ -66,7 +66,7 @@ export function computeNextStep(dashboard: ExecutiveDashboard, projectId: string
       title: 'Run a Verification Audit',
       description: 'Run a new Audit against this Project to measure whether your completed Optimization work actually improved AI Visibility.',
       ctaLabel: 'Go to Workspace',
-      href: '/',
+      href: '/workspace',
     };
   }
 
@@ -83,6 +83,6 @@ export function computeNextStep(dashboard: ExecutiveDashboard, projectId: string
     title: 'Start your next Optimization Cycle',
     description: 'This Optimization Cycle is complete. Run a new Audit to begin the next one.',
     ctaLabel: 'Go to Workspace',
-    href: '/',
+    href: '/workspace',
   };
 }

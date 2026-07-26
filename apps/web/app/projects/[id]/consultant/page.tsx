@@ -8,7 +8,7 @@ export default async function ConsultantPage({ params }: { params: Promise<{ id:
   return (
     <main className="page">
       <Breadcrumbs
-        items={[{ label: 'Workspace', href: '/' }, { label: 'Dashboard', href: `/projects/${id}/dashboard` }, { label: 'AI Consultant' }]}
+        items={[{ label: 'Workspace', href: '/workspace' }, { label: 'Dashboard', href: `/projects/${id}/dashboard` }, { label: 'AI Consultant' }]}
       />
 
       <PageHeader

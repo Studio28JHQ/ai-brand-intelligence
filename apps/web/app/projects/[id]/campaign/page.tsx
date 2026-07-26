@@ -7,7 +7,7 @@ export default async function CampaignPage({ params }: { params: Promise<{ id: s
   return (
     <main className="page">
       <Breadcrumbs
-        items={[{ label: 'Workspace', href: '/' }, { label: 'Dashboard', href: `/projects/${id}/dashboard` }, { label: 'Campaign' }]}
+        items={[{ label: 'Workspace', href: '/workspace' }, { label: 'Dashboard', href: `/projects/${id}/dashboard` }, { label: 'Campaign' }]}
       />
 
       <PageHeader title="Optimization Campaign" description="Track Optimization Actions from plan to verified impact." />

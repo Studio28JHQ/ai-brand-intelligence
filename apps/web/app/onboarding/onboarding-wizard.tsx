@@ -354,7 +354,7 @@ export function OnboardingWizard() {
                 View Full Report
               </Link>
             )}
-            <Link href="/" className="btn btn-ghost">
+            <Link href="/workspace" className="btn btn-ghost">
               Back to Workspace
             </Link>
           </div>

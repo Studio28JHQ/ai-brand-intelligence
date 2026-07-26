@@ -53,7 +53,7 @@ export default async function ExecutiveClientReportPage({
     <main className="page">
       <Breadcrumbs
         items={[
-          { label: 'Workspace', href: '/' },
+          { label: 'Workspace', href: '/workspace' },
           { label: 'Dashboard', href: `/projects/${id}/dashboard` },
           { label: 'Executive Client Report' },
         ]}
@@ -181,7 +181,7 @@ export default async function ExecutiveClientReportPage({
               </p>
             </div>
             <Link
-              href={report.cycleStatus === 'completed' ? '/' : `/projects/${id}/dashboard`}
+              href={report.cycleStatus === 'completed' ? '/workspace' : `/projects/${id}/dashboard`}
               className="btn btn-primary next-step__cta"
             >
               {report.cycleStatus === 'completed' ? 'Go to Workspace' : 'Back to Dashboard'}

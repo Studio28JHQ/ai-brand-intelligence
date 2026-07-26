@@ -13,7 +13,7 @@ export default function GlobalError({ error, reset }: { error: Error; reset: () 
           <button type="button" className="btn btn-primary" onClick={reset}>
             Try Again
           </button>
-          <Link href="/" className="btn btn-secondary">
+          <Link href="/workspace" className="btn btn-secondary">
             Back to Workspace
           </Link>
         </div>

@@ -38,11 +38,27 @@ Every screen was reviewed against a fixed checklist — this is the checklist fu
 
 # Navigation Principles
 
-- **One persistent header** (`AppHeader`, in the root layout): the product name/mark, always linking home. Present on every screen.
-- **Breadcrumbs on every non-home screen**, always ending in the current page (not a link) and starting from "Workspace" (`/`). Dashboard shows `Workspace > {Project}`; Campaign/Consultant/Report show `Workspace > Dashboard > {Page}`; Audit Detail shows `Workspace > Audit`.
+- **One persistent header** (`AppHeader`, in the root layout), present on every screen. As of the public landing page (`F9-S01`, second use of this sprint id — see "Public Marketing Site" below), `AppHeader` renders one of two modes based on route: the public marketing nav (`MarketingHeader`) on `/`, or the existing minimal internal brand bar everywhere else — chosen client-side by `usePathname()`, not by two separate layouts, so every internal route keeps the exact chrome it already had.
+- **Breadcrumbs on every non-home internal screen**, always ending in the current page (not a link) and starting from "Workspace" (`/workspace` as of `F9-S01`'s second use — see below; previously `/`). Dashboard shows `Workspace > {Project}`; Campaign/Consultant/Report show `Workspace > Dashboard > {Page}`; Audit Detail shows `Workspace > Audit`.
 - **Hub-and-spoke, not a chain**: the Dashboard is the hub for a Project — it links out to Consultant, Campaign, and (via the Cycle section) the Executive Client Report. Each spoke page links back to the Dashboard, not sideways to its sibling spokes — this was already the shape before this sprint and was preserved, not redesigned.
 - **One gap closed**: the Audit Detail page previously had no way back to its Project's Dashboard except returning to the workspace home and re-finding the Project — already fixed at `F8-S01` (`CTO-073`) with a "View Project Dashboard" link; this sprint only restyled it.
 - **Reduced-click review**: every workflow from `F8-S01`'s validated end-to-end sequence was walked again during this sprint's browser verification; no additional clicks were required by any restyle, and none were removed — this was explicitly a "do not redesign business workflows" sprint.
+
+# Public Marketing Site
+
+A public landing page at `/` (`apps/web/app/page.tsx`), delivered by a ticket self-identified as `F9-S01` — see the "Sprint id collision" note in `docs/04_PROJECT/DECISION_LOG.md#cto-083` for how this was resolved, since `F9-S01` had already been used by Product Experience Polish (`CTO-077`). This section documents the landing page and navigation only; the collision itself is a Decision Log concern, not repeated here.
+
+**The existing Workspace moved from `/` to `/workspace`**, since a "public entry point to the platform" and the internal, always-open Workspace can't both live at the same route. Every internal link that pointed at `/` (breadcrumbs, `computeNextStep`'s "Go to Workspace" CTAs, `error.tsx`/`not-found.tsx`, the Onboarding wizard's "Back to Workspace") was updated to `/workspace` — nothing about the Workspace itself changed, only its address. `/onboarding` and every `/projects/*`, `/audits/*` route were left exactly where they were.
+
+**One page, in-page anchors, not separate routes**: `Product` (`#product`), `How It Works` (`#how-it-works`), `Platform` (`#platform`), and `About` (`#about`) in `MarketingHeader`'s nav are anchors into the landing page's own sections — the ticket specifies eight sections on one page, not a multi-page marketing site, so no new routes were created for them.
+
+**Every "Platform Capabilities" claim maps to an already-shipped capability**, per the ticket's "Do not invent features": AI Visibility Audits (`F3`/`F6`), AI Consultant (`F7-S03`/`F10-S01`), Optimization Campaigns (`F6-S04`), Executive Reports (`F7-S06`), Continuous Verification (`F4-S03`), Business Impact Analysis (`F6-S05`) — each description is a factual restatement of what that feature already does, not aspirational copy.
+
+**The "Executive Dashboard Preview" section is explicitly labeled illustrative**, using real components (`Card`, `Badge`) with generic status values (`ready`, `verification`, `active` — the platform's own real vocabulary) rather than any specific number presented as a metric, per "Do not fabricate business metrics."
+
+**Footer links only go where something real exists**: "Product" anchors to `#product`; "Documentation" links to the API's own Swagger UI (`${API_URL}/docs`, `CTO-076`) — a genuine, already-reachable page, reusing an existing capability rather than inventing a public docs site. "Privacy," "Terms," and "Contact" render as plain, non-interactive text (not a link, not a 404) — no such pages exist yet and fabricating a destination for them would be worse than honestly showing they aren't available yet.
+
+**Fast-loading by construction**: the landing page is a Server Component with zero client-side data fetching (unlike the former `/` Workspace page, which was `'use client'`) — Next.js prerenders it fully statically (`○` in the build output). Verified live: exactly one `<h1>`, hierarchical `<h2>`s per section, all four semantic landmarks (`header`/`nav`/`main`/`footer`) present, and page-level `<meta name="description">`/OpenGraph tags distinct from the internal app's layout-level metadata.
 
 # Accessibility Baseline
 
@@ -58,3 +74,5 @@ Every screen was reviewed against a fixed checklist — this is the checklist fu
 - **A third-party UI/component library** (e.g., a headless-UI kit). Rejected — the app's screen count and component variety did not justify the dependency weight, and a hand-authored token system stays trivially auditable.
 - **A design-token build pipeline** (Tailwind, CSS-in-JS, a theming package). Rejected as unrequested scope beyond "focus exclusively on product quality and usability" — plain CSS custom properties fully satisfy "unified design system" without new tooling.
 - **Redesigning any business workflow** (e.g., collapsing the home page's inline Audit/Project/Client management into separate pages). Explicitly out of scope per the ticket; every existing workflow's step count and information was preserved exactly, only its presentation changed.
+- **Real authentication** (`/login`, second use of `F9-S01`). The ticket explicitly asked for a placeholder screen only ("Authentication is coming in the next sprint") — `/login` is a static page with no form, no session, no credential handling of any kind.
+- **Separate marketing routes for `/product`, `/platform`, `/about`**. The ticket specifies one landing page with eight ordered sections; `MarketingHeader`'s nav items are same-page anchors, not a multi-page site.

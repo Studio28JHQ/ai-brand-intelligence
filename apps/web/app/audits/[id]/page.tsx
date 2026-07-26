@@ -9,7 +9,7 @@ export default async function AuditDetailPage({ params }: { params: Promise<{ id
 
   return (
     <main className="page">
-      <Breadcrumbs items={[{ label: 'Workspace', href: '/' }, { label: 'Audit' }]} />
+      <Breadcrumbs items={[{ label: 'Workspace', href: '/workspace' }, { label: 'Audit' }]} />
 
       <PageHeader
         title="Audit Detail"
