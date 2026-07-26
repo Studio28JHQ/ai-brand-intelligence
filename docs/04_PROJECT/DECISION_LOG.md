@@ -530,3 +530,23 @@ These four levels are scored and combined (impact weighted highest; low effort a
 - **No queue was added.** Emails are sent synchronously within the issuing HTTP request, same as before. This codebase has no job scheduler/queue anywhere (`CTO-082`'s "no automation" precedent) and a `RESEND_API_KEY`-only, no-queue setup is standard for an MVP's transactional email volume; adding one is a legitimate future upgrade, not required by this ticket's ACCEPTANCE CRITERIA.
 
 **Verification and its limit**: `pnpm dev` was run with `EMAIL_PROVIDER=resend` and a deliberately invalid placeholder key (never a fabricated "real" credential) to prove the entire wiring end-to-end without pretending to have an account this environment doesn't have — see `CTO-089` for the exact commands and log output. This confirms the abstraction, selection, fail-fast, and non-silent-failure logging are all real and correct. It does **not** confirm actual inbox delivery, which requires a real `RESEND_API_KEY` only a developer with a Resend account can provide.
+
+
+# CTO-089
+
+**Title**: Verified `.env`-driven email provider configuration end-to-end; documented the exact credential still required
+**Sprint**: `HOTFIX` (immediate follow-up to `F9-S02-HF02`/`CTO-088`)
+**Decision**: No new documentation file — `.env.example` and `docs/04_PROJECT/AUTHENTICATION.md`'s "Email Delivery" section (`CTO-088`) already cover this; this entry records the verification this ticket specifically asked for.
+
+**What this ticket asked**: confirm the email provider is genuinely environment-driven — `.env` loaded automatically, `RESEND_API_KEY`/`EMAIL_FROM` consumed with zero code changes — and, if no real key exists, report exactly what's missing instead of continuing with a mock.
+
+**Mechanism confirmed, not changed**: `scripts/start-alpha.sh` (run via `pnpm dev`, `CTO-087`) already does `source .env` (`set -a`) before starting anything, and `packages/config`'s `loadConfig()` already reads only `process.env` — this pipeline needed no code change, only a real test. `.env.example` was updated to document `EMAIL_PROVIDER`/`RESEND_API_KEY` (`CTO-088` added the config fields themselves but left this doc gap).
+
+**Live verification**: a local, git-ignored `.env` (`EMAIL_PROVIDER=resend`, a deliberately non-functional placeholder `RESEND_API_KEY`, `EMAIL_FROM`) was created, `pnpm dev` was run from a clean state, and:
+- The API's own log showed `"Email delivery: using resend","from":"no-reply@ai-visibility-auditor.local"` — proving `.env` values reached `loadConfig()` and selected the real provider, with no code touched.
+- `POST /auth/register` returned `201` with `emailDelivered: false` — registration itself unaffected by a delivery failure (`CTO-085`'s resilience holds).
+- The API's log recorded the real cause verbatim: `"Resend API rejected the email (HTTP 401): {\"statusCode\":401,\"name\":\"validation_error\",\"message\":\"API key is invalid\"}"` — a genuine network call to Resend's real API, rejected for the expected reason, logged loudly rather than swallowed.
+
+The test `.env` and its placeholder key, and the resulting test user, were deleted immediately after — no fabricated credential was ever presented as real, and `EMAIL_PROVIDER` reverts to its zero-config `console` default for the next `pnpm dev`.
+
+**Outcome — configuration is incomplete**: everything requested by this ticket that does not require an external account is done and verified. What remains is not something to build: a real `RESEND_API_KEY` cannot be produced without a Resend account, which only the developer/business owner can create. **Missing variable: `RESEND_API_KEY`** (sign up at resend.com, verify a sending domain matching `EMAIL_FROM=no-reply@ai-visibility-auditor.local` — or another `EMAIL_FROM` on a domain you control — then generate a key at resend.com/api-keys, and set `EMAIL_PROVIDER=resend` alongside it in `.env`).

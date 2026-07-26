@@ -40,7 +40,7 @@ Database:       localhost:5432
 Redis:          localhost:6379
 ```
 
-No SMTP/transactional-email provider is configured in this environment — OTP verification codes (registration, password reset) are written to the Backend's own log instead of a real inbox; see `docs/04_PROJECT/AUTHENTICATION.md`.
+Email delivery is env-driven (`EMAIL_PROVIDER=console`, the default, or `resend` + `RESEND_API_KEY`; both loaded automatically from `.env` — no code change needed to switch). No real provider account exists in this environment, so `EMAIL_PROVIDER` defaults to `console`: OTP verification codes (registration, password reset) are written to the Backend's own log instead of a real inbox. See `docs/04_PROJECT/AUTHENTICATION.md`.
 
 **No demo users exist.** `pnpm dev` seeds a demo **workspace** instead (Client/Project/Optimization Cycle with real Findings, Campaign, Verification Audit, and Impact Assessment) — see `docs/04_PROJECT/PILOT_CHECKLIST.md`.
 
