@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react';
 import type { CampaignMetadata } from '@ai-visibility/contracts';
 import { createCampaign, getLatestCampaign, setActionStatus, setCampaignStatus } from '../../../actions';
-import { Badge, Banner, Card, ConfirmButton, EmptyState, SkeletonBlock } from '../../../components/ui';
+import { Badge, Banner, Card, ConfirmButton, EmptyState, SkeletonBlock, StageProgress } from '../../../components/ui';
+
+const CAMPAIGN_STAGES = ['draft', 'active', 'completed', 'archived'];
 
 const NEXT_CAMPAIGN_STATUS: Record<string, 'active' | 'completed' | 'archived' | null> = {
   draft: 'active',
@@ -80,7 +82,10 @@ export function CampaignManager({ projectId }: { projectId: string }) {
       )}
       {!loading && !campaign && (
         <Card>
-          <EmptyState title="No Campaign yet for this Project" />
+          <EmptyState
+            title="No Campaign yet for this Project"
+            description="Create one above from your current Optimization Plan to start tracking work."
+          />
         </Card>
       )}
 
@@ -93,6 +98,7 @@ export function CampaignManager({ projectId }: { projectId: string }) {
             </div>
             <Badge>{campaign.status}</Badge>
           </div>
+          <StageProgress stages={CAMPAIGN_STAGES} current={campaign.status} />
           {NEXT_CAMPAIGN_STATUS[campaign.status] && (
             <div>
               {NEXT_CAMPAIGN_STATUS[campaign.status] === 'archived' ? (
@@ -100,12 +106,13 @@ export function CampaignManager({ projectId }: { projectId: string }) {
                   label="Advance to archived"
                   confirmLabel="Advance this Campaign to 'archived'?"
                   confirmDescription="Archived Campaigns cannot be reopened."
+                  variant="primary"
                   onConfirm={() => handleCampaignStatus('archived')}
                 />
               ) : (
                 <button
                   type="button"
-                  className="btn btn-secondary"
+                  className="btn btn-primary"
                   onClick={() =>
                     handleCampaignStatus(NEXT_CAMPAIGN_STATUS[campaign.status] as 'active' | 'completed')
                   }

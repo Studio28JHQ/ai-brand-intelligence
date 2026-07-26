@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { ReportConclusion } from '@ai-visibility/contracts';
 import { getExecutiveClientReport } from '../../../../../actions';
 import { Badge, Breadcrumbs, Card, CONFIDENCE_VARIANT, EmptyState, PageHeader } from '../../../../../components/ui';
@@ -61,11 +62,23 @@ export default async function ExecutiveClientReportPage({
       <PageHeader
         title="Executive Client Report"
         description={report ? `${report.clientName} — ${report.projectName}` : undefined}
+        actions={
+          <Link href={`/projects/${id}/dashboard`} className="btn btn-secondary">
+            Back to Dashboard
+          </Link>
+        }
       />
 
       {!report && (
         <Card>
-          <EmptyState title="Report not available for this Cycle" />
+          <EmptyState
+            title="Report not available for this Cycle"
+            action={
+              <Link href={`/projects/${id}/dashboard`} className="btn btn-primary btn-sm">
+                Back to Dashboard
+              </Link>
+            }
+          />
         </Card>
       )}
 
@@ -157,6 +170,23 @@ export default async function ExecutiveClientReportPage({
 
           <ConclusionList title="Risks" conclusions={report.risks} />
           <ConclusionList title="Recommended Next Cycle Goals" conclusions={report.recommendedNextCycleGoals} />
+
+          <div className="next-step">
+            <div className="next-step__body">
+              <p className="next-step__eyebrow">What's Next</p>
+              <p className="next-step__description">
+                {report.cycleStatus === 'completed'
+                  ? 'This Cycle is complete. Run a new Audit from the Workspace to start your next Optimization Cycle.'
+                  : "Ready to move forward? Advance this Cycle's status from the Dashboard once you're satisfied with these results."}
+              </p>
+            </div>
+            <Link
+              href={report.cycleStatus === 'completed' ? '/' : `/projects/${id}/dashboard`}
+              className="btn btn-primary next-step__cta"
+            >
+              {report.cycleStatus === 'completed' ? 'Go to Workspace' : 'Back to Dashboard'}
+            </Link>
+          </div>
         </div>
       )}
     </main>

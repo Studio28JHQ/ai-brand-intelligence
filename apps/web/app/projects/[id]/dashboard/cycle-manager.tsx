@@ -4,7 +4,9 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import type { CycleStatus, OptimizationCycleMetadata } from '@ai-visibility/contracts';
 import { getCurrentCycle, transitionCycleStatus } from '../../../actions';
-import { Badge, Banner, ConfirmButton, EmptyState, SkeletonBlock } from '../../../components/ui';
+import { Badge, Banner, ConfirmButton, EmptyState, SkeletonBlock, StageProgress } from '../../../components/ui';
+
+const CYCLE_STAGES: CycleStatus[] = ['planned', 'running', 'verification', 'completed'];
 
 const NEXT_CYCLE_STATUS: Record<CycleStatus, CycleStatus | null> = {
   planned: 'running',
@@ -49,6 +51,7 @@ export function CycleManager({ projectId }: { projectId: string }) {
   return (
     <div className="stack">
       {statusMessage && <Banner variant="success">{statusMessage}</Banner>}
+      <StageProgress stages={CYCLE_STAGES} current={cycle.status} />
       <dl className="dl">
         <dt>Goal</dt>
         <dd>{cycle.goal}</dd>
@@ -68,10 +71,11 @@ export function CycleManager({ projectId }: { projectId: string }) {
               label={`Advance to ${nextStatus}`}
               confirmLabel={`Advance this Cycle to '${nextStatus}'?`}
               confirmDescription="A completed Cycle cannot be reopened."
+              variant="primary"
               onConfirm={() => handleTransition(nextStatus)}
             />
           ) : (
-            <button type="button" className="btn btn-secondary" onClick={() => handleTransition(nextStatus)}>
+            <button type="button" className="btn btn-primary" onClick={() => handleTransition(nextStatus)}>
               Advance to {nextStatus}
             </button>
           ))}

@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { getDashboard } from '../../../actions';
 import { CycleManager } from './cycle-manager';
-import { Badge, Breadcrumbs, Card, EmptyState, PageHeader } from '../../../components/ui';
+import { Badge, Breadcrumbs, Card, EmptyState, NextStepBanner, PageHeader } from '../../../components/ui';
+import { computeNextStep } from '../../../lib/next-step';
 
 export default async function ExecutiveDashboardPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -29,6 +30,8 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
 
       {dashboard && (
         <div className="stack">
+          <NextStepBanner step={computeNextStep(dashboard, id)} />
+
           <Card title="Project Overview">
             <dl className="dl">
               <dt>Project</dt>
@@ -46,7 +49,10 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
             </dl>
           </Card>
 
-          <Card title="Current Optimization Cycle">
+          <Card
+            title="Current Optimization Cycle"
+            description="Groups every Audit, Optimization Plan, and Campaign for one measurable business period, from Planned through Completed."
+          >
             <CycleManager projectId={id} />
           </Card>
 
@@ -89,7 +95,12 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
           </div>
 
           <Card title="Optimization Plan — Priority Actions">
-            {dashboard.priorityActions.length === 0 && <EmptyState title="No priority actions" />}
+            {dashboard.priorityActions.length === 0 && (
+              <EmptyState
+                title="No priority actions"
+                description="Nothing is currently flagged for this Project — run a new Audit if you'd like to check again."
+              />
+            )}
             <div className="stack">
               {dashboard.priorityActions.map((action, index) => (
                 <Card key={`${action.title}-${index}`} muted>
@@ -186,7 +197,17 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
                 </Link>
               }
             >
-              {!dashboard.campaign && <EmptyState title="No Campaign yet" />}
+              {!dashboard.campaign && (
+                <EmptyState
+                  title="No Campaign yet"
+                  description="Create one from your current Optimization Plan to start tracking work."
+                  action={
+                    <Link href={`/projects/${id}/campaign`} className="btn btn-primary btn-sm">
+                      Create Campaign
+                    </Link>
+                  }
+                />
+              )}
               {dashboard.campaign && (
                 <dl className="dl">
                   <dt>Status</dt>
@@ -210,7 +231,12 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
             </Card>
 
             <Card title="Campaign Impact">
-              {!dashboard.campaignImpact && <EmptyState title="No Impact Assessment available yet" />}
+              {!dashboard.campaignImpact && (
+                <EmptyState
+                  title="No Impact Assessment available yet"
+                  description="This appears once a Verification Audit is run after your Campaign is completed."
+                />
+              )}
               {dashboard.campaignImpact && (
                 <div className="stack-sm">
                   <dl className="dl">

@@ -16,7 +16,7 @@ export default async function AuditDetailPage({ params }: { params: Promise<{ id
         description={audit?.url}
         actions={
           audit && (
-            <Link href={`/projects/${audit.projectId}/dashboard`} className="btn btn-secondary">
+            <Link href={`/projects/${audit.projectId}/dashboard`} className="btn btn-primary">
               View Project Dashboard
             </Link>
           )
@@ -79,7 +79,9 @@ export default async function AuditDetailPage({ params }: { params: Promise<{ id
           {audit.status === 'completed' && (
             <>
               <Card title="Findings">
-                {(!analysis || analysis.findings.length === 0) && <EmptyState title="No Findings recorded" />}
+                {(!analysis || analysis.findings.length === 0) && (
+                  <EmptyState title="No Findings recorded" description="Nothing to fix — this Audit didn't identify any issues." />
+                )}
                 {analysis && analysis.findings.length > 0 && (
                   <div className="table-wrapper">
                     <table className="table">
