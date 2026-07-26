@@ -29,6 +29,12 @@ const envSchema = z.object({
   JWT_REMEMBER_ME_EXPIRATION_DAYS: z.coerce.number().int().positive().default(30),
   OTP_EXPIRATION_MINUTES: z.coerce.number().int().positive().default(10),
   EMAIL_FROM: z.string().default('no-reply@ai-visibility-auditor.local'),
+  // Email delivery (F9-S02-HF02). 'console' (default) logs the message instead of delivering it —
+  // appropriate for local development with no provider account, never for production. Adding a new
+  // provider means adding one value here plus one new `EmailSender` implementation
+  // (`infrastructure/notifications/`); no existing use case changes.
+  EMAIL_PROVIDER: z.enum(['console', 'resend']).default('console'),
+  RESEND_API_KEY: z.string().optional(),
 });
 
 export type PlatformConfig = z.infer<typeof envSchema>;
@@ -55,10 +61,43 @@ export function assertProductionSecrets(config: PlatformConfig): void {
   }
 
   const missing = REQUIRED_IN_PRODUCTION.filter((key) => !process.env[key] || process.env[key]!.trim().length === 0);
-  if (missing.length > 0) {
+  const problems: string[] = [...missing];
+  if (config.EMAIL_PROVIDER === 'console') {
+    problems.push(
+      'EMAIL_PROVIDER must not be "console" in production — it only logs emails and never delivers them; set it to a real provider (e.g. "resend")',
+    );
+  }
+  if (problems.length > 0) {
     throw new Error(
       `Refusing to start with NODE_ENV=production: the following secrets must be set explicitly ` +
-        `and cannot rely on their development defaults: ${missing.join(', ')}.`,
+        `and cannot rely on their development defaults: ${problems.join('; ')}.`,
+    );
+  }
+}
+
+const EMAIL_PROVIDER_REQUIREMENTS: Record<Exclude<PlatformConfig['EMAIL_PROVIDER'], 'console'>, { envVar: string; howToObtain: string }> = {
+  resend: {
+    envVar: 'RESEND_API_KEY',
+    howToObtain:
+      'Sign up at https://resend.com, verify a sending domain (Domains → Add Domain), then create an API key at https://resend.com/api-keys.',
+  },
+};
+
+/**
+ * Independent of `assertProductionSecrets`: this must fail fast in *every* environment, not just
+ * production, the moment a developer opts into a real provider (`EMAIL_PROVIDER=resend`) without
+ * also supplying its credentials — silently falling back to the console logger at that point would
+ * hide a real misconfiguration behind what looks like working output (`F9-S02-HF02`).
+ */
+export function assertEmailProviderConfigured(config: PlatformConfig): void {
+  if (config.EMAIL_PROVIDER === 'console') {
+    return;
+  }
+  const requirement = EMAIL_PROVIDER_REQUIREMENTS[config.EMAIL_PROVIDER];
+  if (!config.RESEND_API_KEY || config.RESEND_API_KEY.trim().length === 0) {
+    throw new Error(
+      `Refusing to start with EMAIL_PROVIDER=${config.EMAIL_PROVIDER}: missing required environment variable ` +
+        `${requirement.envVar}. ${requirement.howToObtain}`,
     );
   }
 }

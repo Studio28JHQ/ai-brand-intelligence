@@ -13,10 +13,10 @@ import { EmailMessage, EmailSender } from '../../application/notifications/email
 @Injectable()
 export class ConsoleEmailSender implements EmailSender {
   async send(message: EmailMessage): Promise<void> {
-    logger.info('Email dispatched (console provider — no SMTP configured)', {
+    logger.info('Email dispatched (console provider — EMAIL_PROVIDER=console, not delivered to a real inbox)', {
       to: message.to,
       subject: message.subject,
-      body: message.body,
+      text: message.text,
     });
   }
 }

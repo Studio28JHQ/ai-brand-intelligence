@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
+import { loadConfig } from '@ai-visibility/config';
 import { UserRepositoryModule } from '../../infrastructure/user/user-repository.module';
 import { OtpCodeRepositoryModule } from '../../infrastructure/otp/otp-code-repository.module';
-import { EMAIL_SENDER } from '../../application/notifications/email-sender';
+import { EMAIL_SENDER, EmailSender } from '../../application/notifications/email-sender';
 import { ConsoleEmailSender } from '../../infrastructure/notifications/console-email-sender';
+import { ResendEmailSender } from '../../infrastructure/notifications/resend-email-sender';
 import { PasswordHasher } from '../../application/auth/password-hasher';
 import { OtpGenerator } from '../../application/auth/otp-generator';
 import { SessionTokenService } from '../../application/auth/session-token.service';
@@ -20,7 +22,16 @@ import { AuthController } from './auth.controller';
   imports: [UserRepositoryModule, OtpCodeRepositoryModule],
   controllers: [AuthController],
   providers: [
-    { provide: EMAIL_SENDER, useClass: ConsoleEmailSender },
+    {
+      provide: EMAIL_SENDER,
+      // `assertEmailProviderConfigured` (called at API bootstrap, `main.ts`) has already refused
+      // to start if `EMAIL_PROVIDER=resend` was chosen without `RESEND_API_KEY` — this factory can
+      // assume whatever `EMAIL_PROVIDER` says is safe to construct.
+      useFactory: (): EmailSender => {
+        const config = loadConfig();
+        return config.EMAIL_PROVIDER === 'resend' ? new ResendEmailSender() : new ConsoleEmailSender();
+      },
+    },
     PasswordHasher,
     OtpGenerator,
     SessionTokenService,

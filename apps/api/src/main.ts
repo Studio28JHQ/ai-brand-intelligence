@@ -3,7 +3,7 @@ import { default as helmet } from 'helmet';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { assertProductionSecrets, loadConfig } from '@ai-visibility/config';
+import { assertEmailProviderConfigured, assertProductionSecrets, loadConfig } from '@ai-visibility/config';
 import { logger, setLogLevel } from '@ai-visibility/shared';
 import { AppModule } from './app.module';
 import { correlationIdMiddleware } from './shared/middleware/correlation-id.middleware';
@@ -15,7 +15,17 @@ import { NestLoggerAdapter } from './shared/logging/nest-logger.adapter';
 async function bootstrap() {
   const config = loadConfig();
   assertProductionSecrets(config);
+  assertEmailProviderConfigured(config);
   setLogLevel(config.LOG_LEVEL ?? (config.NODE_ENV === 'production' ? 'info' : 'debug'));
+
+  if (config.EMAIL_PROVIDER === 'console') {
+    logger.warn(
+      'Email delivery: EMAIL_PROVIDER=console — verification/OTP/password-reset emails will be logged, not delivered. ' +
+        'Set EMAIL_PROVIDER=resend and RESEND_API_KEY to send real email (see docs/04_PROJECT/AUTHENTICATION.md).',
+    );
+  } else {
+    logger.info(`Email delivery: using ${config.EMAIL_PROVIDER}`, { from: config.EMAIL_FROM });
+  }
 
   const app = await NestFactory.create(AppModule, {
     logger: new NestLoggerAdapter(),

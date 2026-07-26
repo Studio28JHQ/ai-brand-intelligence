@@ -6,20 +6,28 @@ import { OTP_CODE_REPOSITORY, OtpCodeRepository } from '../../domain/otp/otp-cod
 import { EMAIL_SENDER, EmailSender } from '../notifications/email-sender';
 import { OtpGenerator } from './otp-generator';
 import { User } from '../../domain/user/user.entity';
+import { renderEmailTemplate } from '../notifications/email-template';
 
 const SUBJECT_BY_PURPOSE: Record<OtpPurpose, string> = {
   'email-verification': 'Verify your email — AI Visibility Auditor',
   'password-reset': 'Reset your password — AI Visibility Auditor',
 };
 
-function buildEmailBody(user: User, purpose: OtpPurpose, code: string, expirationMinutes: number): string {
+const HEADING_BY_PURPOSE: Record<OtpPurpose, string> = {
+  'email-verification': 'Verify your email address',
+  'password-reset': 'Reset your password',
+};
+
+function buildEmailContent(user: User, purpose: OtpPurpose, code: string, expirationMinutes: number) {
   const action = purpose === 'email-verification' ? 'verify your email address' : 'reset your password';
-  return (
-    `Hi ${user.firstName},\n\n` +
-    `Use this code to ${action}: ${code}\n\n` +
-    `This code expires in ${expirationMinutes} minutes and can only be used once. ` +
-    `If you didn't request this, you can safely ignore this email.`
-  );
+  return renderEmailTemplate({
+    heading: HEADING_BY_PURPOSE[purpose],
+    bodyLines: [
+      `Hi ${user.firstName},`,
+      `Use this code to ${action}: ${code}`,
+      `This code expires in ${expirationMinutes} minutes and can only be used once. If you didn't request this, you can safely ignore this email.`,
+    ],
+  });
 }
 
 /**
@@ -52,10 +60,12 @@ export class IssueOtpUseCase {
     await this.otpCodeRepository.create(user.id, purpose, codeHash, expiresAt);
 
     try {
+      const { html, text } = buildEmailContent(user, purpose, code, config.OTP_EXPIRATION_MINUTES);
       await this.emailSender.send({
         to: user.email,
         subject: SUBJECT_BY_PURPOSE[purpose],
-        body: buildEmailBody(user, purpose, code, config.OTP_EXPIRATION_MINUTES),
+        html,
+        text,
       });
       return { emailDelivered: true };
     } catch (error) {
