@@ -5,6 +5,7 @@ import { CreateAuditUseCase } from '../../application/audit/create-audit.use-cas
 import { AuditQueryService } from '../../application/audit/audit-query.service';
 import { AuditComparisonService } from '../../application/comparison/audit-comparison.service';
 import { InvalidAuditUrlError, AuditNotFoundError, AuditNotCompletedError } from '../../domain/audit/audit.errors';
+import { ClientNotFoundError } from '../../domain/client/client.errors';
 import { CreateAuditDto } from './dto/create-audit.dto';
 import { toAuditMetadata } from './audit-metadata.mapper';
 import { buildAuditSummary } from './audit-summary.view';
@@ -73,11 +74,14 @@ export class AuditController {
     }
 
     try {
-      const snapshot = await this.createAuditUseCase.execute(dto.url, req.correlationId);
+      const snapshot = await this.createAuditUseCase.execute(dto.url, req.correlationId, dto.clientId);
       return buildAuditSummary(snapshot);
     } catch (error) {
       if (error instanceof InvalidAuditUrlError) {
         throw new BadRequestException(error.message);
+      }
+      if (error instanceof ClientNotFoundError) {
+        throw new NotFoundException(error.message);
       }
       throw error;
     }

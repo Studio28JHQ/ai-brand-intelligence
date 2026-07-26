@@ -4,6 +4,7 @@ import { Project } from '../../domain/project/project.entity';
 export function toProjectMetadata(project: Project): ProjectMetadata {
   return {
     id: project.id,
+    clientId: project.clientId,
     name: project.name,
     canonicalWebsite: project.canonicalWebsite,
     createdAt: project.createdAt.toISOString(),

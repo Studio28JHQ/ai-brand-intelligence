@@ -15,6 +15,9 @@ import { AUDIT_REPOSITORY, AuditRepository } from '../../domain/audit/audit.repo
 import { AuditSnapshot } from '../../domain/audit/audit-snapshot';
 import { PROJECT_REPOSITORY, ProjectRepository } from '../../domain/project/project.repository';
 import { deriveCanonicalWebsite, deriveProjectName } from '../../domain/project/canonical-website';
+import { CLIENT_REPOSITORY, ClientRepository } from '../../domain/client/client.repository';
+import { derivePrimaryDomain, deriveClientName } from '../../domain/client/primary-domain';
+import { ClientNotFoundError } from '../../domain/client/client.errors';
 import { WorkflowExecutionHistoryRepository } from '../../infrastructure/audit/workflow-execution-history.repository';
 import { ExecuteAuditUseCase } from './execute-audit.use-case';
 
@@ -23,17 +26,23 @@ export class CreateAuditUseCase {
   constructor(
     @Inject(AUDIT_REPOSITORY) private readonly auditRepository: AuditRepository,
     @Inject(PROJECT_REPOSITORY) private readonly projectRepository: ProjectRepository,
+    @Inject(CLIENT_REPOSITORY) private readonly clientRepository: ClientRepository,
     private readonly executeAuditUseCase: ExecuteAuditUseCase,
     private readonly workflowExecutionHistoryRepository: WorkflowExecutionHistoryRepository,
   ) {}
 
-  async execute(rawUrl: string, correlationId: string): Promise<AuditSnapshot> {
+  async execute(rawUrl: string, correlationId: string, clientId?: string): Promise<AuditSnapshot> {
     const url = AuditUrl.create(rawUrl);
     const canonicalWebsite = deriveCanonicalWebsite(url.value);
 
-    const project =
-      (await this.projectRepository.findByCanonicalWebsite(canonicalWebsite)) ??
-      (await this.projectRepository.create(deriveProjectName(canonicalWebsite), canonicalWebsite));
+    let project = await this.projectRepository.findByCanonicalWebsite(canonicalWebsite);
+    if (!project) {
+      const client = clientId
+        ? await this.requireClient(clientId)
+        : await this.resolveOrCreateDefaultClient(url.value);
+
+      project = await this.projectRepository.create(client.id, deriveProjectName(canonicalWebsite), canonicalWebsite);
+    }
 
     const audit = await this.auditRepository.create(project.id, url.value);
     await this.projectRepository.updateLastAudit(project.id, audit.id);
@@ -112,5 +121,22 @@ export class CreateAuditUseCase {
       knowledgeGraph: knowledgeGraph.output!,
       aiVisibility: aiVisibility.output!.assessment,
     });
+  }
+
+  private async requireClient(clientId: string) {
+    const client = await this.clientRepository.findById(clientId);
+    if (!client) {
+      throw new ClientNotFoundError(clientId);
+    }
+    return client;
+  }
+
+  private async resolveOrCreateDefaultClient(url: string) {
+    const primaryDomain = derivePrimaryDomain(url);
+    const existing = await this.clientRepository.findByPrimaryDomain(primaryDomain);
+    if (existing) {
+      return existing;
+    }
+    return this.clientRepository.create(deriveClientName(primaryDomain), 'unknown', primaryDomain);
   }
 }

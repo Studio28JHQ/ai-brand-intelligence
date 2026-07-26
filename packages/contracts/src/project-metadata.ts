@@ -1,5 +1,6 @@
 export interface ProjectMetadata {
   id: string;
+  clientId: string;
   name: string;
   canonicalWebsite: string;
   createdAt: string;

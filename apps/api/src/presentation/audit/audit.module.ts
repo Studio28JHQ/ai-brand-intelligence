@@ -25,12 +25,13 @@ import { KnowledgeGraphStep } from '../../infrastructure/audit/knowledge-graph.s
 import { AiVisibilityStep } from '../../infrastructure/audit/ai-visibility.step';
 import { WorkflowAdapter } from '../../infrastructure/audit/workflow.adapter';
 import { AuditRepositoryModule } from '../../infrastructure/audit/audit-repository.module';
+import { ClientRepositoryModule } from '../../infrastructure/client/client-repository.module';
 import { DatabaseModule } from '../../infrastructure/database/database.module';
 import { ProjectModule } from '../project/project.module';
 import { AuditController } from './audit.controller';
 
 @Module({
-  imports: [DatabaseModule, AuditRepositoryModule, ProjectModule],
+  imports: [DatabaseModule, AuditRepositoryModule, ClientRepositoryModule, ProjectModule],
   controllers: [AuditController],
   providers: [
     CreateAuditUseCase,

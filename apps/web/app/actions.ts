@@ -1,7 +1,13 @@
 'use server';
 
 import { loadConfig } from '@ai-visibility/config';
-import type { AuditComparisonResult, AuditMetadata, CreateAuditResponse, ProjectMetadata } from '@ai-visibility/contracts';
+import type {
+  AuditComparisonResult,
+  AuditMetadata,
+  ClientMetadata,
+  CreateAuditResponse,
+  ProjectMetadata,
+} from '@ai-visibility/contracts';
 
 export interface CreateAuditState {
   result?: CreateAuditResponse;
@@ -21,6 +27,47 @@ export async function listAudits(): Promise<AuditMetadata[]> {
     return (await response.json()) as AuditMetadata[];
   } catch {
     return [];
+  }
+}
+
+export async function listClients(): Promise<ClientMetadata[]> {
+  const config = loadConfig();
+
+  try {
+    const response = await fetch(`${config.API_URL}/clients`, { cache: 'no-store' });
+
+    if (!response.ok) {
+      return [];
+    }
+
+    return (await response.json()) as ClientMetadata[];
+  } catch {
+    return [];
+  }
+}
+
+export async function createClient(
+  name: string,
+  industry: string,
+  primaryDomain: string,
+): Promise<{ error?: string }> {
+  const config = loadConfig();
+
+  try {
+    const response = await fetch(`${config.API_URL}/clients`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, industry, primaryDomain }),
+    });
+
+    if (!response.ok) {
+      const body = await response.json();
+      return { error: body?.error?.message ?? 'Failed to create client' };
+    }
+
+    return {};
+  } catch {
+    return { error: 'Failed to reach the backend' };
   }
 }
 
@@ -99,6 +146,7 @@ export async function createAudit(
   formData: FormData,
 ): Promise<CreateAuditState> {
   const url = formData.get('url');
+  const clientId = formData.get('clientId');
 
   if (typeof url !== 'string' || url.trim().length === 0) {
     return { error: 'URL is required' };
@@ -110,7 +158,10 @@ export async function createAudit(
     const response = await fetch(`${config.API_URL}/audits`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url }),
+      body: JSON.stringify({
+        url,
+        ...(typeof clientId === 'string' && clientId.trim().length > 0 ? { clientId } : {}),
+      }),
     });
 
     const body = await response.json();

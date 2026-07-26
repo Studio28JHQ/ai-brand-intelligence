@@ -16,14 +16,30 @@ model PlatformMeta {
   @@map("platform_meta")
 }
 
+model Client {
+  id            String   @id @default(uuid())
+  name          String
+  industry      String
+  primaryDomain String   @unique @map("primary_domain")
+  status        String   @default("active")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  projects Project[]
+
+  @@map("clients")
+}
+
 model Project {
   id               String    @id @default(uuid())
+  clientId         String    @map("client_id")
   name             String
   canonicalWebsite String    @unique @map("canonical_website")
   createdAt        DateTime  @default(now()) @map("created_at")
   lastAuditId      String?   @map("last_audit_id")
   baselineAuditId  String?   @map("baseline_audit_id")
   baselineSetAt    DateTime? @map("baseline_set_at")
+
+  client Client @relation(fields: [clientId], references: [id])
 
   audits          AuditRequest[]
   baselineHistory ProjectBaselineHistory[]

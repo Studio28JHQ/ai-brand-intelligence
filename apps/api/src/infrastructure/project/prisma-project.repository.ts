@@ -7,6 +7,7 @@ import { PRISMA_CLIENT } from '../database/database.module';
 
 interface ProjectRecord {
   id: string;
+  clientId: string;
   name: string;
   canonicalWebsite: string;
   createdAt: Date;
@@ -19,8 +20,8 @@ interface ProjectRecord {
 export class PrismaProjectRepository implements ProjectRepository {
   constructor(@Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient) {}
 
-  async create(name: string, canonicalWebsite: string): Promise<Project> {
-    const record = await this.prisma.project.create({ data: { name, canonicalWebsite } });
+  async create(clientId: string, name: string, canonicalWebsite: string): Promise<Project> {
+    const record = await this.prisma.project.create({ data: { clientId, name, canonicalWebsite } });
     return this.toDomain(record);
   }
 
@@ -74,6 +75,7 @@ export class PrismaProjectRepository implements ProjectRepository {
   private toDomain(record: ProjectRecord): Project {
     return Project.fromPersistence({
       id: record.id,
+      clientId: record.clientId,
       name: record.name,
       canonicalWebsite: record.canonicalWebsite,
       createdAt: record.createdAt,

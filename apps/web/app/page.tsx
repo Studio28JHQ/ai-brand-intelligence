@@ -2,8 +2,17 @@
 
 import { useActionState, useEffect, useState } from 'react';
 import Link from 'next/link';
-import type { AuditComparisonResult, AuditMetadata, ProjectMetadata } from '@ai-visibility/contracts';
-import { compareAudits, createAudit, CreateAuditState, listAudits, listProjects, setProjectBaseline } from './actions';
+import type { AuditComparisonResult, AuditMetadata, ClientMetadata, ProjectMetadata } from '@ai-visibility/contracts';
+import {
+  compareAudits,
+  createAudit,
+  createClient,
+  CreateAuditState,
+  listAudits,
+  listClients,
+  listProjects,
+  setProjectBaseline,
+} from './actions';
 
 const initialState: CreateAuditState = {};
 
@@ -11,12 +20,15 @@ export default function Home() {
   const [state, formAction, pending] = useActionState(createAudit, initialState);
   const [audits, setAudits] = useState<AuditMetadata[]>([]);
   const [projects, setProjects] = useState<ProjectMetadata[]>([]);
+  const [clients, setClients] = useState<ClientMetadata[]>([]);
   const [compareTargets, setCompareTargets] = useState<Record<string, string>>({});
   const [comparisons, setComparisons] = useState<Record<string, AuditComparisonResult | null>>({});
+  const [clientFormError, setClientFormError] = useState<string | undefined>(undefined);
 
   const refresh = () => {
     listAudits().then(setAudits);
     listProjects().then(setProjects);
+    listClients().then(setClients);
   };
 
   useEffect(refresh, [state.result]);
@@ -35,169 +47,218 @@ export default function Home() {
     setComparisons((prev) => ({ ...prev, [projectId]: result }));
   };
 
+  const handleCreateClient = async (formData: FormData) => {
+    const name = formData.get('name');
+    const industry = formData.get('industry');
+    const primaryDomain = formData.get('primaryDomain');
+
+    if (typeof name !== 'string' || typeof industry !== 'string' || typeof primaryDomain !== 'string') {
+      return;
+    }
+
+    const { error } = await createClient(name, industry, primaryDomain);
+    setClientFormError(error);
+    if (!error) {
+      refresh();
+    }
+  };
+
   return (
     <main>
       <h1>Audit Workspace</h1>
 
       <form action={formAction}>
         <input type="url" name="url" placeholder="https://example.com" required />
+        <select name="clientId" defaultValue="">
+          <option value="">Auto-create client from URL</option>
+          {clients.map((client) => (
+            <option key={client.id} value={client.id}>
+              {client.name}
+            </option>
+          ))}
+        </select>
         <button type="submit" disabled={pending}>
           Analyze
         </button>
       </form>
 
       <section>
-        <h2>Projects</h2>
-        {projects.map((project) => (
-          <div key={project.id}>
-            <h3>{project.name}</h3>
-            <p>Project ID: {project.id}</p>
-            <p>Canonical Website: {project.canonicalWebsite}</p>
-            <p>Created At: {project.createdAt}</p>
-            <p>Last Audit: {project.lastAuditId ?? 'N/A'}</p>
-            <p>Current Baseline: {project.baselineAuditId ?? 'N/A'}</p>
-            <p>Baseline Set At: {project.baselineSetAt ?? 'N/A'}</p>
-            <p>Baseline Status: {project.baselineAuditId ? 'Set' : 'Not Set'}</p>
-            <ul>
-              {audits
-                .filter((audit) => audit.projectId === project.id)
-                .map((audit) => (
-                  <li key={audit.id}>
-                    <p>Audit ID: {audit.id}</p>
-                    <p>URL: {audit.url}</p>
-                    <p>Status: {audit.status}</p>
-                    <p>Started At: {audit.startedAt ?? 'N/A'}</p>
-                    <p>Completed At: {audit.completedAt ?? 'N/A'}</p>
-                    <p>Latest AI Visibility Status: {audit.aiVisibilityStatus ?? 'N/A'}</p>
-                    <p>
-                      <Link href={`/audits/${audit.id}`}>Open</Link>
-                    </p>
-                    {audit.status === 'completed' && (
-                      <p>
-                        {project.baselineAuditId === audit.id ? (
-                          'Current Baseline'
-                        ) : (
-                          <button type="button" onClick={() => handleSetBaseline(project.id, audit.id)}>
-                            Set as Baseline
-                          </button>
-                        )}
-                      </p>
-                    )}
-                    {audit.executionHistory.length > 0 && (
-                      <>
-                        <p>Execution Timeline:</p>
-                        <ul>
-                          {audit.executionHistory.map((record, index) => (
-                            <li key={`${record.stepId}-${index}`}>
-                              <p>
-                                {record.stepId}: {record.status}
-                                {record.errorMessage ? ` (${record.errorCode}: ${record.errorMessage})` : ''}
-                              </p>
-                            </li>
+        <h2>New Client</h2>
+        <form action={handleCreateClient}>
+          <input type="text" name="name" placeholder="Client name" required />
+          <input type="text" name="industry" placeholder="Industry" required />
+          <input type="text" name="primaryDomain" placeholder="example.com" required />
+          <button type="submit">Create Client</button>
+        </form>
+        {clientFormError && <p>{clientFormError}</p>}
+      </section>
+
+      <section>
+        <h2>Clients</h2>
+        {clients.map((client) => (
+          <div key={client.id}>
+            <h3>{client.name}</h3>
+            <p>Client ID: {client.id}</p>
+            <p>Industry: {client.industry}</p>
+            <p>Primary Domain: {client.primaryDomain}</p>
+            <p>Status: {client.status}</p>
+            <p>Created At: {client.createdAt}</p>
+
+            <h4>Projects</h4>
+            {projects
+              .filter((project) => project.clientId === client.id)
+              .map((project) => (
+                <div key={project.id}>
+                  <h5>{project.name}</h5>
+                  <p>Project ID: {project.id}</p>
+                  <p>Canonical Website: {project.canonicalWebsite}</p>
+                  <p>Created At: {project.createdAt}</p>
+                  <p>Last Audit: {project.lastAuditId ?? 'N/A'}</p>
+                  <p>Current Baseline: {project.baselineAuditId ?? 'N/A'}</p>
+                  <p>Baseline Set At: {project.baselineSetAt ?? 'N/A'}</p>
+                  <p>Baseline Status: {project.baselineAuditId ? 'Set' : 'Not Set'}</p>
+                  <ul>
+                    {audits
+                      .filter((audit) => audit.projectId === project.id)
+                      .map((audit) => (
+                        <li key={audit.id}>
+                          <p>Audit ID: {audit.id}</p>
+                          <p>URL: {audit.url}</p>
+                          <p>Status: {audit.status}</p>
+                          <p>Started At: {audit.startedAt ?? 'N/A'}</p>
+                          <p>Completed At: {audit.completedAt ?? 'N/A'}</p>
+                          <p>Latest AI Visibility Status: {audit.aiVisibilityStatus ?? 'N/A'}</p>
+                          <p>
+                            <Link href={`/audits/${audit.id}`}>Open</Link>
+                          </p>
+                          {audit.status === 'completed' && (
+                            <p>
+                              {project.baselineAuditId === audit.id ? (
+                                'Current Baseline'
+                              ) : (
+                                <button type="button" onClick={() => handleSetBaseline(project.id, audit.id)}>
+                                  Set as Baseline
+                                </button>
+                              )}
+                            </p>
+                          )}
+                          {audit.executionHistory.length > 0 && (
+                            <>
+                              <p>Execution Timeline:</p>
+                              <ul>
+                                {audit.executionHistory.map((record, index) => (
+                                  <li key={`${record.stepId}-${index}`}>
+                                    <p>
+                                      {record.stepId}: {record.status}
+                                      {record.errorMessage ? ` (${record.errorCode}: ${record.errorMessage})` : ''}
+                                    </p>
+                                  </li>
+                                ))}
+                              </ul>
+                            </>
+                          )}
+                        </li>
+                      ))}
+                  </ul>
+
+                  {project.baselineAuditId && (
+                    <div>
+                      <h6>Compare to Baseline</h6>
+                      <p>Baseline Audit: {project.baselineAuditId}</p>
+                      <select
+                        value={compareTargets[project.id] ?? ''}
+                        onChange={(event) =>
+                          setCompareTargets((prev) => ({ ...prev, [project.id]: event.target.value }))
+                        }
+                      >
+                        <option value="">Select an audit to compare</option>
+                        {audits
+                          .filter(
+                            (audit) =>
+                              audit.projectId === project.id &&
+                              audit.status === 'completed' &&
+                              audit.id !== project.baselineAuditId,
+                          )
+                          .map((audit) => (
+                            <option key={audit.id} value={audit.id}>
+                              {audit.id} ({audit.url})
+                            </option>
                           ))}
-                        </ul>
-                      </>
-                    )}
-                  </li>
-                ))}
-            </ul>
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => handleCompare(project.id, project.baselineAuditId as string)}
+                      >
+                        Compare
+                      </button>
 
-            {project.baselineAuditId && (
-              <div>
-                <h4>Compare to Baseline</h4>
-                <p>Baseline Audit: {project.baselineAuditId}</p>
-                <select
-                  value={compareTargets[project.id] ?? ''}
-                  onChange={(event) =>
-                    setCompareTargets((prev) => ({ ...prev, [project.id]: event.target.value }))
-                  }
-                >
-                  <option value="">Select an audit to compare</option>
-                  {audits
-                    .filter(
-                      (audit) =>
-                        audit.projectId === project.id &&
-                        audit.status === 'completed' &&
-                        audit.id !== project.baselineAuditId,
-                    )
-                    .map((audit) => (
-                      <option key={audit.id} value={audit.id}>
-                        {audit.id} ({audit.url})
-                      </option>
-                    ))}
-                </select>
-                <button
-                  type="button"
-                  onClick={() => handleCompare(project.id, project.baselineAuditId as string)}
-                >
-                  Compare
-                </button>
+                      {comparisons[project.id] && (
+                        <div>
+                          <p>Baseline Audit: {comparisons[project.id]?.baselineAuditId}</p>
+                          <p>Compared Audit: {comparisons[project.id]?.targetAuditId}</p>
 
-                {comparisons[project.id] && (
-                  <div>
-                    <p>Baseline Audit: {comparisons[project.id]?.baselineAuditId}</p>
-                    <p>Compared Audit: {comparisons[project.id]?.targetAuditId}</p>
+                          <h6>Findings</h6>
+                          <p>New: {comparisons[project.id]?.findings.newFindings.length}</p>
+                          <ul>
+                            {comparisons[project.id]?.findings.newFindings.map((entry) => (
+                              <li key={`new-${entry.ruleId}`}>{entry.ruleId} ({entry.category})</li>
+                            ))}
+                          </ul>
+                          <p>Resolved: {comparisons[project.id]?.findings.resolvedFindings.length}</p>
+                          <ul>
+                            {comparisons[project.id]?.findings.resolvedFindings.map((entry) => (
+                              <li key={`resolved-${entry.ruleId}`}>{entry.ruleId} ({entry.category})</li>
+                            ))}
+                          </ul>
+                          <p>Unchanged: {comparisons[project.id]?.findings.unchangedFindings.length}</p>
 
-                    <h5>Findings</h5>
-                    <p>New: {comparisons[project.id]?.findings.newFindings.length}</p>
-                    <ul>
-                      {comparisons[project.id]?.findings.newFindings.map((entry) => (
-                        <li key={`new-${entry.ruleId}`}>{entry.ruleId} ({entry.category})</li>
-                      ))}
-                    </ul>
-                    <p>Resolved: {comparisons[project.id]?.findings.resolvedFindings.length}</p>
-                    <ul>
-                      {comparisons[project.id]?.findings.resolvedFindings.map((entry) => (
-                        <li key={`resolved-${entry.ruleId}`}>{entry.ruleId} ({entry.category})</li>
-                      ))}
-                    </ul>
-                    <p>Unchanged: {comparisons[project.id]?.findings.unchangedFindings.length}</p>
+                          <h6>Entities</h6>
+                          <p>Added: {comparisons[project.id]?.entities.added.length}</p>
+                          <ul>
+                            {comparisons[project.id]?.entities.added.map((entry) => (
+                              <li key={`added-${entry.type}-${entry.name}`}>{entry.name} ({entry.type})</li>
+                            ))}
+                          </ul>
+                          <p>Removed: {comparisons[project.id]?.entities.removed.length}</p>
+                          <ul>
+                            {comparisons[project.id]?.entities.removed.map((entry) => (
+                              <li key={`removed-${entry.type}-${entry.name}`}>{entry.name} ({entry.type})</li>
+                            ))}
+                          </ul>
+                          <p>Unchanged: {comparisons[project.id]?.entities.unchanged.length}</p>
 
-                    <h5>Entities</h5>
-                    <p>Added: {comparisons[project.id]?.entities.added.length}</p>
-                    <ul>
-                      {comparisons[project.id]?.entities.added.map((entry) => (
-                        <li key={`added-${entry.type}-${entry.name}`}>{entry.name} ({entry.type})</li>
-                      ))}
-                    </ul>
-                    <p>Removed: {comparisons[project.id]?.entities.removed.length}</p>
-                    <ul>
-                      {comparisons[project.id]?.entities.removed.map((entry) => (
-                        <li key={`removed-${entry.type}-${entry.name}`}>{entry.name} ({entry.type})</li>
-                      ))}
-                    </ul>
-                    <p>Unchanged: {comparisons[project.id]?.entities.unchanged.length}</p>
-
-                    <h5>AI Visibility</h5>
-                    <p>
-                      Status: {comparisons[project.id]?.aiVisibility.baselineStatus} →{' '}
-                      {comparisons[project.id]?.aiVisibility.targetStatus}
-                      {comparisons[project.id]?.aiVisibility.statusChanged ? ' (changed)' : ' (unchanged)'}
-                    </p>
-                    <p>
-                      Graph Completeness: {comparisons[project.id]?.aiVisibility.baselineGraphCompleteness} →{' '}
-                      {comparisons[project.id]?.aiVisibility.targetGraphCompleteness}
-                    </p>
-                    <p>
-                      Entity Coverage: {comparisons[project.id]?.aiVisibility.baselineEntityCoverage} →{' '}
-                      {comparisons[project.id]?.aiVisibility.targetEntityCoverage}
-                    </p>
-                    <p>
-                      Relationship Coverage: {comparisons[project.id]?.aiVisibility.baselineRelationshipCoverage} →{' '}
-                      {comparisons[project.id]?.aiVisibility.targetRelationshipCoverage}
-                    </p>
-                    <p>
-                      New Missing Signals:{' '}
-                      {comparisons[project.id]?.aiVisibility.newMissingSignals.join(', ') || 'None'}
-                    </p>
-                    <p>
-                      Resolved Missing Signals:{' '}
-                      {comparisons[project.id]?.aiVisibility.resolvedMissingSignals.join(', ') || 'None'}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
+                          <h6>AI Visibility</h6>
+                          <p>
+                            Status: {comparisons[project.id]?.aiVisibility.baselineStatus} →{' '}
+                            {comparisons[project.id]?.aiVisibility.targetStatus}
+                            {comparisons[project.id]?.aiVisibility.statusChanged ? ' (changed)' : ' (unchanged)'}
+                          </p>
+                          <p>
+                            Graph Completeness: {comparisons[project.id]?.aiVisibility.baselineGraphCompleteness} →{' '}
+                            {comparisons[project.id]?.aiVisibility.targetGraphCompleteness}
+                          </p>
+                          <p>
+                            Entity Coverage: {comparisons[project.id]?.aiVisibility.baselineEntityCoverage} →{' '}
+                            {comparisons[project.id]?.aiVisibility.targetEntityCoverage}
+                          </p>
+                          <p>
+                            Relationship Coverage: {comparisons[project.id]?.aiVisibility.baselineRelationshipCoverage}{' '}
+                            → {comparisons[project.id]?.aiVisibility.targetRelationshipCoverage}
+                          </p>
+                          <p>
+                            New Missing Signals:{' '}
+                            {comparisons[project.id]?.aiVisibility.newMissingSignals.join(', ') || 'None'}
+                          </p>
+                          <p>
+                            Resolved Missing Signals:{' '}
+                            {comparisons[project.id]?.aiVisibility.resolvedMissingSignals.join(', ') || 'None'}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
           </div>
         ))}
       </section>

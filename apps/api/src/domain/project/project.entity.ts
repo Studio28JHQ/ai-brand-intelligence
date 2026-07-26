@@ -1,5 +1,6 @@
 export interface ProjectProps {
   id: string;
+  clientId: string;
   name: string;
   canonicalWebsite: string;
   createdAt: Date;
@@ -11,6 +12,7 @@ export interface ProjectProps {
 export class Project {
   private constructor(
     public readonly id: string,
+    public readonly clientId: string,
     public readonly name: string,
     public readonly canonicalWebsite: string,
     public readonly createdAt: Date,
@@ -22,6 +24,7 @@ export class Project {
   static fromPersistence(props: ProjectProps): Project {
     return new Project(
       props.id,
+      props.clientId,
       props.name,
       props.canonicalWebsite,
       props.createdAt,
