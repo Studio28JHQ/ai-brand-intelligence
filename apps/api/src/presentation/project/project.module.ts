@@ -9,7 +9,7 @@ import { AiContextBuilderService } from '../../application/ai-context/ai-context
 import { AiConversationOrchestratorService } from '../../application/ai-conversation/ai-conversation-orchestrator.service';
 import { AI_PROVIDER } from '../../application/ai-conversation/ai-provider';
 import { AuditComparisonService } from '../../application/comparison/audit-comparison.service';
-import { NoOpAiProvider } from '../../infrastructure/ai-conversation/no-op-ai-provider';
+import { StructuredFactAiProvider } from '../../infrastructure/ai-conversation/structured-fact-ai-provider';
 import { BaselineHistoryReadRepository } from '../../infrastructure/project/baseline-history-read.repository';
 import { FindingReadRepository } from '../../infrastructure/comparison/finding-read.repository';
 import { EntityReadRepository } from '../../infrastructure/comparison/entity-read.repository';
@@ -40,7 +40,7 @@ import { ProjectController } from './project.controller';
     ImpactAssessmentService,
     AiContextBuilderService,
     AiConversationOrchestratorService,
-    { provide: AI_PROVIDER, useClass: NoOpAiProvider },
+    { provide: AI_PROVIDER, useClass: StructuredFactAiProvider },
     AuditComparisonService,
     BaselineHistoryReadRepository,
     FindingReadRepository,

@@ -6,6 +6,8 @@ import type {
   AuditMetadata,
   CampaignMetadata,
   ClientMetadata,
+  ConsultantAnswer,
+  ConsultantIntentType,
   CreateAuditResponse,
   ExecutiveDashboard,
   ImpactAssessment,
@@ -280,5 +282,29 @@ export async function createAudit(
     return { result: body as CreateAuditResponse };
   } catch {
     return { error: 'Failed to reach the backend' };
+  }
+}
+
+export async function askConsultant(
+  projectId: string,
+  intentType: ConsultantIntentType,
+  question: string,
+): Promise<ConsultantAnswer | null> {
+  const config = loadConfig();
+
+  try {
+    const response = await fetch(`${config.API_URL}/projects/${projectId}/consultant/ask`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ intentType, question }),
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return (await response.json()) as ConsultantAnswer;
+  } catch {
+    return null;
   }
 }

@@ -13,6 +13,10 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
 
       <h1>Executive Dashboard</h1>
 
+      <p>
+        <Link href={`/projects/${id}/consultant`}>Ask the AI Consultant</Link>
+      </p>
+
       {!dashboard && <p>Dashboard not available.</p>}
 
       {dashboard && (

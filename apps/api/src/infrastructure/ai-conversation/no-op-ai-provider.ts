@@ -8,6 +8,16 @@ export class NoOpAiProvider implements AiProvider {
   readonly providerId = 'none';
 
   async complete(request: AiRequest): Promise<AiResponse> {
-    return { requestId: request.requestId, status: 'unavailable', content: null, providerId: this.providerId };
+    return {
+      requestId: request.requestId,
+      status: 'unavailable',
+      content: null,
+      providerId: this.providerId,
+      facts: [],
+      suggestedActions: [],
+      confidence: null,
+      relatedFindings: [],
+      relatedOptimizationItems: [],
+    };
   }
 }

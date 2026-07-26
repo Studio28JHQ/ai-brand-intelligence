@@ -1,7 +1,8 @@
 export type ConversationIntentType =
-  | 'explain-findings'
-  | 'explain-optimization-plan'
-  | 'explain-campaign-impact'
+  | 'why'
+  | 'what-should-i-do-first'
+  | 'what-changed'
+  | 'what-is-blocking-visibility'
   | 'general-question';
 
 export interface ConversationSession {

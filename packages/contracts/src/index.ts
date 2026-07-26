@@ -21,3 +21,4 @@ export * from './executive-dashboard';
 export * from './optimization-campaign';
 export * from './impact-assessment';
 export * from './reasoning-model';
+export * from './ai-consultant';
