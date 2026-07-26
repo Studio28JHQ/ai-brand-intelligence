@@ -7,12 +7,20 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-if [ -f .env ]; then
-  set -a
-  # shellcheck disable=SC1091
-  source .env
-  set +a
+if [ ! -f .env ]; then
+  if [ -f .env.example ]; then
+    cp .env.example .env
+    echo "[start-alpha] No .env found — created one from .env.example (zero-cost local defaults: EMAIL_PROVIDER=console, no provider account required). Edit .env to add real credentials (e.g. RESEND_API_KEY) when you need them."
+  else
+    echo "[start-alpha] No .env and no .env.example found in $ROOT_DIR — cannot determine configuration safely. See README.md for the required variables." >&2
+    exit 1
+  fi
 fi
+
+set -a
+# shellcheck disable=SC1091
+source .env
+set +a
 
 API_PORT="${PORT:-3001}"
 WEB_PORT="3000"
@@ -65,7 +73,15 @@ log "Running Prisma migrations..."
 pnpm --filter @ai-visibility/database run migrate:deploy
 
 log "Building workspace..."
-pnpm -r build
+# Forced for this step only (not exported to the Backend/Frontend processes started below): `next
+# build` reliably corrupts Turbopack's prerendered error-boundary pages (`/_not-found`,
+# `/_global-error` — "Cannot read properties of null (reading 'useContext')") when NODE_ENV is
+# already "development" in the environment, which `.env`/`.env.example` sets by design for the
+# Backend's own local-dev behavior (HOTFIX, "complete environment bootstrap"). The Backend/Frontend
+# runtime processes below still see NODE_ENV from `.env` — forcing it there too would make
+# `apps/web/app/auth-actions.ts` mark the session cookie `secure`, which browsers silently refuse
+# to set over local (non-HTTPS) http://localhost.
+NODE_ENV=production pnpm -r build
 
 log "Starting Backend on port $API_PORT..."
 PORT="$API_PORT" pnpm --filter @ai-visibility/api run start:prod > "$ROOT_DIR/.alpha-api.log" 2>&1 &

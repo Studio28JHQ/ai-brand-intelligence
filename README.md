@@ -18,11 +18,29 @@ See `docs/00_FOUNDATION/00_CONSTITUTION.md` and `docs/04_PROJECT/CURRENT_STATE.m
 pnpm install
 ```
 
-All configuration is env-var driven (`packages/config`, validated with zod). Most variables have a working local default, but **email does not**: the platform's real default is `EMAIL_PROVIDER=resend` (real delivery is expected, not opt-in), so `pnpm dev` with no `.env` at all will refuse to start unless a real `RESEND_API_KEY` is set. Copy `.env.example` to `.env` before starting — it pins `EMAIL_PROVIDER=console` explicitly as a documented, zero-cost local-development opt-out (email is logged, not delivered); delete that line once you have a real `RESEND_API_KEY` to send real email.
+### Environment variables
+
+All configuration is env-var driven (`packages/config`, validated with zod — this is the *only* place in the codebase that reads `process.env`). Every variable the platform understands, with a working local default for each, is listed in **`.env.example`** at the repository root — that file, not this README, is the authoritative reference; nothing here duplicates it.
+
+Create your own copy before starting:
 
 ```
 cp .env.example .env
 ```
+
+`pnpm dev` (below) also does this automatically if `.env` is missing, so you never have to do it manually — but running it yourself first lets you review or edit values before the platform starts.
+
+**Mandatory vs. optional**: almost everything in `.env.example` ships with a working default (Postgres/Redis/MinIO credentials matching `docker/docker-compose.yml`, JWT secrets, rate limits, etc.) — you don't need to change any of it to run locally. The one exception is **email**: the platform's real default is `EMAIL_PROVIDER=resend` (real delivery is expected, not opt-in), so a `.env` that omits it — or doesn't exist at all — refuses to start without a real `RESEND_API_KEY` and `EMAIL_FROM`. `.env.example` pins `EMAIL_PROVIDER=console` explicitly instead, as a documented, zero-cost local-development opt-out (email is logged, not delivered, no provider account required).
+
+**To send real email**, edit your `.env`:
+1. Sign up at [resend.com](https://resend.com).
+2. Verify a sending domain: Resend dashboard → Domains → Add Domain → add the shown SPF/DKIM DNS records at your domain registrar → wait for Resend to confirm verification (usually minutes, can take longer depending on DNS propagation).
+3. Set `EMAIL_FROM` to an address on that verified domain (e.g. `no-reply@yourdomain.com`).
+4. Generate an API key at [resend.com/api-keys](https://resend.com/api-keys) and set it as `RESEND_API_KEY`.
+5. Set `EMAIL_PROVIDER=resend` (or delete the line — that's the default).
+6. Optionally set `EMAIL_REPLY_TO` if replies should go somewhere other than `EMAIL_FROM`.
+
+See `docs/04_PROJECT/AUTHENTICATION.md`'s "Email Delivery" section for the provider architecture.
 
 ### Starting the platform
 
@@ -30,7 +48,7 @@ cp .env.example .env
 pnpm dev
 ```
 
-This single command is the only supported way to start the platform locally. It starts Docker infrastructure (PostgreSQL, Redis, MinIO), waits for PostgreSQL to be ready, runs Prisma migrations, builds the whole workspace, starts the Backend and Frontend, waits for both to respond to health checks, and seeds a demo workspace. It prints a summary banner once everything is up, then stays attached — press `Ctrl+C` to stop the Backend and Frontend (Docker infrastructure keeps running; tear it down separately with `docker compose -f docker/docker-compose.yml down` if needed). A demo-seed failure logs a warning but does not stop the Backend/Frontend from running; any other startup failure (Docker not running, a port already in use, a failed migration) prints an actionable message and exits non-zero rather than leaving a half-started environment.
+This single command is the only supported way to start the platform locally. If `.env` doesn't exist yet, it's created automatically from `.env.example` first (so configuration is never silently missing — you'll see exactly which file was created and why). It then starts Docker infrastructure (PostgreSQL, Redis, MinIO), waits for PostgreSQL to be ready, runs Prisma migrations, builds the whole workspace, starts the Backend and Frontend, waits for both to respond to health checks, and seeds a demo workspace. It prints a summary banner once everything is up, then stays attached — press `Ctrl+C` to stop the Backend and Frontend (Docker infrastructure keeps running; tear it down separately with `docker compose -f docker/docker-compose.yml down` if needed). A demo-seed failure logs a warning but does not stop the Backend/Frontend from running; any other startup failure (Docker not running, a port already in use, a failed migration) prints an actionable message and exits non-zero rather than leaving a half-started environment.
 
 ### URLs
 
@@ -57,7 +75,7 @@ Email delivery is env-driven (`EMAIL_PROVIDER` — `resend` + `RESEND_API_KEY`/`
 - **Prisma migration errors** — confirm `DATABASE_URL` points at a reachable Postgres instance and that no other process is holding conflicting schema locks; the migration step is safe to re-run.
 - **Want a clean slate** — `docker compose -f docker/docker-compose.yml down -v` removes all containers and volumes (this deletes all local data, including the demo workspace); re-run `pnpm dev` afterward to rebuild everything from scratch.
 - **Frontend can't reach the Backend at all (`ECONNREFUSED` on port 3001)** — the Backend process itself isn't running. Check `pnpm dev`'s own output for the actual failure (see `docs/04_PROJECT/DECISION_LOG.md#cto-086`/`#cto-087`); confirm with `lsof -i :3001` / `curl http://localhost:3001/health`.
-- **Backend refuses to start with `Refusing to start with EMAIL_PROVIDER=resend: missing required environment variable RESEND_API_KEY`** — you don't have a `.env` file (or it doesn't set `EMAIL_PROVIDER`). Run `cp .env.example .env` for a zero-cost local setup (logs email instead of sending it), or set a real `RESEND_API_KEY` to send real email — see `docs/04_PROJECT/DECISION_LOG.md#cto-090`.
+- **Backend refuses to start with `Refusing to start with EMAIL_PROVIDER=resend: missing required environment variable RESEND_API_KEY`** — your `.env` sets `EMAIL_PROVIDER=resend` (or omits it — that's the default) without a real key. `pnpm dev` auto-creates `.env` from `.env.example` (which pins `EMAIL_PROVIDER=console`) the first time it's missing, so this should only happen if you've since edited `.env` yourself; either set a real `RESEND_API_KEY`, or set `EMAIL_PROVIDER=console` for a zero-cost local setup — see `docs/04_PROJECT/DECISION_LOG.md#cto-090`/`#cto-091`.
 
 ## Production
 
