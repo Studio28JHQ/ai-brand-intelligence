@@ -118,7 +118,7 @@ Ideas explicitly routed here by a sprint rather than implemented, grouped by the
 - Gating existing routes/APIs behind requiring a session (every route remains open today)
 - A persisted/revocable session table (currently stateless JWTs)
 - A `/logout` route and signed-in state in `AppHeader`
-- A real transactional email provider (SendGrid/SES/SMTP) — no credentials exist in this environment; `EmailSender` is provider-abstracted and ready for one
+- A working `RESEND_API_KEY` — `ResendEmailProvider` (`F9-S02-HF02`/`F9-S02-HF03`) is fully implemented and verified to genuinely call Resend's API; no real account/API key exists in this environment to confirm actual inbox delivery. Adding SES/Postmark/SendGrid/Mailgun instead is a new `EmailProvider` implementation, not a redesign.
 - OAuth/SAML identity providers (Google, Microsoft, GitHub, SAML) — the session model doesn't assume email/password is the only path, but none are implemented
 
 **Marketing Landing Page** (deferred from `F9-S01`, second use of this sprint id)

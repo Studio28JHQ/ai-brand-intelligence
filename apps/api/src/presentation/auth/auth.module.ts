@@ -2,9 +2,9 @@ import { Module } from '@nestjs/common';
 import { loadConfig } from '@ai-visibility/config';
 import { UserRepositoryModule } from '../../infrastructure/user/user-repository.module';
 import { OtpCodeRepositoryModule } from '../../infrastructure/otp/otp-code-repository.module';
-import { EMAIL_SENDER, EmailSender } from '../../application/notifications/email-sender';
-import { ConsoleEmailSender } from '../../infrastructure/notifications/console-email-sender';
-import { ResendEmailSender } from '../../infrastructure/notifications/resend-email-sender';
+import { EMAIL_PROVIDER_TOKEN, EmailProvider } from '../../application/notifications/email-provider';
+import { ConsoleEmailProvider } from '../../infrastructure/notifications/console-email-provider';
+import { ResendEmailProvider } from '../../infrastructure/notifications/resend-email-provider';
 import { PasswordHasher } from '../../application/auth/password-hasher';
 import { OtpGenerator } from '../../application/auth/otp-generator';
 import { SessionTokenService } from '../../application/auth/session-token.service';
@@ -23,13 +23,15 @@ import { AuthController } from './auth.controller';
   controllers: [AuthController],
   providers: [
     {
-      provide: EMAIL_SENDER,
+      provide: EMAIL_PROVIDER_TOKEN,
       // `assertEmailProviderConfigured` (called at API bootstrap, `main.ts`) has already refused
-      // to start if `EMAIL_PROVIDER=resend` was chosen without `RESEND_API_KEY` — this factory can
-      // assume whatever `EMAIL_PROVIDER` says is safe to construct.
-      useFactory: (): EmailSender => {
+      // to start if `EMAIL_PROVIDER=resend` (the default) was chosen without `RESEND_API_KEY` — this
+      // factory can assume whatever `EMAIL_PROVIDER` says is safe to construct. Registering a new
+      // provider (SES/Postmark/SendGrid/Mailgun) means adding one branch here plus one new class
+      // implementing `EmailProvider`; nothing else in the module changes.
+      useFactory: (): EmailProvider => {
         const config = loadConfig();
-        return config.EMAIL_PROVIDER === 'resend' ? new ResendEmailSender() : new ConsoleEmailSender();
+        return config.EMAIL_PROVIDER === 'resend' ? new ResendEmailProvider() : new ConsoleEmailProvider();
       },
     },
     PasswordHasher,

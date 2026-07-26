@@ -18,7 +18,11 @@ See `docs/00_FOUNDATION/00_CONSTITUTION.md` and `docs/04_PROJECT/CURRENT_STATE.m
 pnpm install
 ```
 
-All configuration is env-var driven (`packages/config`, validated with zod) and every variable has a working default — no `.env` file is required to start locally. Copy `.env.example` to `.env` only if you need to override something (e.g. `JWT_SECRET`/`POSTGRES_PASSWORD` for a production-like run — see `docs/04_PROJECT/PRODUCTION_READINESS.md`).
+All configuration is env-var driven (`packages/config`, validated with zod). Most variables have a working local default, but **email does not**: the platform's real default is `EMAIL_PROVIDER=resend` (real delivery is expected, not opt-in), so `pnpm dev` with no `.env` at all will refuse to start unless a real `RESEND_API_KEY` is set. Copy `.env.example` to `.env` before starting — it pins `EMAIL_PROVIDER=console` explicitly as a documented, zero-cost local-development opt-out (email is logged, not delivered); delete that line once you have a real `RESEND_API_KEY` to send real email.
+
+```
+cp .env.example .env
+```
 
 ### Starting the platform
 
@@ -40,7 +44,7 @@ Database:       localhost:5432
 Redis:          localhost:6379
 ```
 
-Email delivery is env-driven (`EMAIL_PROVIDER=console`, the default, or `resend` + `RESEND_API_KEY`; both loaded automatically from `.env` — no code change needed to switch). No real provider account exists in this environment, so `EMAIL_PROVIDER` defaults to `console`: OTP verification codes (registration, password reset) are written to the Backend's own log instead of a real inbox. See `docs/04_PROJECT/AUTHENTICATION.md`.
+Email delivery is env-driven (`EMAIL_PROVIDER` — `resend` + `RESEND_API_KEY`/`EMAIL_FROM`/`EMAIL_REPLY_TO`, or `console` — all loaded automatically from `.env`, no code change needed to switch). No real provider account exists in this environment; `.env.example` pins `EMAIL_PROVIDER=console`, so OTP verification codes (registration, password reset) are written to the Backend's own log instead of a real inbox. See `docs/04_PROJECT/AUTHENTICATION.md`.
 
 **No demo users exist.** `pnpm dev` seeds a demo **workspace** instead (Client/Project/Optimization Cycle with real Findings, Campaign, Verification Audit, and Impact Assessment) — see `docs/04_PROJECT/PILOT_CHECKLIST.md`.
 
@@ -53,6 +57,7 @@ Email delivery is env-driven (`EMAIL_PROVIDER=console`, the default, or `resend`
 - **Prisma migration errors** — confirm `DATABASE_URL` points at a reachable Postgres instance and that no other process is holding conflicting schema locks; the migration step is safe to re-run.
 - **Want a clean slate** — `docker compose -f docker/docker-compose.yml down -v` removes all containers and volumes (this deletes all local data, including the demo workspace); re-run `pnpm dev` afterward to rebuild everything from scratch.
 - **Frontend can't reach the Backend at all (`ECONNREFUSED` on port 3001)** — the Backend process itself isn't running. Check `pnpm dev`'s own output for the actual failure (see `docs/04_PROJECT/DECISION_LOG.md#cto-086`/`#cto-087`); confirm with `lsof -i :3001` / `curl http://localhost:3001/health`.
+- **Backend refuses to start with `Refusing to start with EMAIL_PROVIDER=resend: missing required environment variable RESEND_API_KEY`** — you don't have a `.env` file (or it doesn't set `EMAIL_PROVIDER`). Run `cp .env.example .env` for a zero-cost local setup (logs email instead of sending it), or set a real `RESEND_API_KEY` to send real email — see `docs/04_PROJECT/DECISION_LOG.md#cto-090`.
 
 ## Production
 

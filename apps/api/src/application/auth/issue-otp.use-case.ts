@@ -3,7 +3,7 @@ import { loadConfig } from '@ai-visibility/config';
 import { logger } from '@ai-visibility/shared';
 import { OtpPurpose } from '../../domain/otp/otp-code.entity';
 import { OTP_CODE_REPOSITORY, OtpCodeRepository } from '../../domain/otp/otp-code.repository';
-import { EMAIL_SENDER, EmailSender } from '../notifications/email-sender';
+import { EMAIL_PROVIDER_TOKEN, EmailProvider } from '../notifications/email-provider';
 import { OtpGenerator } from './otp-generator';
 import { User } from '../../domain/user/user.entity';
 import { renderEmailTemplate } from '../notifications/email-template';
@@ -41,7 +41,7 @@ export class IssueOtpUseCase {
   constructor(
     @Inject(OTP_CODE_REPOSITORY) private readonly otpCodeRepository: OtpCodeRepository,
     private readonly otpGenerator: OtpGenerator,
-    @Inject(EMAIL_SENDER) private readonly emailSender: EmailSender,
+    @Inject(EMAIL_PROVIDER_TOKEN) private readonly emailProvider: EmailProvider,
   ) {}
 
   /**
@@ -61,7 +61,7 @@ export class IssueOtpUseCase {
 
     try {
       const { html, text } = buildEmailContent(user, purpose, code, config.OTP_EXPIRATION_MINUTES);
-      await this.emailSender.send({
+      await this.emailProvider.send({
         to: user.email,
         subject: SUBJECT_BY_PURPOSE[purpose],
         html,

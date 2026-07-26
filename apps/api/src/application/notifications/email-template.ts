@@ -1,5 +1,6 @@
 const BRAND_COLOR = '#4f46e5';
 const BRAND_NAME = 'AI Visibility Auditor';
+const FOOTER_TEXT = `This is an automated message from ${BRAND_NAME}. If you didn't expect this email, you can safely ignore it.`;
 
 export interface EmailContent {
   heading: string;
@@ -42,6 +43,11 @@ export function renderEmailTemplate({ heading, bodyLines }: EmailContent): Rende
                 ${paragraphsHtml}
               </td>
             </tr>
+            <tr>
+              <td style="padding:16px 32px;background:#f9fafb;border-top:1px solid #e5e7eb;">
+                <p style="margin:0;color:#9ca3af;font-size:12px;line-height:1.5;">${escapeHtml(FOOTER_TEXT)}</p>
+              </td>
+            </tr>
           </table>
         </td>
       </tr>
@@ -49,7 +55,7 @@ export function renderEmailTemplate({ heading, bodyLines }: EmailContent): Rende
   </body>
 </html>`;
 
-  const text = [heading, '', ...bodyLines].join('\n');
+  const text = [heading, '', ...bodyLines, '', FOOTER_TEXT].join('\n');
 
   return { html, text };
 }

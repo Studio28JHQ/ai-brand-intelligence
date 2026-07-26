@@ -24,7 +24,10 @@ async function bootstrap() {
         'Set EMAIL_PROVIDER=resend and RESEND_API_KEY to send real email (see docs/04_PROJECT/AUTHENTICATION.md).',
     );
   } else {
-    logger.info(`Email delivery: using ${config.EMAIL_PROVIDER}`, { from: config.EMAIL_FROM });
+    logger.info(`Email delivery: using ${config.EMAIL_PROVIDER}`, {
+      from: config.EMAIL_FROM,
+      replyTo: config.EMAIL_REPLY_TO ?? '(none configured)',
+    });
   }
 
   const app = await NestFactory.create(AppModule, {

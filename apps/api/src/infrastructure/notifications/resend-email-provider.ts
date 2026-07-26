@@ -1,19 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { loadConfig } from '@ai-visibility/config';
 import { logger } from '@ai-visibility/shared';
-import { EmailMessage, EmailSender } from '../../application/notifications/email-sender';
+import { EmailMessage, EmailProvider } from '../../application/notifications/email-provider';
 
 const RESEND_API_URL = 'https://api.resend.com/emails';
 
 /**
  * Real transactional-email delivery via Resend's HTTP API (no SDK dependency — a single `fetch`
- * call). Bound instead of `ConsoleEmailSender` when `EMAIL_PROVIDER=resend`
- * (`presentation/auth/auth.module.ts`); `assertEmailProviderConfigured` (`@ai-visibility/config`)
- * refuses to even boot the API if `RESEND_API_KEY` is missing at that point, so this class can
- * assume the key is present.
+ * call). Bound instead of `ConsoleEmailProvider` when `EMAIL_PROVIDER=resend` (the default,
+ * `presentation/auth/auth.module.ts`); `assertEmailProviderConfigured` (`@ai-visibility/config`)
+ * refuses to even boot the API if `RESEND_API_KEY`/`EMAIL_FROM` are missing at that point, so this
+ * class can assume both are present.
  */
 @Injectable()
-export class ResendEmailSender implements EmailSender {
+export class ResendEmailProvider implements EmailProvider {
   async send(message: EmailMessage): Promise<void> {
     const config = loadConfig();
 
@@ -29,6 +29,7 @@ export class ResendEmailSender implements EmailSender {
         subject: message.subject,
         html: message.html,
         text: message.text,
+        ...(config.EMAIL_REPLY_TO ? { reply_to: config.EMAIL_REPLY_TO } : {}),
       }),
     });
 

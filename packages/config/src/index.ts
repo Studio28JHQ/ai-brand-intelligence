@@ -29,11 +29,13 @@ const envSchema = z.object({
   JWT_REMEMBER_ME_EXPIRATION_DAYS: z.coerce.number().int().positive().default(30),
   OTP_EXPIRATION_MINUTES: z.coerce.number().int().positive().default(10),
   EMAIL_FROM: z.string().default('no-reply@ai-visibility-auditor.local'),
-  // Email delivery (F9-S02-HF02). 'console' (default) logs the message instead of delivering it —
-  // appropriate for local development with no provider account, never for production. Adding a new
-  // provider means adding one value here plus one new `EmailSender` implementation
-  // (`infrastructure/notifications/`); no existing use case changes.
-  EMAIL_PROVIDER: z.enum(['console', 'resend']).default('console'),
+  EMAIL_REPLY_TO: z.string().optional(),
+  // Email delivery (F9-S02-HF02, F9-S02-HF03). Defaults to 'resend' — the platform ships assuming
+  // real delivery is required; 'console' (log instead of deliver) is an explicit, documented opt-out
+  // for local development, never the silent default. Adding a new provider means adding one value
+  // here plus one new `EmailProvider` implementation (`infrastructure/notifications/`); no existing
+  // use case changes.
+  EMAIL_PROVIDER: z.enum(['console', 'resend']).default('resend'),
   RESEND_API_KEY: z.string().optional(),
 });
 
@@ -85,9 +87,11 @@ const EMAIL_PROVIDER_REQUIREMENTS: Record<Exclude<PlatformConfig['EMAIL_PROVIDER
 
 /**
  * Independent of `assertProductionSecrets`: this must fail fast in *every* environment, not just
- * production, the moment a developer opts into a real provider (`EMAIL_PROVIDER=resend`) without
+ * production, the moment a real provider is active (`EMAIL_PROVIDER=resend`, the default) without
  * also supplying its credentials — silently falling back to the console logger at that point would
- * hide a real misconfiguration behind what looks like working output (`F9-S02-HF02`).
+ * hide a real misconfiguration behind what looks like working output (`F9-S02-HF02`). Set
+ * `EMAIL_PROVIDER=console` explicitly to opt out of this check for local development without a
+ * provider account.
  */
 export function assertEmailProviderConfigured(config: PlatformConfig): void {
   if (config.EMAIL_PROVIDER === 'console') {
@@ -98,6 +102,12 @@ export function assertEmailProviderConfigured(config: PlatformConfig): void {
     throw new Error(
       `Refusing to start with EMAIL_PROVIDER=${config.EMAIL_PROVIDER}: missing required environment variable ` +
         `${requirement.envVar}. ${requirement.howToObtain}`,
+    );
+  }
+  if (!config.EMAIL_FROM || config.EMAIL_FROM.trim().length === 0) {
+    throw new Error(
+      `Refusing to start with EMAIL_PROVIDER=${config.EMAIL_PROVIDER}: missing required environment variable EMAIL_FROM ` +
+        `(the verified sender address to send from).`,
     );
   }
 }
