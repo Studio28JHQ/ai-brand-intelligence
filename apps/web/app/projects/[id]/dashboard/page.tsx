@@ -38,7 +38,7 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
           </section>
 
           <section>
-            <h2>Priority Actions</h2>
+            <h2>Optimization Plan — Priority Actions</h2>
             {dashboard.priorityActions.length === 0 && <p>No priority actions.</p>}
             <ul>
               {dashboard.priorityActions.map((action, index) => (
@@ -49,7 +49,7 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
                   <p>Priority: {action.priority}</p>
                   <p>Expected Impact: {action.expectedImpact}</p>
                   <p>Estimated Effort: {action.estimatedEffort}</p>
-                  <p>Related Findings: {action.relatedFindingIds.join(', ')}</p>
+                  <p>Supporting Findings: {action.supportingFindingIds.join(', ')}</p>
                 </li>
               ))}
             </ul>

@@ -398,19 +398,19 @@ export default function Home() {
               <p>Assessed At: {state.result.aiVisibility.assessedAt}</p>
             </>
           )}
-          {state.result.recommendation && (
+          {state.result.optimizationPlan && (
             <>
-              <h2>Recommendations</h2>
+              <h2>Optimization Plan</h2>
               <ul>
-                {state.result.recommendation.recommendations.map((item) => (
-                  <li key={item.title + item.relatedFindingIds.join(',')}>
+                {state.result.optimizationPlan.items.map((item) => (
+                  <li key={item.title + item.supportingFindingIds.join(',')}>
                     <p>Title: {item.title}</p>
                     <p>Description: {item.description}</p>
                     <p>Business Rationale: {item.rationale}</p>
                     <p>Priority: {item.priority}</p>
                     <p>Expected Impact: {item.expectedImpact}</p>
                     <p>Estimated Effort: {item.estimatedEffort}</p>
-                    <p>Related Findings: {item.relatedFindingIds.join(', ') || 'None'}</p>
+                    <p>Supporting Findings: {item.supportingFindingIds.join(', ') || 'None'}</p>
                     <p>Status: {item.status}</p>
                   </li>
                 ))}

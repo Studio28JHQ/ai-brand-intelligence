@@ -10,7 +10,7 @@ export * from './analysis';
 export * from './entity';
 export * from './knowledge-graph';
 export * from './ai-visibility';
-export * from './recommendation';
+export * from './optimization-plan';
 export * from './audit-metadata';
 export * from './workflow-progress';
 export * from './workflow-execution-history';

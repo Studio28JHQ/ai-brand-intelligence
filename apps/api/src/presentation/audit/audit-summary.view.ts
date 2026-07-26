@@ -1,7 +1,7 @@
 import type { CreateAuditResponse, CrawlResult, EngineResult, InventoryResult } from '@ai-visibility/contracts';
 import { AuditSnapshot } from '../../domain/audit/audit-snapshot';
 import { DiscoveryResult } from '../../domain/audit/discovery-result';
-import { generateRecommendations } from '../../application/recommendation/generate-recommendations';
+import { generateOptimizationPlan } from '../../application/optimization/generate-optimization-plan';
 
 export function buildAuditSummary(snapshot: AuditSnapshot): CreateAuditResponse {
   const discovery = (snapshot.engineResults.discovery as EngineResult<DiscoveryResult>).output!;
@@ -65,8 +65,8 @@ export function buildAuditSummary(snapshot: AuditSnapshot): CreateAuditResponse 
       missingSignals: snapshot.aiVisibility.missingSignals,
       assessedAt: snapshot.aiVisibility.assessedAt,
     },
-    recommendation: {
-      recommendations: generateRecommendations(
+    optimizationPlan: {
+      items: generateOptimizationPlan(
         { projectId: snapshot.audit.projectId, auditId: snapshot.audit.id },
         snapshot.findings,
         snapshot.aiVisibility,

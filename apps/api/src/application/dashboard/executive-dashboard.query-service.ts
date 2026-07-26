@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { ExecutiveDashboard } from '@ai-visibility/contracts';
-import { generateRecommendations } from '../recommendation/generate-recommendations';
-import { deriveExpectedImpact, sortByPriority } from '../recommendation/recommendation-prioritization';
+import { generateOptimizationPlan } from '../optimization/generate-optimization-plan';
+import { deriveExpectedImpact, sortByPriority } from '../optimization/optimization-prioritization';
 import { PROJECT_REPOSITORY, ProjectRepository } from '../../domain/project/project.repository';
 import { ProjectNotFoundError } from '../../domain/project/project.errors';
 import { CLIENT_REPOSITORY, ClientRepository } from '../../domain/client/client.repository';
@@ -74,9 +74,9 @@ export class ExecutiveDashboardQueryService {
     const criticalFindings = isCritical ? actionableFindings.length : 0;
     const opportunities = actionableFindings.length - criticalFindings;
 
-    const recommendations =
+    const optimizationItems =
       currentAssessment && latestCompleted
-        ? generateRecommendations(
+        ? generateOptimizationPlan(
             { projectId: project.id, auditId: latestCompleted.id },
             findings,
             currentAssessment,
@@ -103,7 +103,7 @@ export class ExecutiveDashboardQueryService {
         criticalFindings,
         opportunities,
       },
-      priorityActions: sortByPriority(recommendations).slice(0, TOP_PRIORITY_ACTIONS_LIMIT),
+      priorityActions: sortByPriority(optimizationItems).slice(0, TOP_PRIORITY_ACTIONS_LIMIT),
       recentActivity: {
         latestCompletedAuditId: latestCompleted?.id ?? null,
         latestCompletedAuditDate: latestCompleted?.completedAt ? latestCompleted.completedAt.toISOString() : null,

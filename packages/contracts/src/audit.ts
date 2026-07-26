@@ -4,7 +4,7 @@ import type { AnalysisSummary } from './analysis';
 import type { EntitySummary } from './entity';
 import type { KnowledgeGraphSummary } from './knowledge-graph';
 import type { AiVisibilitySummary } from './ai-visibility';
-import type { RecommendationSummary } from './recommendation';
+import type { OptimizationPlan } from './optimization-plan';
 import type { WorkflowProgress } from './workflow-progress';
 import type { WorkflowExecutionRecord } from './workflow-execution-history';
 
@@ -30,7 +30,7 @@ export interface CreateAuditResponse {
   entity?: EntitySummary;
   knowledgeGraph?: KnowledgeGraphSummary;
   aiVisibility?: AiVisibilitySummary;
-  recommendation?: RecommendationSummary;
+  optimizationPlan?: OptimizationPlan;
   progress?: WorkflowProgress[];
   executionHistory?: WorkflowExecutionRecord[];
 }
