@@ -8,6 +8,7 @@ import { AUDIT_REPOSITORY, AuditRepository } from '../../domain/audit/audit.repo
 import { Audit } from '../../domain/audit/audit.entity';
 import { FindingReadRepository } from '../../infrastructure/comparison/finding-read.repository';
 import { AiVisibilityReadRepository } from '../../infrastructure/comparison/ai-visibility-read.repository';
+import { KnowledgeGraphReadRepository } from '../../infrastructure/comparison/knowledge-graph-read.repository';
 import { generateOptimizationPlan } from '../optimization/generate-optimization-plan';
 
 function latestByCreatedAt(audits: Audit[]): Audit | null {
@@ -27,6 +28,7 @@ export class CreateCampaignUseCase {
     @Inject(AUDIT_REPOSITORY) private readonly auditRepository: AuditRepository,
     private readonly findingReadRepository: FindingReadRepository,
     private readonly aiVisibilityReadRepository: AiVisibilityReadRepository,
+    private readonly knowledgeGraphReadRepository: KnowledgeGraphReadRepository,
   ) {}
 
   async execute(projectId: string): Promise<Campaign> {
@@ -42,12 +44,15 @@ export class CreateCampaignUseCase {
       throw new NoCompletedAuditError(projectId);
     }
 
-    const [findings, assessment] = await Promise.all([
+    const [findings, assessment, knowledgeGraph] = await Promise.all([
       this.findingReadRepository.findByAuditId(latestCompleted.id),
       this.aiVisibilityReadRepository.findByAuditId(latestCompleted.id),
+      this.knowledgeGraphReadRepository.findByAuditId(latestCompleted.id),
     ]);
 
-    const items = assessment ? generateOptimizationPlan({ projectId, auditId: latestCompleted.id }, findings) : [];
+    const items = assessment
+      ? generateOptimizationPlan({ projectId, auditId: latestCompleted.id }, findings, assessment, knowledgeGraph)
+      : [];
 
     return this.campaignRepository.create(
       projectId,

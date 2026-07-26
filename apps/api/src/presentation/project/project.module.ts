@@ -10,6 +10,7 @@ import { BaselineHistoryReadRepository } from '../../infrastructure/project/base
 import { FindingReadRepository } from '../../infrastructure/comparison/finding-read.repository';
 import { EntityReadRepository } from '../../infrastructure/comparison/entity-read.repository';
 import { AiVisibilityReadRepository } from '../../infrastructure/comparison/ai-visibility-read.repository';
+import { KnowledgeGraphReadRepository } from '../../infrastructure/comparison/knowledge-graph-read.repository';
 import { ProjectRepositoryModule } from '../../infrastructure/project/project-repository.module';
 import { AuditRepositoryModule } from '../../infrastructure/audit/audit-repository.module';
 import { ClientRepositoryModule } from '../../infrastructure/client/client-repository.module';
@@ -38,6 +39,7 @@ import { ProjectController } from './project.controller';
     FindingReadRepository,
     EntityReadRepository,
     AiVisibilityReadRepository,
+    KnowledgeGraphReadRepository,
   ],
   exports: [ProjectRepositoryModule],
 })

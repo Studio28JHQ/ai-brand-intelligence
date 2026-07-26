@@ -20,3 +20,4 @@ export * from './client-metadata';
 export * from './executive-dashboard';
 export * from './optimization-campaign';
 export * from './impact-assessment';
+export * from './reasoning-model';

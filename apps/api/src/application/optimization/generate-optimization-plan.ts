@@ -1,6 +1,7 @@
-import type { Finding, OptimizationItem } from '@ai-visibility/contracts';
+import type { AiVisibilityAssessment, Finding, KnowledgeGraphResult, OptimizationItem } from '@ai-visibility/contracts';
 import { resolveOptimizationRule } from '../optimization-knowledge-base/optimization-knowledge-base';
 import type { OptimizationRuleVersion } from '../optimization-knowledge-base/optimization-rule';
+import { buildReasoningModel } from '../reasoning/build-reasoning-model';
 import {
   computePriority,
   countBlockedItems,
@@ -19,6 +20,8 @@ function buildOptimizationItem(
   finding: Finding,
   rule: OptimizationRuleVersion,
   allSourceEngines: ReadonlyArray<string>,
+  assessment: AiVisibilityAssessment,
+  knowledgeGraph: KnowledgeGraphResult,
 ): OptimizationItem {
   const supportingFindingIds = [finding.id];
   const estimatedEffort = deriveEstimatedEffort(supportingFindingIds.length);
@@ -38,12 +41,15 @@ function buildOptimizationItem(
     auditId: context.auditId,
     optimizationRuleId: rule.ruleId,
     optimizationRuleVersion: rule.version,
+    reasoning: buildReasoningModel({ finding, rule, confidence, dependencyWeight, assessment, knowledgeGraph }),
   };
 }
 
 export function generateOptimizationPlan(
   context: OptimizationPlanContext,
   findings: ReadonlyArray<Finding>,
+  assessment: AiVisibilityAssessment,
+  knowledgeGraph: KnowledgeGraphResult,
 ): OptimizationItem[] {
   const actionableFindings = findings.filter((finding) => finding.severity !== 'none');
 
@@ -65,6 +71,6 @@ export function generateOptimizationPlan(
   const allSourceEngines = resolvedFindings.map(({ finding }) => finding.sourceEngine);
 
   return resolvedFindings.map(({ finding, rule }) =>
-    buildOptimizationItem(context, finding, rule, allSourceEngines),
+    buildOptimizationItem(context, finding, rule, allSourceEngines, assessment, knowledgeGraph),
   );
 }

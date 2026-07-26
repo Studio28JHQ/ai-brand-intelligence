@@ -415,6 +415,21 @@ export default function Home() {
                     <p>
                       Optimization Rule: {item.optimizationRuleId} (v{item.optimizationRuleVersion})
                     </p>
+                    <details>
+                      <summary>Reasoning</summary>
+                      <p>Confidence: {item.reasoning.confidence}</p>
+                      <p>
+                        Expected Outcome: {item.reasoning.expectedOutcome.impactLevel} impact on{' '}
+                        {item.reasoning.expectedOutcome.targetDimension}
+                      </p>
+                      <p>
+                        Evidence:{' '}
+                        {item.reasoning.evidence.map((entry) => `${entry.field}=${entry.value}`).join(', ') || 'None'}
+                      </p>
+                      <p>
+                        Assumptions: {item.reasoning.assumptions.map((assumption) => assumption.code).join(', ')}
+                      </p>
+                    </details>
                   </li>
                 ))}
               </ul>

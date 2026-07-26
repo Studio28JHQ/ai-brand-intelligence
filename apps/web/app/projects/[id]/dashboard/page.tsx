@@ -53,6 +53,62 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
                   <p>
                     Optimization Rule: {action.optimizationRuleId} (v{action.optimizationRuleVersion})
                   </p>
+                  <details>
+                    <summary>Reasoning</summary>
+                    <p>
+                      <strong>Why this action exists</strong>
+                    </p>
+                    <ul>
+                      {action.reasoning.triggeringFindings.map((finding) => (
+                        <li key={finding.findingId}>
+                          Finding {finding.findingId}: rule &apos;{finding.ruleId}&apos; ({finding.category}, {finding.sourceEngine}) evaluated to &apos;{finding.outcome}&apos;.
+                        </li>
+                      ))}
+                      {action.reasoning.appliedRules.map((rule) => (
+                        <li key={`${rule.ruleId}-${rule.ruleVersion}`}>
+                          Applied Optimization Rule &apos;{rule.ruleId}&apos; v{rule.ruleVersion} ({rule.category}, severity {rule.severity}).
+                        </li>
+                      ))}
+                    </ul>
+                    <p>
+                      <strong>What evidence supports it</strong>
+                    </p>
+                    {action.reasoning.evidence.length === 0 && <p>No evidence facts recorded.</p>}
+                    <ul>
+                      {action.reasoning.evidence.map((entry, index) => (
+                        <li key={`${entry.field}-${index}`}>
+                          {entry.field}: {entry.value}
+                        </li>
+                      ))}
+                    </ul>
+                    <p>
+                      Knowledge Graph facts:{' '}
+                      {action.reasoning.knowledgeGraphFacts.map((fact) => `${fact.dimension}=${fact.level}`).join(', ')}
+                    </p>
+                    <p>
+                      Entity relationships:{' '}
+                      {action.reasoning.entityRelationships.length === 0
+                        ? 'None (not applicable to this rule)'
+                        : action.reasoning.entityRelationships
+                            .map((rel) => `${rel.sourceEntityName} -${rel.relationshipType}-> ${rel.targetEntityName}`)
+                            .join(', ')}
+                    </p>
+                    <p>
+                      <strong>Expected benefit</strong>
+                    </p>
+                    <p>
+                      Impact level: {action.reasoning.expectedOutcome.impactLevel} on {action.reasoning.expectedOutcome.targetDimension}
+                    </p>
+                    <p>Confidence: {action.reasoning.confidence}</p>
+                    <p>Assumptions:</p>
+                    <ul>
+                      {action.reasoning.assumptions.map((assumption) => (
+                        <li key={assumption.code}>
+                          [{assumption.code}] {assumption.description}
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
                 </li>
               ))}
             </ul>

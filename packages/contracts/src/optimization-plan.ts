@@ -1,3 +1,5 @@
+import type { ReasoningModel } from './reasoning-model';
+
 export type OptimizationLevel = 'low' | 'medium' | 'high';
 
 export type OptimizationPriority = OptimizationLevel;
@@ -17,6 +19,7 @@ export interface OptimizationItem {
   auditId: string;
   optimizationRuleId: string;
   optimizationRuleVersion: string;
+  reasoning: ReasoningModel;
 }
 
 export interface OptimizationPlan {

@@ -10,6 +10,7 @@ import { AUDIT_REPOSITORY, AuditRepository } from '../../domain/audit/audit.repo
 import { Audit } from '../../domain/audit/audit.entity';
 import { FindingReadRepository } from '../../infrastructure/comparison/finding-read.repository';
 import { AiVisibilityReadRepository } from '../../infrastructure/comparison/ai-visibility-read.repository';
+import { KnowledgeGraphReadRepository } from '../../infrastructure/comparison/knowledge-graph-read.repository';
 import { BaselineHistoryReadRepository } from '../../infrastructure/project/baseline-history-read.repository';
 import { CampaignQueryService } from '../campaign/campaign-query.service';
 import { computeCampaignProgress } from '../campaign/campaign-progress';
@@ -40,6 +41,7 @@ export class ExecutiveDashboardQueryService {
     @Inject(AUDIT_REPOSITORY) private readonly auditRepository: AuditRepository,
     private readonly findingReadRepository: FindingReadRepository,
     private readonly aiVisibilityReadRepository: AiVisibilityReadRepository,
+    private readonly knowledgeGraphReadRepository: KnowledgeGraphReadRepository,
     private readonly baselineHistoryReadRepository: BaselineHistoryReadRepository,
     private readonly campaignQueryService: CampaignQueryService,
     private readonly impactAssessmentService: ImpactAssessmentService,
@@ -63,13 +65,16 @@ export class ExecutiveDashboardQueryService {
     const latestCompleted = latestByTimestamp(completedAudits, (audit) => audit.completedAt);
     const lastExecution = latestByTimestamp(projectAudits, (audit) => audit.createdAt);
 
-    const [findings, currentAssessment, baselineAssessment, lastBaselineChange] = await Promise.all([
+    const [findings, currentAssessment, baselineAssessment, lastBaselineChange, knowledgeGraph] = await Promise.all([
       latestCompleted ? this.findingReadRepository.findByAuditId(latestCompleted.id) : Promise.resolve([]),
       latestCompleted ? this.aiVisibilityReadRepository.findByAuditId(latestCompleted.id) : Promise.resolve(null),
       project.baselineAuditId
         ? this.aiVisibilityReadRepository.findByAuditId(project.baselineAuditId)
         : Promise.resolve(null),
       this.baselineHistoryReadRepository.findLatestByProjectId(projectId),
+      latestCompleted
+        ? this.knowledgeGraphReadRepository.findByAuditId(latestCompleted.id)
+        : Promise.resolve({ nodes: [], relationships: [] }),
     ]);
 
     const currentScore = currentAssessment?.status ?? null;
@@ -78,7 +83,12 @@ export class ExecutiveDashboardQueryService {
 
     const optimizationItems =
       currentAssessment && latestCompleted
-        ? generateOptimizationPlan({ projectId: project.id, auditId: latestCompleted.id }, findings)
+        ? generateOptimizationPlan(
+            { projectId: project.id, auditId: latestCompleted.id },
+            findings,
+            currentAssessment,
+            knowledgeGraph,
+          )
         : [];
 
     const criticalFindings = optimizationItems.filter((item) => item.expectedImpact === 'high').length;
