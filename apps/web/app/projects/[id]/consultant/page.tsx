@@ -1,4 +1,5 @@
 import { ConsultantChat } from './consultant-chat';
+import { ProactiveRecommendations } from './proactive-recommendations';
 import { Breadcrumbs, PageHeader } from '../../../components/ui';
 
 export default async function ConsultantPage({ params }: { params: Promise<{ id: string }> }) {
@@ -10,7 +11,12 @@ export default async function ConsultantPage({ params }: { params: Promise<{ id:
         items={[{ label: 'Workspace', href: '/' }, { label: 'Dashboard', href: `/projects/${id}/dashboard` }, { label: 'AI Consultant' }]}
       />
 
-      <PageHeader title="AI Consultant" description="Ask about this Project's Findings, Optimization Plan, and Impact." />
+      <PageHeader
+        title="AI Consultant"
+        description="Proactive recommendations for this Project, plus answers to your questions about its Findings, Optimization Plan, and Impact."
+      />
+
+      <ProactiveRecommendations projectId={id} />
 
       <ConsultantChat projectId={id} />
     </main>

@@ -116,6 +116,14 @@ A workspace-level Read Model summarizing the most important information across e
 
 **Automatic generation**: `apps/web/app/daily-briefing.tsx` (`DailyBriefing`) fetches `GET /briefing/daily` in a `useEffect` on mount at the top of the workspace page (`apps/web/app/page.tsx`) — no button, no user action, satisfying "generated automatically on workspace load."
 
+# Proactive Recommendations
+
+Transforms the AI Consultant from a purely reactive Chat into a proactive assistant, delivered `F10-S01` (see `CTO-079`; full detail in `docs/04_PROJECT/PROACTIVE_ASSISTANT.md`). `apps/web/app/projects/[id]/consultant/proactive-recommendations.tsx` (`ProactiveRecommendations`) renders above the existing `ConsultantChat` on the same page, unprompted.
+
+**Zero new `apps/api` surface**: reuses `GET /briefing/daily` (`F7-S04`) verbatim, filtered client-side to the current Project and relabeled from the Briefing's six categories into five sections — High-Priority Alerts, Risk Notifications, Verification Reminders, Optimization Opportunities, Daily Highlights (`apps/web/app/lib/recommendation-groups.ts`). Each Recommendation is a `BriefingItem` presented with Why (`reason`), Evidence (`evidence`), Expected Impact (`businessImpact`), and Recommended Action (`recommendedNextAction`) — the same four fields the Briefing already computed, no new contract.
+
+**Dismissible, client-side only**: a "Dismiss" button adds the item's already-deterministic `id` to a `localStorage` set scoped to the Project (`dismissed-recommendations:{projectId}`) — no server-side persistence, no new database table, consistent with the Chat's existing "no long-term memory" posture.
+
 # Executive Client Report
 
 Transforms one Optimization Cycle into a structured, client-presentation-ready report, delivered `F7-S06` (see `CTO-072`): `ExecutiveClientReportBuilderService.build(cycleId)`, at `apps/api/src/application/executive-client-report/`. Registered in `ProjectModule` — the same shape `AiContext` (`F7-S01`) had before it gained a consumer at `F7-S03`. Exposed via `GET /cycles/:id/report` (`OptimizationCycleController`) and a Next.js page (`apps/web/app/projects/[id]/cycles/[cycleId]/report/`) as of `F8-S01` (see `CTO-073`), reachable from the Dashboard's Optimization Cycle section.
@@ -157,7 +165,7 @@ Full setup, startup, environment variables, and troubleshooting live in the repo
 
 # Current Phase
 
-F7 — AI Consultant, in progress. F8 — Pilot Hardening, in progress. F9 — Product Experience, in progress. F6 — Pilot Readiness fully delivered (`F6-S01` through `F6-S07`). AI Context Builder (`F7-S01`), AI Conversation Orchestrator (`F7-S02`), AI Consultant Chat MVP (`F7-S03`), AI Daily Briefing (`F7-S04`), Optimization Cycle (`F7-S05`, Pilot Readiness), and Executive Client Report (`F7-S06`, Pilot Readiness) delivered. End-to-End Pilot Workflow validated (`F8-S01`, Pilot Hardening). Pilot Readiness Assessment complete (`F8-S02`, Pilot Hardening) — see `docs/04_PROJECT/PILOT_CHECKLIST.md`. Local Development Bootstrap complete (`F8-S03`, Pilot Hardening) — see `README.md` and `CTO-076`. Product Experience Polish complete (`F9-S01`, Product Experience) — see `docs/04_PROJECT/DESIGN_SYSTEM.md`. Guided Experience complete (`F9-S04`, Product Experience) — see `docs/04_PROJECT/GUIDED_EXPERIENCE.md`.
+F7 — AI Consultant, in progress. F8 — Pilot Hardening, in progress. F9 — Product Experience, in progress. F10 — AI Product Intelligence, in progress. F6 — Pilot Readiness fully delivered (`F6-S01` through `F6-S07`). AI Context Builder (`F7-S01`), AI Conversation Orchestrator (`F7-S02`), AI Consultant Chat MVP (`F7-S03`), AI Daily Briefing (`F7-S04`), Optimization Cycle (`F7-S05`, Pilot Readiness), and Executive Client Report (`F7-S06`, Pilot Readiness) delivered. End-to-End Pilot Workflow validated (`F8-S01`, Pilot Hardening). Pilot Readiness Assessment complete (`F8-S02`, Pilot Hardening) — see `docs/04_PROJECT/PILOT_CHECKLIST.md`. Local Development Bootstrap complete (`F8-S03`, Pilot Hardening) — see `README.md` and `CTO-076`. Product Experience Polish complete (`F9-S01`, Product Experience) — see `docs/04_PROJECT/DESIGN_SYSTEM.md`. Guided Experience complete (`F9-S04`, Product Experience) — see `docs/04_PROJECT/GUIDED_EXPERIENCE.md`. Proactive AI Assistant complete (`F10-S01`, AI Product Intelligence) — see `docs/04_PROJECT/PROACTIVE_ASSISTANT.md`.
 
 # Next Sprint
 
