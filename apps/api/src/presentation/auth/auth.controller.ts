@@ -59,8 +59,8 @@ export class AuthController {
   @Throttle({ default: { limit: 3, ttl: 60_000 } })
   async register(@Body() dto: RegisterDto): Promise<RegisterResponse> {
     try {
-      const user = await this.registerUserUseCase.execute(dto);
-      return { email: user.email };
+      const { user, emailDelivered } = await this.registerUserUseCase.execute(dto);
+      return { email: user.email, emailDelivered };
     } catch (error) {
       if (error instanceof UserAlreadyExistsError) {
         throw new ConflictException(error.message);
@@ -98,8 +98,8 @@ export class AuthController {
   @Throttle({ default: { limit: 3, ttl: 60_000 } })
   async resendOtp(@Body() dto: ResendOtpDto): Promise<AuthActionResponse> {
     try {
-      await this.resendOtpUseCase.execute(dto.email, dto.purpose);
-      return { success: true, message: GENERIC_OTP_SENT_MESSAGE };
+      const { emailDelivered } = await this.resendOtpUseCase.execute(dto.email, dto.purpose);
+      return { success: true, message: GENERIC_OTP_SENT_MESSAGE, emailDelivered };
     } catch (error) {
       if (error instanceof UserNotFoundError) {
         throw new NotFoundException(error.message);
@@ -133,8 +133,8 @@ export class AuthController {
   @Post('forgot-password')
   @Throttle({ default: { limit: 3, ttl: 60_000 } })
   async forgotPassword(@Body() dto: ForgotPasswordDto): Promise<AuthActionResponse> {
-    await this.forgotPasswordUseCase.execute(dto.email);
-    return { success: true, message: GENERIC_OTP_SENT_MESSAGE };
+    const { emailDelivered } = await this.forgotPasswordUseCase.execute(dto.email);
+    return { success: true, message: GENERIC_OTP_SENT_MESSAGE, emailDelivered };
   }
 
   @Post('reset-password')

@@ -23,6 +23,7 @@ export function VerifyEmailForm() {
   const searchParams = useSearchParams();
   const email = searchParams.get('email') ?? '';
   const purpose = (searchParams.get('purpose') as OtpPurpose | null) ?? 'email-verification';
+  const initialEmailDeliveryFailed = searchParams.get('emailDelivered') === '0';
 
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | undefined>(undefined);
@@ -30,6 +31,7 @@ export function VerifyEmailForm() {
   const [succeeded, setSucceeded] = useState(false);
   const [cooldown, setCooldown] = useState(RESEND_COOLDOWN_SECONDS);
   const [resendMessage, setResendMessage] = useState<string | undefined>(undefined);
+  const [resendFailed, setResendFailed] = useState(false);
   const hasAutoSubmitted = useRef(false);
 
   useEffect(() => {
@@ -83,7 +85,13 @@ export function VerifyEmailForm() {
       return;
     }
     setCooldown(RESEND_COOLDOWN_SECONDS);
-    setResendMessage('A new code has been sent.');
+    const deliveryFailed = result.emailDelivered === false;
+    setResendFailed(deliveryFailed);
+    setResendMessage(
+      deliveryFailed
+        ? 'A new code was generated, but the email could not be sent. Please try again shortly or contact support.'
+        : 'A new code has been sent.',
+    );
   };
 
   const changeEmailHref = purpose === 'email-verification' ? '/register' : '/forgot-password';
@@ -110,8 +118,13 @@ export function VerifyEmailForm() {
       <div className="stack">
         <OtpInput value={code} onChange={setCode} disabled={verifying} />
 
+        {initialEmailDeliveryFailed && !error && !resendMessage && (
+          <Banner variant="error">
+            Your account was created, but we couldn&apos;t send the verification email. Use Resend below to try again.
+          </Banner>
+        )}
         {error && <Banner variant="error">{error}</Banner>}
-        {resendMessage && <Banner variant="success">{resendMessage}</Banner>}
+        {resendMessage && <Banner variant={resendFailed ? 'error' : 'success'}>{resendMessage}</Banner>}
 
         <button type="button" className="btn btn-primary" disabled={code.length !== 6 || verifying} onClick={handleVerify}>
           {verifying ? 'Verifying…' : 'Verify Code'}

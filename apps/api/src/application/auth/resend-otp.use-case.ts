@@ -11,20 +11,21 @@ export class ResendOtpUseCase {
     private readonly issueOtpUseCase: IssueOtpUseCase,
   ) {}
 
-  async execute(email: string, purpose: OtpPurpose): Promise<void> {
+  async execute(email: string, purpose: OtpPurpose): Promise<{ emailDelivered: boolean }> {
     const user = await this.userRepository.findByEmail(email);
 
     if (!user) {
       // 'email-verification' resend is only reachable right after this exact email just
       // registered, so there is nothing left to protect by staying silent. 'password-reset'
       // resend sits behind forgot-password, which deliberately never reveals whether an email
-      // exists — resend must preserve that same guarantee rather than leaking it back out here.
+      // exists — resend must preserve that same guarantee rather than leaking it back out here,
+      // including in whether `emailDelivered` looks any different from the real-user path.
       if (purpose === 'email-verification') {
         throw new UserNotFoundError(email);
       }
-      return;
+      return { emailDelivered: true };
     }
 
-    await this.issueOtpUseCase.execute(user, purpose);
+    return this.issueOtpUseCase.execute(user, purpose);
   }
 }

@@ -10,26 +10,50 @@ interface ApiError {
   error?: { message?: string };
 }
 
+/**
+ * Deliberately does not collapse every failure into one generic message — a caller (a developer
+ * reading the server log, or a future error-reporting hook) needs to be able to tell "the API
+ * process isn't reachable at all" apart from "the API responded but not with JSON" apart from
+ * "the API rejected the request with a specific reason." Each branch logs the real underlying
+ * error server-side (visible in the `apps/web` process's own log, e.g. `pnpm dev`'s terminal)
+ * before returning a message that's still safe and useful to show the user. Fixed as part of
+ * `F9-S02-HF01` — the previous single `catch { return 'Unable to reach the server' }` made every
+ * one of these cases indistinguishable from the browser, including genuine validation failures
+ * whose real message was being read successfully but then discarded.
+ */
 async function postJson<T>(path: string, body: unknown): Promise<{ data?: T; error?: string }> {
   const config = loadConfig();
+  const url = `${config.API_URL}${path}`;
 
+  let response: Response;
   try {
-    const response = await fetch(`${config.API_URL}${path}`, {
+    response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
-
-    const json = (await response.json()) as T & ApiError;
-
-    if (!response.ok) {
-      return { error: json?.error?.message ?? 'Something went wrong. Please try again.' };
-    }
-
-    return { data: json };
-  } catch {
-    return { error: 'Unable to reach the server. Please try again.' };
+  } catch (error) {
+    console.error(`[auth-actions] Could not reach the API at ${url}:`, error);
+    return { error: 'Unable to reach the server. Please check your connection and try again.' };
   }
+
+  let json: (T & ApiError) | undefined;
+  try {
+    json = (await response.json()) as T & ApiError;
+  } catch (error) {
+    console.error(`[auth-actions] API response from ${url} was not valid JSON (status ${response.status}):`, error);
+    return { error: 'Received an unexpected response from the server. Please try again.' };
+  }
+
+  if (!response.ok) {
+    const message = json?.error?.message;
+    if (!message) {
+      console.error(`[auth-actions] API error response from ${url} had no error message (status ${response.status}):`, json);
+    }
+    return { error: message ?? 'Something went wrong. Please try again.' };
+  }
+
+  return { data: json };
 }
 
 export interface RegisterInput {
@@ -40,9 +64,13 @@ export interface RegisterInput {
   confirmPassword: string;
 }
 
-export async function registerUser(input: RegisterInput): Promise<{ email?: string; error?: string }> {
-  const result = await postJson<{ email: string }>('/auth/register', input);
-  return result.error ? { error: result.error } : { email: result.data!.email };
+export async function registerUser(
+  input: RegisterInput,
+): Promise<{ email?: string; emailDelivered?: boolean; error?: string }> {
+  const result = await postJson<{ email: string; emailDelivered: boolean }>('/auth/register', input);
+  return result.error
+    ? { error: result.error }
+    : { email: result.data!.email, emailDelivered: result.data!.emailDelivered };
 }
 
 export async function verifyOtp(
@@ -61,14 +89,19 @@ export async function verifyOtp(
   return { verified: result.data!.verified, resetToken: result.data!.resetToken };
 }
 
-export async function resendOtp(email: string, purpose: OtpPurpose): Promise<{ success?: boolean; error?: string }> {
-  const result = await postJson<{ success: boolean }>('/auth/resend-otp', { email, purpose });
-  return result.error ? { error: result.error } : { success: true };
+export async function resendOtp(
+  email: string,
+  purpose: OtpPurpose,
+): Promise<{ success?: boolean; emailDelivered?: boolean; error?: string }> {
+  const result = await postJson<{ success: boolean; emailDelivered?: boolean }>('/auth/resend-otp', { email, purpose });
+  return result.error ? { error: result.error } : { success: true, emailDelivered: result.data!.emailDelivered };
 }
 
-export async function forgotPassword(email: string): Promise<{ success?: boolean; error?: string }> {
-  const result = await postJson<{ success: boolean }>('/auth/forgot-password', { email });
-  return result.error ? { error: result.error } : { success: true };
+export async function forgotPassword(
+  email: string,
+): Promise<{ success?: boolean; emailDelivered?: boolean; error?: string }> {
+  const result = await postJson<{ success: boolean; emailDelivered?: boolean }>('/auth/forgot-password', { email });
+  return result.error ? { error: result.error } : { success: true, emailDelivered: result.data!.emailDelivered };
 }
 
 export async function resetPassword(

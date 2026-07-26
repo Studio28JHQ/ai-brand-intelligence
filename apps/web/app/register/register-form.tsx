@@ -36,7 +36,8 @@ export function RegisterForm() {
       return;
     }
 
-    router.push(`/verify-email?email=${encodeURIComponent(email)}&purpose=email-verification`);
+    const emailDeliveredParam = result.emailDelivered === false ? '&emailDelivered=0' : '';
+    router.push(`/verify-email?email=${encodeURIComponent(email)}&purpose=email-verification${emailDeliveredParam}`);
   };
 
   return (

@@ -12,6 +12,8 @@ export interface UserMetadata {
 
 export interface RegisterResponse {
   email: string;
+  /** The account is created either way — `false` only means the verification email itself could not be sent (e.g. no email provider configured). */
+  emailDelivered: boolean;
 }
 
 export interface LoginResponse {
@@ -29,4 +31,6 @@ export interface VerifyOtpResponse {
 export interface AuthActionResponse {
   success: true;
   message: string;
+  /** Only present when this action sends an email (resend-otp, forgot-password) — omitted where no email is involved (e.g. reset-password). */
+  emailDelivered?: boolean;
 }

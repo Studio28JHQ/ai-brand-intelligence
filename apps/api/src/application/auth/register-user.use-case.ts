@@ -28,7 +28,7 @@ export class RegisterUserUseCase {
     private readonly issueOtpUseCase: IssueOtpUseCase,
   ) {}
 
-  async execute(input: RegisterUserInput): Promise<User> {
+  async execute(input: RegisterUserInput): Promise<{ user: User; emailDelivered: boolean }> {
     if (input.password !== input.confirmPassword) {
       throw new PasswordConfirmationMismatchError();
     }
@@ -41,8 +41,10 @@ export class RegisterUserUseCase {
     const passwordHash = await this.passwordHasher.hash(input.password);
     const user = await this.userRepository.create(input.firstName, input.lastName, input.email, passwordHash);
 
-    await this.issueOtpUseCase.execute(user, 'email-verification');
+    // The account is created regardless of whether the verification email actually goes out —
+    // see `IssueOtpUseCase`; the OTP itself is always issued and valid either way.
+    const { emailDelivered } = await this.issueOtpUseCase.execute(user, 'email-verification');
 
-    return user;
+    return { user, emailDelivered };
   }
 }

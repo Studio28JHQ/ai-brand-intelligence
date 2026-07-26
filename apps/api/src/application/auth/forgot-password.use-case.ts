@@ -15,11 +15,11 @@ export class ForgotPasswordUseCase {
     private readonly issueOtpUseCase: IssueOtpUseCase,
   ) {}
 
-  async execute(email: string): Promise<void> {
+  async execute(email: string): Promise<{ emailDelivered: boolean }> {
     const user = await this.userRepository.findByEmail(email);
     if (!user) {
-      return;
+      return { emailDelivered: true };
     }
-    await this.issueOtpUseCase.execute(user, 'password-reset');
+    return this.issueOtpUseCase.execute(user, 'password-reset');
   }
 }

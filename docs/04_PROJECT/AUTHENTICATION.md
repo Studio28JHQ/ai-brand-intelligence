@@ -57,6 +57,14 @@ Sessions are self-contained signed JWTs (`SessionTokenService`, `jsonwebtoken`),
 - **Rate limiting**: `@Throttle()` overrides on every endpoint the ticket names — register (3/min), login (5/min), verify-otp (10/min, more lenient since legitimate typos happen), resend-otp (3/min), forgot-password (3/min), reset-password (5/min) — layered on top of the global 120/min default (`CTO-080`).
 - **Password strength**: minimum 8 characters, at least one uppercase, one lowercase, one digit (`class-validator` `@Matches`, both `RegisterDto` and `ResetPasswordDto`).
 
+# Error Handling & Resilience
+
+Hardened at `F9-S02-HF01` after registration was reported failing with an opaque "Unable to reach the server" message — see `docs/04_PROJECT/DECISION_LOG.md#cto-085` for the investigation. Two real, distinct defects were found and fixed:
+
+- **Validation errors were content-free app-wide, not just for auth**: `GlobalExceptionFilter` (`apps/api/src/shared/filters/`) read `exception.message` for every `HttpException`, which for a `ValidationPipe`-thrown `BadRequestException` is always the generic string `"Bad Request Exception"` — the real per-field messages live in `exception.getResponse()`'s `message` array instead. Fixed to resolve and join the real messages; a weak password now returns "Password must include at least one uppercase letter, one lowercase letter, and one number; Password must be at least 8 characters." instead of nothing.
+- **The frontend's one catch-all silently discarded the real error**: `auth-actions.ts`'s `postJson` now separates "the API isn't reachable" (network/connection failure) from "the API responded with something that wasn't JSON" from "the API rejected the request with a specific reason" — each logs the real underlying error server-side (visible in the `apps/web` process's own log) before returning a distinct, still-safe message. The exact reported symptom was reproduced live by stopping the API process and submitting the form: the log now shows `ECONNREFUSED` plainly instead of nothing.
+- **Email delivery failures no longer fail registration**: `IssueOtpUseCase` persists the OTP before attempting to send it, and now catches a send failure rather than letting it propagate — an account (and its OTP) is never left in a state where the client sees a hard failure despite the database write having already succeeded. `RegisterResponse`/`AuthActionResponse` gained an `emailDelivered` field so the client can say so plainly if it happens (`ConsoleEmailSender` in this environment never actually fails, but a real provider could).
+
 # Provider Extensibility
 
 Two ports exist specifically so this module can grow without being rewritten:

@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { loadConfig } from '@ai-visibility/config';
+import { logger } from '@ai-visibility/shared';
 import { OtpPurpose } from '../../domain/otp/otp-code.entity';
 import { OTP_CODE_REPOSITORY, OtpCodeRepository } from '../../domain/otp/otp-code.repository';
 import { EMAIL_SENDER, EmailSender } from '../notifications/email-sender';
@@ -35,7 +36,14 @@ export class IssueOtpUseCase {
     @Inject(EMAIL_SENDER) private readonly emailSender: EmailSender,
   ) {}
 
-  async execute(user: User, purpose: OtpPurpose): Promise<void> {
+  /**
+   * The OTP is persisted before the email is attempted, and a failed send is caught here rather
+   * than left to propagate — a real transactional-email provider can legitimately fail (timeout,
+   * rejected credentials, provider outage), and that must never undo — or appear to undo — an
+   * already-created account or an already-issued code. Callers surface `emailDelivered: false` to
+   * the user instead of a hard failure (`F9-S02-HF01`).
+   */
+  async execute(user: User, purpose: OtpPurpose): Promise<{ emailDelivered: boolean }> {
     const config = loadConfig();
     const code = this.otpGenerator.generate();
     const codeHash = this.otpGenerator.hash(code);
@@ -43,10 +51,20 @@ export class IssueOtpUseCase {
 
     await this.otpCodeRepository.create(user.id, purpose, codeHash, expiresAt);
 
-    await this.emailSender.send({
-      to: user.email,
-      subject: SUBJECT_BY_PURPOSE[purpose],
-      body: buildEmailBody(user, purpose, code, config.OTP_EXPIRATION_MINUTES),
-    });
+    try {
+      await this.emailSender.send({
+        to: user.email,
+        subject: SUBJECT_BY_PURPOSE[purpose],
+        body: buildEmailBody(user, purpose, code, config.OTP_EXPIRATION_MINUTES),
+      });
+      return { emailDelivered: true };
+    } catch (error) {
+      logger.error('Failed to send OTP email — the code was still issued and is valid', {
+        userId: user.id,
+        purpose,
+        reason: error instanceof Error ? error.message : String(error),
+      });
+      return { emailDelivered: false };
+    }
   }
 }
