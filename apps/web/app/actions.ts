@@ -2,6 +2,7 @@
 
 import { loadConfig } from '@ai-visibility/config';
 import type {
+  AuditAnalysisView,
   AuditComparisonResult,
   AuditMetadata,
   BriefingModel,
@@ -10,8 +11,11 @@ import type {
   ConsultantAnswer,
   ConsultantIntentType,
   CreateAuditResponse,
+  CycleStatus,
+  ExecutiveClientReport,
   ExecutiveDashboard,
   ImpactAssessment,
+  OptimizationCycleMetadata,
   ProjectMetadata,
 } from '@ai-visibility/contracts';
 
@@ -283,6 +287,70 @@ export async function createAudit(
     return { result: body as CreateAuditResponse };
   } catch {
     return { error: 'Failed to reach the backend' };
+  }
+}
+
+export async function getAuditAnalysis(auditId: string): Promise<AuditAnalysisView | null> {
+  const config = loadConfig();
+
+  try {
+    const response = await fetch(`${config.API_URL}/audits/${auditId}/analysis`, { cache: 'no-store' });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return (await response.json()) as AuditAnalysisView;
+  } catch {
+    return null;
+  }
+}
+
+export async function getCurrentCycle(projectId: string): Promise<OptimizationCycleMetadata | null> {
+  const config = loadConfig();
+
+  try {
+    const response = await fetch(`${config.API_URL}/projects/${projectId}/cycles/current`, { cache: 'no-store' });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return (await response.json()) as OptimizationCycleMetadata;
+  } catch {
+    return null;
+  }
+}
+
+export async function transitionCycleStatus(cycleId: string, status: CycleStatus): Promise<boolean> {
+  const config = loadConfig();
+
+  try {
+    const response = await fetch(`${config.API_URL}/cycles/${cycleId}/status`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+export async function getExecutiveClientReport(cycleId: string): Promise<ExecutiveClientReport | null> {
+  const config = loadConfig();
+
+  try {
+    const response = await fetch(`${config.API_URL}/cycles/${cycleId}/report`, { cache: 'no-store' });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return (await response.json()) as ExecutiveClientReport;
+  } catch {
+    return null;
   }
 }
 

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { getDashboard } from '../../../actions';
+import { CycleManager } from './cycle-manager';
 
 export default async function ExecutiveDashboardPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -33,17 +34,7 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
 
           <section>
             <h2>Current Optimization Cycle</h2>
-            {!dashboard.currentCycle && <p>No optimization cycle yet — one is created automatically on the next Audit.</p>}
-            {dashboard.currentCycle && (
-              <>
-                <p>Cycle ID: {dashboard.currentCycle.id}</p>
-                <p>Goal: {dashboard.currentCycle.goal}</p>
-                <p>Status: {dashboard.currentCycle.status}</p>
-                <p>Current Phase: {dashboard.currentCycle.currentPhase}</p>
-                <p>Start Date: {dashboard.currentCycle.startDate ?? 'Not started'}</p>
-                <p>End Date: {dashboard.currentCycle.endDate ?? 'Not completed'}</p>
-              </>
-            )}
+            <CycleManager projectId={id} />
           </section>
 
           <section>

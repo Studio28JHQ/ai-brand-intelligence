@@ -1,8 +1,9 @@
 import { BadRequestException, Body, Controller, Get, NotFoundException, Param, Post, Query, Req } from '@nestjs/common';
 import type { Request } from 'express';
-import type { AuditComparisonResult, AuditMetadata, CreateAuditResponse } from '@ai-visibility/contracts';
+import type { AuditAnalysisView, AuditComparisonResult, AuditMetadata, CreateAuditResponse } from '@ai-visibility/contracts';
 import { CreateAuditUseCase } from '../../application/audit/create-audit.use-case';
 import { AuditQueryService } from '../../application/audit/audit-query.service';
+import { AuditAnalysisQueryService } from '../../application/audit/audit-analysis-query.service';
 import { AuditComparisonService } from '../../application/comparison/audit-comparison.service';
 import { InvalidAuditUrlError, AuditNotFoundError, AuditNotCompletedError } from '../../domain/audit/audit.errors';
 import { ClientNotFoundError } from '../../domain/client/client.errors';
@@ -15,6 +16,7 @@ export class AuditController {
   constructor(
     private readonly createAuditUseCase: CreateAuditUseCase,
     private readonly auditQueryService: AuditQueryService,
+    private readonly auditAnalysisQueryService: AuditAnalysisQueryService,
     private readonly auditComparisonService: AuditComparisonService,
   ) {}
 
@@ -65,6 +67,15 @@ export class AuditController {
       throw new NotFoundException(`Audit not found: ${id}`);
     }
     return toAuditMetadata(audit);
+  }
+
+  @Get(':id/analysis')
+  async getAnalysis(@Param('id') id: string): Promise<AuditAnalysisView> {
+    const analysis = await this.auditAnalysisQueryService.getByAuditId(id);
+    if (!analysis) {
+      throw new NotFoundException(`No analysis available for audit: ${id}`);
+    }
+    return analysis;
   }
 
   @Post()

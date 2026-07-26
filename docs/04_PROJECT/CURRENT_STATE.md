@@ -118,7 +118,7 @@ A workspace-level Read Model summarizing the most important information across e
 
 # Executive Client Report
 
-Transforms one Optimization Cycle into a structured, client-presentation-ready report, delivered `F7-S06` (see `CTO-072`): `ExecutiveClientReportBuilderService.build(cycleId)`, at `apps/api/src/application/executive-client-report/`. An internal application service — registered in `ProjectModule`, no controller, no HTTP endpoint — the same shape `AiContext` (`F7-S01`) had before it gained a consumer at `F7-S03`.
+Transforms one Optimization Cycle into a structured, client-presentation-ready report, delivered `F7-S06` (see `CTO-072`): `ExecutiveClientReportBuilderService.build(cycleId)`, at `apps/api/src/application/executive-client-report/`. Registered in `ProjectModule` — the same shape `AiContext` (`F7-S01`) had before it gained a consumer at `F7-S03`. Exposed via `GET /cycles/:id/report` (`OptimizationCycleController`) and a Next.js page (`apps/web/app/projects/[id]/cycles/[cycleId]/report/`) as of `F8-S01` (see `CTO-073`), reachable from the Dashboard's Optimization Cycle section.
 
 **Report generation flow**: resolve the `OptimizationCycle` (`F7-S05`) → resolve its Project/Client → find every `Audit` whose `cycleId` matches (the earliest is the Cycle's "Initial Situation," the latest completed one drives current-state sections) → resolve the Cycle's `OptimizationCampaign` (`CampaignQueryService.getLatestByProjectId`, filtered to a matching `cycleId`) → compute the Optimization Plan for the latest Audit (`generateOptimizationPlan`, `F6-S03`) and, separately, for the Campaign's source Audit (to reconstruct completed Actions' `ReasoningModel`) → compute the `ImpactAssessment` (`F6-S05`) and a raw `AuditComparisonService.compare` (`F4-S03`) between the Project's Baseline Audit and the latest completed Audit, for `ruleId`-bearing resolved/remaining Findings. Nothing is recomputed that already exists elsewhere; the Builder only composes.
 
@@ -126,9 +126,28 @@ Transforms one Optimization Cycle into a structured, client-presentation-ready r
 
 **Reconstructing an Action's Reasoning**: a persisted `OptimizationAction` stores only `title`/`supportingFindingIds` (`F6-S04`), not a `ReasoningModel`. `buildActionsCompleted` regenerates the Optimization Plan against the Campaign's own `sourceAuditId` and matches each completed/verified Action back to the `OptimizationItem` with the identical `title` + `supportingFindingIds` — the exact two fields `CreateCampaignUseCase` used to seed the Action, so the match is exact by construction.
 
+# End-to-End Pilot Workflow
+
+Validated live, through both the API and the web UI, `F8-S01` (see `CTO-073`) — an agency can execute this entire sequence without developer support or manual database manipulation:
+
+```
+Client → Project → Baseline Audit → Findings → Optimization Plan
+  → Optimization Campaign → Verification Audit → Impact Assessment
+  → Optimization Cycle → AI Daily Briefing → AI Consultant Chat
+  → Executive Client Report
+```
+
+Each stage is documented in its own section above (Optimization Cycle, Verification Workflow, AI Context, AI Consultant Chat, AI Daily Briefing, Executive Client Report) — this section only records the pilot execution flow through the product surface and the two gaps `F8-S01` closed, so as not to duplicate that detail:
+
+**Pilot execution flow**: `POST /clients` (or auto-provisioned) → `POST /audits { url }` (auto-provisions Project and Optimization Cycle, `CTO-059`/`CTO-071`) → `POST /projects/:id/baseline` → view Findings/Optimization Plan for that Audit at `GET /audits/:id/analysis` or the Audit Detail page → `POST /projects/:id/campaigns` → a second `POST /audits` for the same Project (the verification Audit) → `GET /campaigns/:id/impact-assessment` (also on the Dashboard) → advance the Cycle through `POST /cycles/:id/status` (or the Dashboard's `CycleManager` buttons) → `GET /briefing/daily` (auto-loads on workspace open) → `POST /projects/:id/consultant/ask` → `GET /cycles/:id/report` (or the Dashboard's "View Executive Client Report" link).
+
+**Two gaps closed** (see `CTO-073` for full rationale): Findings/Optimization Plan for a specific Audit had no read path after creation (`GET /audits/:id/analysis` added); the Executive Client Report had no HTTP endpoint or UI at all despite being the sequence's final stage (`GET /cycles/:id/report` and a report page added, plus the Dashboard's Cycle section became interactive). Everything else in the sequence was already correct.
+
+**Known, accepted limitation**: the only Analysis Rules implemented are execution-status checks (`F6-S06`) that pass for any successfully-crawled site, so a real Audit against a real URL typically yields zero actionable Findings/Optimization Items/Campaign Actions. The full pipeline is nonetheless verified correct — every `F6`/`F7` sprint validated it with synthetic data. Adding real content-quality Analysis Rules is a new business capability, out of this ticket's scope.
+
 # Current Phase
 
-F7 — AI Consultant, in progress. F6 — Pilot Readiness fully delivered (`F6-S01` through `F6-S07`). AI Context Builder (`F7-S01`), AI Conversation Orchestrator (`F7-S02`), AI Consultant Chat MVP (`F7-S03`), AI Daily Briefing (`F7-S04`), Optimization Cycle (`F7-S05`, Pilot Readiness), and Executive Client Report (`F7-S06`, Pilot Readiness) delivered.
+F7 — AI Consultant, in progress. F8 — Pilot Hardening, in progress. F6 — Pilot Readiness fully delivered (`F6-S01` through `F6-S07`). AI Context Builder (`F7-S01`), AI Conversation Orchestrator (`F7-S02`), AI Consultant Chat MVP (`F7-S03`), AI Daily Briefing (`F7-S04`), Optimization Cycle (`F7-S05`, Pilot Readiness), and Executive Client Report (`F7-S06`, Pilot Readiness) delivered. End-to-End Pilot Workflow validated (`F8-S01`, Pilot Hardening).
 
 # Next Sprint
 

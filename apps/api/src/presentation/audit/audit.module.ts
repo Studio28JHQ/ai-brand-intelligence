@@ -10,12 +10,14 @@ import { FULL_AUDIT_TYPE } from '../../domain/audit/full-audit.type';
 import { CreateAuditUseCase } from '../../application/audit/create-audit.use-case';
 import { ExecuteAuditUseCase } from '../../application/audit/execute-audit.use-case';
 import { AuditQueryService } from '../../application/audit/audit-query.service';
+import { AuditAnalysisQueryService } from '../../application/audit/audit-analysis-query.service';
 import { AuditComparisonService } from '../../application/comparison/audit-comparison.service';
 import { AiVisibilityStatusRepository } from '../../infrastructure/audit/ai-visibility-status.repository';
 import { WorkflowExecutionHistoryRepository } from '../../infrastructure/audit/workflow-execution-history.repository';
 import { FindingReadRepository } from '../../infrastructure/comparison/finding-read.repository';
 import { EntityReadRepository } from '../../infrastructure/comparison/entity-read.repository';
 import { AiVisibilityReadRepository } from '../../infrastructure/comparison/ai-visibility-read.repository';
+import { KnowledgeGraphReadRepository } from '../../infrastructure/comparison/knowledge-graph-read.repository';
 import { DiscoveryStep } from '../../infrastructure/audit/discovery.step';
 import { CrawlerStep } from '../../infrastructure/audit/crawler.step';
 import { InventoryStep } from '../../infrastructure/audit/inventory.step';
@@ -39,6 +41,7 @@ import { AuditController } from './audit.controller';
     CreateAuditUseCase,
     ExecuteAuditUseCase,
     AuditQueryService,
+    AuditAnalysisQueryService,
     AuditComparisonService,
     AiVisibilityStatusRepository,
     WorkflowExecutionHistoryRepository,
@@ -46,6 +49,7 @@ import { AuditController } from './audit.controller';
     FindingReadRepository,
     EntityReadRepository,
     AiVisibilityReadRepository,
+    KnowledgeGraphReadRepository,
     { provide: WORKFLOW_PORT, useClass: WorkflowAdapter },
     DiscoveryStep,
     CrawlerStep,

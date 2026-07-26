@@ -1,9 +1,10 @@
 import Link from 'next/link';
-import { getAudit } from '../../actions';
+import { getAudit, getAuditAnalysis } from '../../actions';
 
 export default async function AuditDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const audit = await getAudit(id);
+  const analysis = audit?.status === 'completed' ? await getAuditAnalysis(id) : null;
 
   return (
     <main>
@@ -39,6 +40,45 @@ export default async function AuditDetailPage({ params }: { params: Promise<{ id
               </li>
             ))}
           </ul>
+
+          {audit.status === 'completed' && (
+            <>
+              <h2>Findings</h2>
+              {(!analysis || analysis.findings.length === 0) && <p>No findings recorded.</p>}
+              {analysis && analysis.findings.length > 0 && (
+                <ul>
+                  {analysis.findings.map((finding) => (
+                    <li key={finding.id}>
+                      <p>Rule: {finding.ruleId} (v{finding.ruleVersion})</p>
+                      <p>Category: {finding.category}</p>
+                      <p>Source Engine: {finding.sourceEngine}</p>
+                      <p>Outcome: {finding.outcome}</p>
+                      <p>Severity: {finding.severity}</p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              <h2>Optimization Plan</h2>
+              {(!analysis || analysis.optimizationPlan.length === 0) && <p>No optimization items.</p>}
+              {analysis && analysis.optimizationPlan.length > 0 && (
+                <ul>
+                  {analysis.optimizationPlan.map((item, index) => (
+                    <li key={`${item.title}-${index}`}>
+                      <p>Title: {item.title}</p>
+                      <p>Description: {item.description}</p>
+                      <p>Priority: {item.priority}</p>
+                      <p>Expected Impact: {item.expectedImpact}</p>
+                      <p>Estimated Effort: {item.estimatedEffort}</p>
+                      <p>
+                        Optimization Rule: {item.optimizationRuleId} (v{item.optimizationRuleVersion})
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
+          )}
         </div>
       )}
     </main>

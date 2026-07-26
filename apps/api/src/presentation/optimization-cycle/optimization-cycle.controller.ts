@@ -1,7 +1,8 @@
 import { BadRequestException, Body, Controller, Get, NotFoundException, Param, Post } from '@nestjs/common';
-import type { OptimizationCycleMetadata } from '@ai-visibility/contracts';
+import type { ExecutiveClientReport, OptimizationCycleMetadata } from '@ai-visibility/contracts';
 import { OptimizationCycleQueryService } from '../../application/optimization-cycle/optimization-cycle-query.service';
 import { TransitionCycleStatusUseCase } from '../../application/optimization-cycle/transition-cycle-status.use-case';
+import { ExecutiveClientReportBuilderService } from '../../application/executive-client-report/executive-client-report-builder.service';
 import {
   InvalidCycleStateTransitionError,
   OptimizationCycleNotFoundError,
@@ -15,6 +16,7 @@ export class OptimizationCycleController {
   constructor(
     private readonly optimizationCycleQueryService: OptimizationCycleQueryService,
     private readonly transitionCycleStatusUseCase: TransitionCycleStatusUseCase,
+    private readonly executiveClientReportBuilderService: ExecutiveClientReportBuilderService,
   ) {}
 
   @Get(':id')
@@ -24,6 +26,18 @@ export class OptimizationCycleController {
       throw new NotFoundException(`Optimization cycle not found: ${id}`);
     }
     return toOptimizationCycleMetadata(cycle);
+  }
+
+  @Get(':id/report')
+  async getExecutiveClientReport(@Param('id') id: string): Promise<ExecutiveClientReport> {
+    try {
+      return await this.executiveClientReportBuilderService.build(id);
+    } catch (error) {
+      if (error instanceof OptimizationCycleNotFoundError) {
+        throw new NotFoundException(error.message);
+      }
+      throw error;
+    }
   }
 
   @Post(':id/status')

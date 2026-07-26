@@ -25,3 +25,4 @@ export * from './ai-consultant';
 export * from './ai-briefing';
 export * from './optimization-cycle';
 export * from './executive-client-report';
+export * from './audit-analysis-view';
