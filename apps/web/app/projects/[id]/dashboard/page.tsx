@@ -1,183 +1,245 @@
 import Link from 'next/link';
 import { getDashboard } from '../../../actions';
 import { CycleManager } from './cycle-manager';
+import { Badge, Breadcrumbs, Card, EmptyState, PageHeader } from '../../../components/ui';
 
 export default async function ExecutiveDashboardPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const dashboard = await getDashboard(id);
 
   return (
-    <main>
-      <p>
-        <Link href="/">Back to Workspace</Link>
-      </p>
+    <main className="page">
+      <Breadcrumbs items={[{ label: 'Workspace', href: '/' }, { label: dashboard?.project.projectName ?? 'Project' }]} />
 
-      <h1>Executive Dashboard</h1>
+      <PageHeader
+        title="Executive Dashboard"
+        description={dashboard ? `${dashboard.project.clientName} · ${dashboard.project.primaryDomain}` : undefined}
+        actions={
+          <Link href={`/projects/${id}/consultant`} className="btn btn-secondary">
+            Ask the AI Consultant
+          </Link>
+        }
+      />
 
-      <p>
-        <Link href={`/projects/${id}/consultant`}>Ask the AI Consultant</Link>
-      </p>
-
-      {!dashboard && <p>Dashboard not available.</p>}
+      {!dashboard && (
+        <Card>
+          <EmptyState title="Dashboard not available" description="The Project may not exist, or the API may be unreachable." />
+        </Card>
+      )}
 
       {dashboard && (
-        <div>
-          <section>
-            <h2>Project Overview</h2>
-            <p>Project: {dashboard.project.projectName}</p>
-            <p>Client: {dashboard.project.clientName}</p>
-            <p>Primary Domain: {dashboard.project.primaryDomain}</p>
-            <p>Current Baseline: {dashboard.project.baselineAuditId ?? 'Not set'}</p>
-            <p>Baseline Set At: {dashboard.project.baselineSetAt ?? 'N/A'}</p>
-            <p>Latest Audit: {dashboard.project.latestAuditId ?? 'N/A'}</p>
-          </section>
+        <div className="stack">
+          <Card title="Project Overview">
+            <dl className="dl">
+              <dt>Project</dt>
+              <dd>{dashboard.project.projectName}</dd>
+              <dt>Client</dt>
+              <dd>{dashboard.project.clientName}</dd>
+              <dt>Primary Domain</dt>
+              <dd>{dashboard.project.primaryDomain}</dd>
+              <dt>Baseline</dt>
+              <dd>{dashboard.project.baselineAuditId ? <Badge variant="success">Set</Badge> : <Badge>Not set</Badge>}</dd>
+              <dt>Baseline Set At</dt>
+              <dd>{dashboard.project.baselineSetAt ?? 'N/A'}</dd>
+              <dt>Latest Audit</dt>
+              <dd>{dashboard.project.latestAuditId ?? 'N/A'}</dd>
+            </dl>
+          </Card>
 
-          <section>
-            <h2>Current Optimization Cycle</h2>
+          <Card title="Current Optimization Cycle">
             <CycleManager projectId={id} />
-          </section>
+          </Card>
 
-          <section>
-            <h2>Visibility Overview</h2>
-            <p>AI Visibility Score: {dashboard.visibility.currentScore ?? 'N/A'}</p>
-            <p>Baseline Score: {dashboard.visibility.baselineScore ?? 'N/A'}</p>
-            <p>Score Trend: {dashboard.visibility.scoreTrend}</p>
-            <p>Total Findings: {dashboard.visibility.totalFindings}</p>
-            <p>Critical Findings: {dashboard.visibility.criticalFindings}</p>
-            <p>Opportunities: {dashboard.visibility.opportunities}</p>
-          </section>
+          <div className="grid-2">
+            <Card title="Visibility Overview">
+              <dl className="dl">
+                <dt>AI Visibility Score</dt>
+                <dd>{dashboard.visibility.currentScore ? <Badge>{dashboard.visibility.currentScore}</Badge> : 'N/A'}</dd>
+                <dt>Baseline Score</dt>
+                <dd>{dashboard.visibility.baselineScore ? <Badge>{dashboard.visibility.baselineScore}</Badge> : 'N/A'}</dd>
+                <dt>Score Trend</dt>
+                <dd>
+                  <Badge>{dashboard.visibility.scoreTrend}</Badge>
+                </dd>
+                <dt>Total Findings</dt>
+                <dd>{dashboard.visibility.totalFindings}</dd>
+                <dt>Critical Findings</dt>
+                <dd>{dashboard.visibility.criticalFindings}</dd>
+                <dt>Opportunities</dt>
+                <dd>{dashboard.visibility.opportunities}</dd>
+              </dl>
+            </Card>
 
-          <section>
-            <h2>Optimization Plan — Priority Actions</h2>
-            {dashboard.priorityActions.length === 0 && <p>No priority actions.</p>}
-            <ul>
+            <Card title="Recent Activity">
+              <dl className="dl">
+                <dt>Latest Completed Audit</dt>
+                <dd>{dashboard.recentActivity.latestCompletedAuditId ?? 'N/A'}</dd>
+                <dt>Completed At</dt>
+                <dd>{dashboard.recentActivity.latestCompletedAuditDate ?? 'N/A'}</dd>
+                <dt>Last Baseline Change</dt>
+                <dd>{dashboard.recentActivity.lastBaselineChangeAuditId ?? 'N/A'}</dd>
+                <dt>Changed At</dt>
+                <dd>{dashboard.recentActivity.lastBaselineChangeAt ?? 'N/A'}</dd>
+                <dt>Last Execution</dt>
+                <dd>{dashboard.recentActivity.lastExecutionStatus ? <Badge>{dashboard.recentActivity.lastExecutionStatus}</Badge> : 'N/A'}</dd>
+                <dt>Executed At</dt>
+                <dd>{dashboard.recentActivity.lastExecutionAt ?? 'N/A'}</dd>
+              </dl>
+            </Card>
+          </div>
+
+          <Card title="Optimization Plan — Priority Actions">
+            {dashboard.priorityActions.length === 0 && <EmptyState title="No priority actions" />}
+            <div className="stack">
               {dashboard.priorityActions.map((action, index) => (
-                <li key={`${action.title}-${index}`}>
-                  <p>Title: {action.title}</p>
-                  <p>Description: {action.description}</p>
-                  <p>Business Rationale: {action.rationale}</p>
-                  <p>Priority: {action.priority}</p>
-                  <p>Expected Impact: {action.expectedImpact}</p>
-                  <p>Estimated Effort: {action.estimatedEffort}</p>
-                  <p>Supporting Findings: {action.supportingFindingIds.join(', ')}</p>
-                  <p>
-                    Optimization Rule: {action.optimizationRuleId} (v{action.optimizationRuleVersion})
-                  </p>
+                <Card key={`${action.title}-${index}`} muted>
+                  <div className="card__header">
+                    <h4>{action.title}</h4>
+                    <Badge>{action.priority}</Badge>
+                  </div>
+                  <p>{action.description}</p>
+                  <p className="text-secondary">{action.rationale}</p>
+                  <dl className="dl">
+                    <dt>Expected Impact</dt>
+                    <dd>{action.expectedImpact}</dd>
+                    <dt>Estimated Effort</dt>
+                    <dd>{action.estimatedEffort}</dd>
+                    <dt>Supporting Findings</dt>
+                    <dd>{action.supportingFindingIds.join(', ') || 'None'}</dd>
+                    <dt>Optimization Rule</dt>
+                    <dd>
+                      {action.optimizationRuleId} (v{action.optimizationRuleVersion})
+                    </dd>
+                  </dl>
                   <details>
                     <summary>Reasoning</summary>
-                    <p>
-                      <strong>Why this action exists</strong>
-                    </p>
-                    <ul>
-                      {action.reasoning.triggeringFindings.map((finding) => (
-                        <li key={finding.findingId}>
-                          Finding {finding.findingId}: rule &apos;{finding.ruleId}&apos; ({finding.category}, {finding.sourceEngine}) evaluated to &apos;{finding.outcome}&apos;.
-                        </li>
-                      ))}
-                      {action.reasoning.appliedRules.map((rule) => (
-                        <li key={`${rule.ruleId}-${rule.ruleVersion}`}>
-                          Applied Optimization Rule &apos;{rule.ruleId}&apos; v{rule.ruleVersion} ({rule.category}, severity {rule.severity}).
-                        </li>
-                      ))}
-                    </ul>
-                    <p>
-                      <strong>What evidence supports it</strong>
-                    </p>
-                    {action.reasoning.evidence.length === 0 && <p>No evidence facts recorded.</p>}
-                    <ul>
-                      {action.reasoning.evidence.map((entry, index) => (
-                        <li key={`${entry.field}-${index}`}>
-                          {entry.field}: {entry.value}
-                        </li>
-                      ))}
-                    </ul>
-                    <p>
-                      Knowledge Graph facts:{' '}
-                      {action.reasoning.knowledgeGraphFacts.map((fact) => `${fact.dimension}=${fact.level}`).join(', ')}
-                    </p>
-                    <p>
-                      Entity relationships:{' '}
-                      {action.reasoning.entityRelationships.length === 0
-                        ? 'None (not applicable to this rule)'
-                        : action.reasoning.entityRelationships
-                            .map((rel) => `${rel.sourceEntityName} -${rel.relationshipType}-> ${rel.targetEntityName}`)
-                            .join(', ')}
-                    </p>
-                    <p>
-                      <strong>Expected benefit</strong>
-                    </p>
-                    <p>
-                      Impact level: {action.reasoning.expectedOutcome.impactLevel} on {action.reasoning.expectedOutcome.targetDimension}
-                    </p>
-                    <p>Confidence: {action.reasoning.confidence}</p>
-                    <p>Assumptions:</p>
-                    <ul>
-                      {action.reasoning.assumptions.map((assumption) => (
-                        <li key={assumption.code}>
-                          [{assumption.code}] {assumption.description}
-                        </li>
-                      ))}
-                    </ul>
-                  </details>
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          <section>
-            <h2>Optimization Campaign</h2>
-            {!dashboard.campaign && <p>No campaign yet.</p>}
-            {dashboard.campaign && (
-              <>
-                <p>Campaign ID: {dashboard.campaign.campaignId}</p>
-                <p>Status: {dashboard.campaign.status}</p>
-                <p>Total Actions: {dashboard.campaign.totalActions}</p>
-                <p>Pending: {dashboard.campaign.pendingActions}</p>
-                <p>In Progress: {dashboard.campaign.inProgressActions}</p>
-                <p>Completed: {dashboard.campaign.completedActions}</p>
-                <p>Verified: {dashboard.campaign.verifiedActions}</p>
-                <p>Progress: {dashboard.campaign.progressPercentage}%</p>
-              </>
-            )}
-            <p>
-              <Link href={`/projects/${id}/campaign`}>Manage Campaign</Link>
-            </p>
-          </section>
-
-          <section>
-            <h2>Campaign Impact</h2>
-            {!dashboard.campaignImpact && <p>No impact assessment available yet.</p>}
-            {dashboard.campaignImpact && (
-              <>
-                <p>Verification Date: {dashboard.campaignImpact.verificationDate}</p>
-                <p>AI Visibility Trend: {dashboard.campaignImpact.aiVisibilityTrend}</p>
-                <p>Findings Resolved: {dashboard.campaignImpact.findingsResolvedCount}</p>
-                <p>Findings Introduced: {dashboard.campaignImpact.findingsIntroducedCount}</p>
-                <p>Remaining Opportunities: {dashboard.campaignImpact.remainingOpportunitiesCount}</p>
-                <h3>Improvement Summary</h3>
-                {dashboard.campaignImpact.improvements.length === 0 && <p>No improvements recorded yet.</p>}
-                <ul>
-                  {dashboard.campaignImpact.improvements.map((entry, index) => (
-                    <li key={`${entry.category}-${index}`}>
+                    <div className="stack-sm">
                       <p>
-                        [{entry.category}] {entry.description}
+                        <strong>Why this action exists</strong>
                       </p>
-                    </li>
-                  ))}
-                </ul>
-              </>
-            )}
-          </section>
+                      <ul className="stack-sm">
+                        {action.reasoning.triggeringFindings.map((finding) => (
+                          <li key={finding.findingId} className="text-secondary">
+                            Finding {finding.findingId}: rule &apos;{finding.ruleId}&apos; ({finding.category}, {finding.sourceEngine})
+                            evaluated to &apos;{finding.outcome}&apos;.
+                          </li>
+                        ))}
+                        {action.reasoning.appliedRules.map((rule) => (
+                          <li key={`${rule.ruleId}-${rule.ruleVersion}`} className="text-secondary">
+                            Applied Optimization Rule &apos;{rule.ruleId}&apos; v{rule.ruleVersion} ({rule.category}, severity{' '}
+                            {rule.severity}).
+                          </li>
+                        ))}
+                      </ul>
+                      <p>
+                        <strong>What evidence supports it</strong>
+                      </p>
+                      {action.reasoning.evidence.length === 0 && <p className="text-secondary">No evidence facts recorded.</p>}
+                      <ul className="stack-sm">
+                        {action.reasoning.evidence.map((entry, entryIndex) => (
+                          <li key={`${entry.field}-${entryIndex}`} className="text-secondary">
+                            {entry.field}: {entry.value}
+                          </li>
+                        ))}
+                      </ul>
+                      <p className="text-secondary">
+                        Knowledge Graph facts:{' '}
+                        {action.reasoning.knowledgeGraphFacts.map((fact) => `${fact.dimension}=${fact.level}`).join(', ') || 'None'}
+                      </p>
+                      <p className="text-secondary">
+                        Entity relationships:{' '}
+                        {action.reasoning.entityRelationships.length === 0
+                          ? 'None (not applicable to this rule)'
+                          : action.reasoning.entityRelationships
+                              .map((rel) => `${rel.sourceEntityName} -${rel.relationshipType}-> ${rel.targetEntityName}`)
+                              .join(', ')}
+                      </p>
+                      <p>
+                        <strong>Expected benefit</strong>
+                      </p>
+                      <p className="text-secondary">
+                        Impact level: {action.reasoning.expectedOutcome.impactLevel} on{' '}
+                        {action.reasoning.expectedOutcome.targetDimension}
+                      </p>
+                      <p className="text-secondary">Confidence: {action.reasoning.confidence}</p>
+                      <p>Assumptions:</p>
+                      <ul className="stack-sm">
+                        {action.reasoning.assumptions.map((assumption) => (
+                          <li key={assumption.code} className="text-secondary">
+                            [{assumption.code}] {assumption.description}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </details>
+                </Card>
+              ))}
+            </div>
+          </Card>
 
-          <section>
-            <h2>Recent Activity</h2>
-            <p>Latest Completed Audit: {dashboard.recentActivity.latestCompletedAuditId ?? 'N/A'}</p>
-            <p>Latest Completed Audit Date: {dashboard.recentActivity.latestCompletedAuditDate ?? 'N/A'}</p>
-            <p>Last Baseline Change: {dashboard.recentActivity.lastBaselineChangeAuditId ?? 'N/A'}</p>
-            <p>Last Baseline Change At: {dashboard.recentActivity.lastBaselineChangeAt ?? 'N/A'}</p>
-            <p>Last Execution Status: {dashboard.recentActivity.lastExecutionStatus ?? 'N/A'}</p>
-            <p>Last Execution At: {dashboard.recentActivity.lastExecutionAt ?? 'N/A'}</p>
-          </section>
+          <div className="grid-2">
+            <Card
+              title="Optimization Campaign"
+              actions={
+                <Link href={`/projects/${id}/campaign`} className="btn btn-secondary btn-sm">
+                  Manage Campaign
+                </Link>
+              }
+            >
+              {!dashboard.campaign && <EmptyState title="No Campaign yet" />}
+              {dashboard.campaign && (
+                <dl className="dl">
+                  <dt>Status</dt>
+                  <dd>
+                    <Badge>{dashboard.campaign.status}</Badge>
+                  </dd>
+                  <dt>Total Actions</dt>
+                  <dd>{dashboard.campaign.totalActions}</dd>
+                  <dt>Pending</dt>
+                  <dd>{dashboard.campaign.pendingActions}</dd>
+                  <dt>In Progress</dt>
+                  <dd>{dashboard.campaign.inProgressActions}</dd>
+                  <dt>Completed</dt>
+                  <dd>{dashboard.campaign.completedActions}</dd>
+                  <dt>Verified</dt>
+                  <dd>{dashboard.campaign.verifiedActions}</dd>
+                  <dt>Progress</dt>
+                  <dd>{dashboard.campaign.progressPercentage}%</dd>
+                </dl>
+              )}
+            </Card>
+
+            <Card title="Campaign Impact">
+              {!dashboard.campaignImpact && <EmptyState title="No Impact Assessment available yet" />}
+              {dashboard.campaignImpact && (
+                <div className="stack-sm">
+                  <dl className="dl">
+                    <dt>Verification Date</dt>
+                    <dd>{dashboard.campaignImpact.verificationDate}</dd>
+                    <dt>AI Visibility Trend</dt>
+                    <dd>
+                      <Badge>{dashboard.campaignImpact.aiVisibilityTrend}</Badge>
+                    </dd>
+                    <dt>Findings Resolved</dt>
+                    <dd>{dashboard.campaignImpact.findingsResolvedCount}</dd>
+                    <dt>Findings Introduced</dt>
+                    <dd>{dashboard.campaignImpact.findingsIntroducedCount}</dd>
+                    <dt>Remaining Opportunities</dt>
+                    <dd>{dashboard.campaignImpact.remainingOpportunitiesCount}</dd>
+                  </dl>
+                  <h4>Improvement Summary</h4>
+                  {dashboard.campaignImpact.improvements.length === 0 && <p className="text-secondary">No improvements recorded yet.</p>}
+                  <ul className="stack-sm">
+                    {dashboard.campaignImpact.improvements.map((entry, index) => (
+                      <li key={`${entry.category}-${index}`} className="text-secondary">
+                        <Badge variant="neutral">{entry.category}</Badge> {entry.description}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </Card>
+          </div>
         </div>
       )}
     </main>

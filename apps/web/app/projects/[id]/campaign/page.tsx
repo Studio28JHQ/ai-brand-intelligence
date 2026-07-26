@@ -1,16 +1,16 @@
-import Link from 'next/link';
 import { CampaignManager } from './campaign-manager';
+import { Breadcrumbs, PageHeader } from '../../../components/ui';
 
 export default async function CampaignPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
   return (
-    <main>
-      <p>
-        <Link href={`/projects/${id}/dashboard`}>Back to Dashboard</Link>
-      </p>
+    <main className="page">
+      <Breadcrumbs
+        items={[{ label: 'Workspace', href: '/' }, { label: 'Dashboard', href: `/projects/${id}/dashboard` }, { label: 'Campaign' }]}
+      />
 
-      <h1>Optimization Campaign</h1>
+      <PageHeader title="Optimization Campaign" description="Track Optimization Actions from plan to verified impact." />
 
       <CampaignManager projectId={id} />
     </main>

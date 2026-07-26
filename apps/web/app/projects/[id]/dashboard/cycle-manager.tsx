@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import type { CycleStatus, OptimizationCycleMetadata } from '@ai-visibility/contracts';
 import { getCurrentCycle, transitionCycleStatus } from '../../../actions';
+import { Badge, Banner, ConfirmButton, EmptyState, SkeletonBlock } from '../../../components/ui';
 
 const NEXT_CYCLE_STATUS: Record<CycleStatus, CycleStatus | null> = {
   planned: 'running',
@@ -36,32 +37,48 @@ export function CycleManager({ projectId }: { projectId: string }) {
   };
 
   if (loading) {
-    return <p>Loading current cycle...</p>;
+    return <SkeletonBlock lines={3} />;
   }
 
   if (!cycle) {
-    return <p>No optimization cycle yet — one is created automatically on the next Audit.</p>;
+    return <EmptyState title="No Optimization Cycle yet" description="One is created automatically on the next Audit." />;
   }
 
   const nextStatus = NEXT_CYCLE_STATUS[cycle.status];
 
   return (
-    <div>
-      {statusMessage && <p>{statusMessage}</p>}
-      <p>Cycle ID: {cycle.id}</p>
-      <p>Goal: {cycle.goal}</p>
-      <p>Status: {cycle.status}</p>
-      <p>Current Phase: {cycle.currentPhase}</p>
-      <p>Start Date: {cycle.startDate ?? 'Not started'}</p>
-      <p>End Date: {cycle.endDate ?? 'Not completed'}</p>
-      {nextStatus && (
-        <button type="button" onClick={() => handleTransition(nextStatus)}>
-          Advance to {nextStatus}
-        </button>
-      )}
-      <p>
-        <Link href={`/projects/${projectId}/cycles/${cycle.id}/report`}>View Executive Client Report</Link>
-      </p>
+    <div className="stack">
+      {statusMessage && <Banner variant="success">{statusMessage}</Banner>}
+      <dl className="dl">
+        <dt>Goal</dt>
+        <dd>{cycle.goal}</dd>
+        <dt>Status</dt>
+        <dd>
+          <Badge>{cycle.status}</Badge>
+        </dd>
+        <dt>Start Date</dt>
+        <dd>{cycle.startDate ?? 'Not started'}</dd>
+        <dt>End Date</dt>
+        <dd>{cycle.endDate ?? 'Not completed'}</dd>
+      </dl>
+      <div className="cluster">
+        {nextStatus &&
+          (nextStatus === 'completed' ? (
+            <ConfirmButton
+              label={`Advance to ${nextStatus}`}
+              confirmLabel={`Advance this Cycle to '${nextStatus}'?`}
+              confirmDescription="A completed Cycle cannot be reopened."
+              onConfirm={() => handleTransition(nextStatus)}
+            />
+          ) : (
+            <button type="button" className="btn btn-secondary" onClick={() => handleTransition(nextStatus)}>
+              Advance to {nextStatus}
+            </button>
+          ))}
+        <Link href={`/projects/${projectId}/cycles/${cycle.id}/report`} className="btn btn-ghost">
+          View Executive Client Report
+        </Link>
+      </div>
     </div>
   );
 }

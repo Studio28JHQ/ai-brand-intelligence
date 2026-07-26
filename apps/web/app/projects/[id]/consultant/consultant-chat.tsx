@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { ConsultantAnswer, ConsultantIntentType } from '@ai-visibility/contracts';
 import { askConsultant } from '../../../actions';
+import { Badge, Banner, Card, CONFIDENCE_VARIANT, EmptyState, SkeletonBlock } from '../../../components/ui';
 
 interface ConversationTurn {
   question: string;
@@ -47,37 +48,55 @@ export function ConsultantChat({ projectId }: { projectId: string }) {
   };
 
   return (
-    <div>
-      <p>
-        {PRESET_QUESTIONS.map((preset) => (
-          <button
-            key={preset.intentType}
-            type="button"
-            disabled={loading}
-            onClick={() => ask(preset.intentType, preset.question)}
-            style={{ marginRight: '0.5rem' }}
-          >
-            {preset.question}
+    <div className="stack">
+      <Card>
+        <div className="cluster">
+          {PRESET_QUESTIONS.map((preset) => (
+            <button
+              key={preset.intentType}
+              type="button"
+              className="btn btn-secondary btn-sm"
+              disabled={loading}
+              onClick={() => ask(preset.intentType, preset.question)}
+            >
+              {preset.question}
+            </button>
+          ))}
+        </div>
+
+        <div className="form-row">
+          <div className="field" style={{ flex: '1 1 320px' }}>
+            <label htmlFor="consultant-question" className="visually-hidden">
+              Ask a question about this Project
+            </label>
+            <input
+              className="input"
+              id="consultant-question"
+              type="text"
+              value={customQuestion}
+              onChange={(event) => setCustomQuestion(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  handleCustomAsk();
+                }
+              }}
+              placeholder="Ask a question about this Project"
+            />
+          </div>
+          <button type="button" className="btn btn-primary" disabled={loading} onClick={handleCustomAsk}>
+            Ask
           </button>
-        ))}
-      </p>
+        </div>
 
-      <p>
-        <input
-          type="text"
-          value={customQuestion}
-          onChange={(event) => setCustomQuestion(event.target.value)}
-          placeholder="Ask a question about this Project"
-        />
-        <button type="button" disabled={loading} onClick={handleCustomAsk}>
-          Ask
-        </button>
-      </p>
+        {loading && <SkeletonBlock lines={2} />}
+        {error && <Banner variant="error">{error}</Banner>}
+      </Card>
 
-      {loading && <p>Thinking...</p>}
-      {error && <p>{error}</p>}
+      {history.length === 0 && !loading && (
+        <EmptyState title="No questions asked yet" description="Try one of the preset questions above to get started." />
+      )}
 
-      <div>
+      <div className="stack">
         {history
           .slice()
           .reverse()
@@ -93,78 +112,70 @@ function ConversationTurnView({ turn }: { turn: ConversationTurn }) {
   const { answer } = turn;
 
   return (
-    <div style={{ border: '1px solid #ccc', padding: '1rem', marginBottom: '1rem' }}>
-      <p>
-        <strong>Q:</strong> {turn.question}
-      </p>
+    <Card>
+      <p className="text-secondary">Q: {turn.question}</p>
 
-      {answer.status === 'rejected' && (
-        <p>
-          <strong>Unable to answer:</strong> {answer.rejectionReason}
-        </p>
-      )}
+      {answer.status === 'rejected' && <Banner variant="error">Unable to answer: {answer.rejectionReason}</Banner>}
 
-      {answer.status === 'unavailable' && <p>The AI Consultant has no answer available right now.</p>}
+      {answer.status === 'unavailable' && <Banner variant="info">The AI Consultant has no answer available right now.</Banner>}
 
       {answer.status === 'completed' && (
-        <>
-          <section>
-            <h4>AI Interpretation</h4>
+        <div className="stack">
+          <div className="section">
+            <div className="cluster">
+              <h4>AI Interpretation</h4>
+              {answer.confidence && <Badge variant={CONFIDENCE_VARIANT}>{answer.confidence}</Badge>}
+            </div>
             <p>{answer.answer}</p>
-            {answer.confidence && (
-              <p>
-                <strong>Confidence:</strong> {answer.confidence}
-              </p>
-            )}
-          </section>
+          </div>
 
-          <section>
+          <div className="section">
             <h4>Facts (Evidence)</h4>
-            {answer.facts.length === 0 && <p>No supporting facts.</p>}
-            <ul>
+            {answer.facts.length === 0 && <p className="text-secondary">No supporting facts.</p>}
+            <ul className="stack-sm">
               {answer.facts.map((fact, index) => (
-                <li key={index}>
+                <li key={index} className="text-secondary">
                   {fact.label}: {fact.value}
                 </li>
               ))}
             </ul>
-          </section>
+          </div>
 
-          <section>
+          <div className="section">
             <h4>Suggested Actions</h4>
-            {answer.suggestedActions.length === 0 && <p>No suggested actions.</p>}
-            <ul>
+            {answer.suggestedActions.length === 0 && <p className="text-secondary">No suggested actions.</p>}
+            <ul className="stack-sm">
               {answer.suggestedActions.map((action, index) => (
                 <li key={index}>{action}</li>
               ))}
             </ul>
-          </section>
+          </div>
 
-          <section>
+          <div className="section">
             <h4>Related Findings</h4>
-            {answer.relatedFindings.length === 0 && <p>No related findings.</p>}
-            <ul>
+            {answer.relatedFindings.length === 0 && <p className="text-secondary">No related findings.</p>}
+            <ul className="stack-sm">
               {answer.relatedFindings.map((finding) => (
-                <li key={finding.findingId}>
+                <li key={finding.findingId} className="text-secondary">
                   {finding.ruleId} ({finding.sourceEngine}/{finding.category}): {finding.outcome}
                 </li>
               ))}
             </ul>
-          </section>
+          </div>
 
-          <section>
+          <div className="section">
             <h4>Related Optimization Items</h4>
-            {answer.relatedOptimizationItems.length === 0 && <p>No related optimization items.</p>}
-            <ul>
+            {answer.relatedOptimizationItems.length === 0 && <p className="text-secondary">No related optimization items.</p>}
+            <ul className="stack-sm">
               {answer.relatedOptimizationItems.map((item) => (
-                <li key={`${item.optimizationRuleId}-${item.optimizationRuleVersion}`}>
-                  {item.title} (priority: {item.priority})
+                <li key={`${item.optimizationRuleId}-${item.optimizationRuleVersion}`} className="text-secondary">
+                  {item.title} (priority: <Badge>{item.priority}</Badge>)
                 </li>
               ))}
             </ul>
-          </section>
-        </>
+          </div>
+        </div>
       )}
-    </div>
+    </Card>
   );
 }

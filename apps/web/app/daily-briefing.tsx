@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import type { BriefingItem, BriefingModel } from '@ai-visibility/contracts';
 import { getDailyBriefing } from './actions';
+import { Badge, Banner, Card, CONFIDENCE_VARIANT, EmptyState, SkeletonBlock } from './components/ui';
 
 const CATEGORY_LABELS: Record<BriefingItem['category'], string> = {
   'project-attention': 'Projects Requiring Attention',
@@ -26,63 +27,68 @@ export function DailyBriefing() {
 
   if (loading) {
     return (
-      <section>
-        <h2>AI Daily Briefing</h2>
-        <p>Generating briefing...</p>
-      </section>
+      <Card title="AI Daily Briefing">
+        <SkeletonBlock lines={2} />
+      </Card>
     );
   }
 
   if (!briefing) {
     return (
-      <section>
-        <h2>AI Daily Briefing</h2>
-        <p>Unable to load the briefing right now. Is the API reachable?</p>
-      </section>
+      <Card title="AI Daily Briefing">
+        <Banner variant="error">Unable to load the briefing right now. Is the API reachable?</Banner>
+      </Card>
     );
   }
 
   if (briefing.items.length === 0) {
     return (
-      <section>
-        <h2>AI Daily Briefing</h2>
-        <p>Nothing needs your attention right now across {briefing.projectsSummarized} active Project(s).</p>
-      </section>
+      <Card title="AI Daily Briefing">
+        <EmptyState
+          title="Nothing needs your attention"
+          description={`Across ${briefing.projectsSummarized} active Project(s).`}
+        />
+      </Card>
     );
   }
 
   return (
-    <section>
-      <h2>AI Daily Briefing</h2>
-      <p>
+    <Card title="AI Daily Briefing">
+      <p className="text-tertiary">
         Generated at {briefing.generatedAt} across {briefing.projectsSummarized} active Project(s).
       </p>
-      <ul>
+      <div className="stack">
         {briefing.items.map((item) => (
-          <li key={item.id} style={{ border: '1px solid #ccc', padding: '0.75rem', marginBottom: '0.5rem' }}>
-            <p>
-              <strong>{CATEGORY_LABELS[item.category]}</strong> — {item.projectName} ({item.clientName})
+          <Card key={item.id} muted>
+            <div className="card__header">
+              <div>
+                <p className="text-secondary">
+                  {CATEGORY_LABELS[item.category]} · {item.projectName} ({item.clientName})
+                </p>
+                <h4>{item.title}</h4>
+              </div>
+              <Badge variant={CONFIDENCE_VARIANT}>{item.confidence}</Badge>
+            </div>
+            <p>{item.reason}</p>
+            <p className="text-secondary">
+              <strong>Business impact:</strong> {item.businessImpact}
             </p>
-            <p>
-              <strong>{item.title}</strong>
+            <p className="text-secondary">
+              <strong>Recommended next action:</strong> {item.recommendedNextAction}
             </p>
-            <p>Reason: {item.reason}</p>
-            <p>Business Impact: {item.businessImpact}</p>
-            <p>Recommended Next Action: {item.recommendedNextAction}</p>
-            <p>Confidence: {item.confidence}</p>
             <details>
               <summary>Evidence</summary>
-              <ul>
+              <ul className="stack-sm">
                 {item.evidence.map((fact, index) => (
-                  <li key={index}>
+                  <li key={index} className="text-secondary">
                     {fact.label}: {fact.value}
                   </li>
                 ))}
               </ul>
             </details>
-          </li>
+          </Card>
         ))}
-      </ul>
-    </section>
+      </div>
+    </Card>
   );
 }

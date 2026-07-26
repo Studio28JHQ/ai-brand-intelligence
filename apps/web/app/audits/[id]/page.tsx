@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { getAudit, getAuditAnalysis } from '../../actions';
+import { Badge, Breadcrumbs, Card, EmptyState, PageHeader } from '../../components/ui';
 
 export default async function AuditDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -7,79 +8,136 @@ export default async function AuditDetailPage({ params }: { params: Promise<{ id
   const analysis = audit?.status === 'completed' ? await getAuditAnalysis(id) : null;
 
   return (
-    <main>
-      <p>
-        <Link href="/">Back to Workspace</Link>
-      </p>
+    <main className="page">
+      <Breadcrumbs items={[{ label: 'Workspace', href: '/' }, { label: 'Audit' }]} />
 
-      <h1>Audit Detail</h1>
+      <PageHeader
+        title="Audit Detail"
+        description={audit?.url}
+        actions={
+          audit && (
+            <Link href={`/projects/${audit.projectId}/dashboard`} className="btn btn-secondary">
+              View Project Dashboard
+            </Link>
+          )
+        }
+      />
 
-      {!audit && <p>Audit not found.</p>}
+      {!audit && (
+        <Card>
+          <EmptyState title="Audit not found" />
+        </Card>
+      )}
 
       {audit && (
-        <div>
-          <p>
-            <Link href={`/projects/${audit.projectId}/dashboard`}>View Project Dashboard</Link>
-          </p>
-          <p>Audit ID: {audit.id}</p>
-          <p>Target URL: {audit.url}</p>
-          <p>Status: {audit.status}</p>
-          <p>Started At: {audit.startedAt ?? 'N/A'}</p>
-          <p>Completed At: {audit.completedAt ?? 'N/A'}</p>
-          <p>Latest AI Visibility Status: {audit.aiVisibilityStatus ?? 'N/A'}</p>
+        <div className="stack">
+          <Card>
+            <dl className="dl">
+              <dt>Status</dt>
+              <dd>
+                <Badge>{audit.status}</Badge>
+              </dd>
+              <dt>Started At</dt>
+              <dd>{audit.startedAt ?? 'N/A'}</dd>
+              <dt>Completed At</dt>
+              <dd>{audit.completedAt ?? 'N/A'}</dd>
+              <dt>AI Visibility Status</dt>
+              <dd>{audit.aiVisibilityStatus ? <Badge>{audit.aiVisibilityStatus}</Badge> : 'N/A'}</dd>
+            </dl>
+          </Card>
 
-          <h2>Execution Timeline</h2>
-          {audit.executionHistory.length === 0 && <p>No execution history recorded.</p>}
-          <ul>
-            {audit.executionHistory.map((record, index) => (
-              <li key={`${record.stepId}-${index}`}>
-                <p>Step: {record.stepId}</p>
-                <p>Status: {record.status}</p>
-                <p>Started At: {record.startedAt}</p>
-                <p>Completed At: {record.completedAt}</p>
-                <p>Duration: {record.durationMs}ms</p>
-                {record.errorCode && <p>Error Code: {record.errorCode}</p>}
-                {record.errorMessage && <p>Error Message: {record.errorMessage}</p>}
-              </li>
-            ))}
-          </ul>
+          <Card title="Execution Timeline">
+            {audit.executionHistory.length === 0 && <EmptyState title="No execution history recorded" />}
+            {audit.executionHistory.length > 0 && (
+              <div className="table-wrapper">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Step</th>
+                      <th>Status</th>
+                      <th>Duration</th>
+                      <th>Error</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {audit.executionHistory.map((record, index) => (
+                      <tr key={`${record.stepId}-${index}`}>
+                        <td>{record.stepId}</td>
+                        <td>
+                          <Badge>{record.status}</Badge>
+                        </td>
+                        <td>{record.durationMs}ms</td>
+                        <td>{record.errorMessage ? `${record.errorCode}: ${record.errorMessage}` : '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </Card>
 
           {audit.status === 'completed' && (
             <>
-              <h2>Findings</h2>
-              {(!analysis || analysis.findings.length === 0) && <p>No findings recorded.</p>}
-              {analysis && analysis.findings.length > 0 && (
-                <ul>
-                  {analysis.findings.map((finding) => (
-                    <li key={finding.id}>
-                      <p>Rule: {finding.ruleId} (v{finding.ruleVersion})</p>
-                      <p>Category: {finding.category}</p>
-                      <p>Source Engine: {finding.sourceEngine}</p>
-                      <p>Outcome: {finding.outcome}</p>
-                      <p>Severity: {finding.severity}</p>
-                    </li>
-                  ))}
-                </ul>
-              )}
+              <Card title="Findings">
+                {(!analysis || analysis.findings.length === 0) && <EmptyState title="No Findings recorded" />}
+                {analysis && analysis.findings.length > 0 && (
+                  <div className="table-wrapper">
+                    <table className="table">
+                      <thead>
+                        <tr>
+                          <th>Rule</th>
+                          <th>Category</th>
+                          <th>Source Engine</th>
+                          <th>Outcome</th>
+                          <th>Severity</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {analysis.findings.map((finding) => (
+                          <tr key={finding.id}>
+                            <td>
+                              {finding.ruleId} <span className="text-tertiary">v{finding.ruleVersion}</span>
+                            </td>
+                            <td>{finding.category}</td>
+                            <td>{finding.sourceEngine}</td>
+                            <td>
+                              <Badge>{finding.outcome}</Badge>
+                            </td>
+                            <td>
+                              <Badge>{finding.severity}</Badge>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </Card>
 
-              <h2>Optimization Plan</h2>
-              {(!analysis || analysis.optimizationPlan.length === 0) && <p>No optimization items.</p>}
-              {analysis && analysis.optimizationPlan.length > 0 && (
-                <ul>
-                  {analysis.optimizationPlan.map((item, index) => (
-                    <li key={`${item.title}-${index}`}>
-                      <p>Title: {item.title}</p>
-                      <p>Description: {item.description}</p>
-                      <p>Priority: {item.priority}</p>
-                      <p>Expected Impact: {item.expectedImpact}</p>
-                      <p>Estimated Effort: {item.estimatedEffort}</p>
-                      <p>
-                        Optimization Rule: {item.optimizationRuleId} (v{item.optimizationRuleVersion})
-                      </p>
-                    </li>
+              <Card title="Optimization Plan">
+                {(!analysis || analysis.optimizationPlan.length === 0) && <EmptyState title="No Optimization Items" />}
+                <div className="stack">
+                  {analysis?.optimizationPlan.map((item, index) => (
+                    <Card key={`${item.title}-${index}`} muted>
+                      <div className="card__header">
+                        <h4>{item.title}</h4>
+                        <Badge>{item.priority}</Badge>
+                      </div>
+                      <p>{item.description}</p>
+                      <dl className="dl">
+                        <dt>Expected Impact</dt>
+                        <dd>{item.expectedImpact}</dd>
+                        <dt>Estimated Effort</dt>
+                        <dd>{item.estimatedEffort}</dd>
+                        <dt>Optimization Rule</dt>
+                        <dd>
+                          {item.optimizationRuleId} (v{item.optimizationRuleVersion})
+                        </dd>
+                      </dl>
+                    </Card>
                   ))}
-                </ul>
-              )}
+                </div>
+              </Card>
             </>
           )}
         </div>
