@@ -50,6 +50,9 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
                   <p>Expected Impact: {action.expectedImpact}</p>
                   <p>Estimated Effort: {action.estimatedEffort}</p>
                   <p>Supporting Findings: {action.supportingFindingIds.join(', ')}</p>
+                  <p>
+                    Optimization Rule: {action.optimizationRuleId} (v{action.optimizationRuleVersion})
+                  </p>
                 </li>
               ))}
             </ul>

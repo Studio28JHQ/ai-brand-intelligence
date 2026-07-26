@@ -69,7 +69,6 @@ export function buildAuditSummary(snapshot: AuditSnapshot): CreateAuditResponse 
       items: generateOptimizationPlan(
         { projectId: snapshot.audit.projectId, auditId: snapshot.audit.id },
         snapshot.findings,
-        snapshot.aiVisibility,
       ),
     },
     progress: [...snapshot.progress],

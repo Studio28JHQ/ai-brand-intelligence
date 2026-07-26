@@ -15,6 +15,8 @@ export interface OptimizationItem {
   supportingFindingIds: string[];
   projectId: string;
   auditId: string;
+  optimizationRuleId: string;
+  optimizationRuleVersion: string;
 }
 
 export interface OptimizationPlan {

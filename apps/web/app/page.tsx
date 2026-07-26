@@ -412,6 +412,9 @@ export default function Home() {
                     <p>Estimated Effort: {item.estimatedEffort}</p>
                     <p>Supporting Findings: {item.supportingFindingIds.join(', ') || 'None'}</p>
                     <p>Status: {item.status}</p>
+                    <p>
+                      Optimization Rule: {item.optimizationRuleId} (v{item.optimizationRuleVersion})
+                    </p>
                   </li>
                 ))}
               </ul>

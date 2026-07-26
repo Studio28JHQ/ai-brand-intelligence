@@ -1,11 +1,12 @@
-import type { AiVisibilityAssessment, Finding, OptimizationItem, OptimizationLevel } from '@ai-visibility/contracts';
+import type { Finding, OptimizationItem } from '@ai-visibility/contracts';
+import { resolveOptimizationRule } from '../optimization-knowledge-base/optimization-knowledge-base';
+import type { OptimizationRuleVersion } from '../optimization-knowledge-base/optimization-rule';
 import {
   computePriority,
   countBlockedItems,
   deriveConfidence,
   deriveDependencyWeight,
   deriveEstimatedEffort,
-  deriveExpectedImpact,
 } from './optimization-prioritization';
 
 export interface OptimizationPlanContext {
@@ -16,8 +17,7 @@ export interface OptimizationPlanContext {
 function buildOptimizationItem(
   context: OptimizationPlanContext,
   finding: Finding,
-  expectedImpact: OptimizationLevel,
-  assessmentStatus: AiVisibilityAssessment['status'],
+  rule: OptimizationRuleVersion,
   allSourceEngines: ReadonlyArray<string>,
 ): OptimizationItem {
   const supportingFindingIds = [finding.id];
@@ -27,39 +27,44 @@ function buildOptimizationItem(
 
   return {
     title: `Resolve ${finding.sourceEngine} execution issue`,
-    description: `Rule '${finding.ruleId}' evaluated to '${finding.outcome}' for the ${finding.sourceEngine} engine (${finding.category}).`,
-    rationale: `Addressing this improves AI Visibility signal completeness and moves the assessment away from '${assessmentStatus}'.`,
-    expectedImpact,
+    description: rule.resolutionStrategy,
+    rationale: rule.businessRationale,
+    expectedImpact: rule.expectedImpact,
     estimatedEffort,
-    priority: computePriority(expectedImpact, estimatedEffort, confidence, dependencyWeight),
+    priority: computePriority(rule.expectedImpact, estimatedEffort, confidence, dependencyWeight),
     status: 'open',
     supportingFindingIds,
     projectId: context.projectId,
     auditId: context.auditId,
+    optimizationRuleId: rule.ruleId,
+    optimizationRuleVersion: rule.version,
   };
 }
 
 export function generateOptimizationPlan(
   context: OptimizationPlanContext,
   findings: ReadonlyArray<Finding>,
-  assessment: AiVisibilityAssessment,
 ): OptimizationItem[] {
-  const expectedImpact = deriveExpectedImpact(assessment.status);
   const actionableFindings = findings.filter((finding) => finding.severity !== 'none');
 
   const seenRuleIds = new Set<string>();
-  const distinctFindings: Finding[] = [];
+  const resolvedFindings: Array<{ finding: Finding; rule: OptimizationRuleVersion }> = [];
   for (const finding of actionableFindings) {
     if (seenRuleIds.has(finding.ruleId)) {
       continue;
     }
     seenRuleIds.add(finding.ruleId);
-    distinctFindings.push(finding);
+
+    const rule = resolveOptimizationRule(finding.ruleId);
+    if (!rule) {
+      continue;
+    }
+    resolvedFindings.push({ finding, rule });
   }
 
-  const allSourceEngines = distinctFindings.map((finding) => finding.sourceEngine);
+  const allSourceEngines = resolvedFindings.map(({ finding }) => finding.sourceEngine);
 
-  return distinctFindings.map((finding) =>
-    buildOptimizationItem(context, finding, expectedImpact, assessment.status, allSourceEngines),
+  return resolvedFindings.map(({ finding, rule }) =>
+    buildOptimizationItem(context, finding, rule, allSourceEngines),
   );
 }

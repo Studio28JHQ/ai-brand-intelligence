@@ -47,9 +47,7 @@ export class CreateCampaignUseCase {
       this.aiVisibilityReadRepository.findByAuditId(latestCompleted.id),
     ]);
 
-    const items = assessment
-      ? generateOptimizationPlan({ projectId, auditId: latestCompleted.id }, findings, assessment)
-      : [];
+    const items = assessment ? generateOptimizationPlan({ projectId, auditId: latestCompleted.id }, findings) : [];
 
     return this.campaignRepository.create(
       projectId,

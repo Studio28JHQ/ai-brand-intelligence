@@ -21,16 +21,6 @@ function pipelineRank(sourceEngine: string): number {
   return index === -1 ? PIPELINE_ORDER.length : index;
 }
 
-export function deriveExpectedImpact(assessmentStatus: 'ready' | 'needs-improvement' | 'not-ready'): OptimizationLevel {
-  if (assessmentStatus === 'not-ready') {
-    return 'high';
-  }
-  if (assessmentStatus === 'needs-improvement') {
-    return 'medium';
-  }
-  return 'low';
-}
-
 export function deriveEstimatedEffort(supportingFindingCount: number): OptimizationLevel {
   if (supportingFindingCount >= 4) {
     return 'high';

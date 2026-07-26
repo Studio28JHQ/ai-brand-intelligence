@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { ExecutiveDashboard } from '@ai-visibility/contracts';
 import { generateOptimizationPlan } from '../optimization/generate-optimization-plan';
-import { deriveExpectedImpact, sortByPriority } from '../optimization/optimization-prioritization';
+import { sortByPriority } from '../optimization/optimization-prioritization';
 import { PROJECT_REPOSITORY, ProjectRepository } from '../../domain/project/project.repository';
 import { ProjectNotFoundError } from '../../domain/project/project.errors';
 import { CLIENT_REPOSITORY, ClientRepository } from '../../domain/client/client.repository';
@@ -75,18 +75,14 @@ export class ExecutiveDashboardQueryService {
     const currentScore = currentAssessment?.status ?? null;
     const baselineScore = baselineAssessment?.status ?? null;
     const actionableFindings = findings.filter((finding) => finding.severity !== 'none');
-    const isCritical = currentAssessment ? deriveExpectedImpact(currentAssessment.status) === 'high' : false;
-    const criticalFindings = isCritical ? actionableFindings.length : 0;
-    const opportunities = actionableFindings.length - criticalFindings;
 
     const optimizationItems =
       currentAssessment && latestCompleted
-        ? generateOptimizationPlan(
-            { projectId: project.id, auditId: latestCompleted.id },
-            findings,
-            currentAssessment,
-          )
+        ? generateOptimizationPlan({ projectId: project.id, auditId: latestCompleted.id }, findings)
         : [];
+
+    const criticalFindings = optimizationItems.filter((item) => item.expectedImpact === 'high').length;
+    const opportunities = optimizationItems.length - criticalFindings;
 
     const latestCampaign = await this.campaignQueryService.getLatestByProjectId(projectId);
     const campaignImpact = latestCampaign
