@@ -61,6 +61,7 @@ function toCampaignFact(campaign: Campaign, actions: ReadonlyArray<OptimizationA
   return {
     id: campaign.id,
     projectId: campaign.projectId,
+    cycleId: campaign.cycleId,
     sourceAuditId: campaign.sourceAuditId,
     status: campaign.status,
     createdAt: campaign.createdAt.toISOString(),
@@ -122,7 +123,12 @@ export class AiContextBuilderService {
 
     const optimizationPlan =
       assessment && latestCompleted
-        ? generateOptimizationPlan({ projectId, auditId: latestCompleted.id }, findings, assessment, knowledgeGraph)
+        ? generateOptimizationPlan(
+            { projectId, auditId: latestCompleted.id, cycleId: latestCompleted.cycleId },
+            findings,
+            assessment,
+            knowledgeGraph,
+          )
         : [];
 
     const latestCampaignResult: CampaignQueryResult | null =

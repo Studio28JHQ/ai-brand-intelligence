@@ -17,6 +17,7 @@ export interface OptimizationItem {
   supportingFindingIds: string[];
   projectId: string;
   auditId: string;
+  cycleId: string;
   optimizationRuleId: string;
   optimizationRuleVersion: string;
   reasoning: ReasoningModel;

@@ -9,6 +9,7 @@ import { PRISMA_CLIENT } from '../database/database.module';
 interface CampaignRecord {
   id: string;
   projectId: string;
+  cycleId: string;
   sourceAuditId: string;
   status: string;
   createdAt: Date;
@@ -21,10 +22,11 @@ interface CampaignRecord {
 export class PrismaCampaignRepository implements CampaignRepository {
   constructor(@Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient) {}
 
-  async create(projectId: string, sourceAuditId: string, actionSeeds: NewActionSeed[]): Promise<Campaign> {
+  async create(projectId: string, sourceAuditId: string, cycleId: string, actionSeeds: NewActionSeed[]): Promise<Campaign> {
     const record = await this.prisma.optimizationCampaign.create({
       data: {
         projectId,
+        cycleId,
         sourceAuditId,
         actions: {
           create: actionSeeds.map((seed) => ({
@@ -92,6 +94,7 @@ export class PrismaCampaignRepository implements CampaignRepository {
     return Campaign.fromPersistence({
       id: record.id,
       projectId: record.projectId,
+      cycleId: record.cycleId,
       sourceAuditId: record.sourceAuditId,
       status: record.status as CampaignStatus,
       createdAt: record.createdAt,

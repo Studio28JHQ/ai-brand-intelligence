@@ -22,6 +22,7 @@ export function toCampaignMetadata(campaign: Campaign, actions: ReadonlyArray<Op
   return {
     id: campaign.id,
     projectId: campaign.projectId,
+    cycleId: campaign.cycleId,
     sourceAuditId: campaign.sourceAuditId,
     status: campaign.status,
     createdAt: campaign.createdAt.toISOString(),

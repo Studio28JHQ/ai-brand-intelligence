@@ -113,6 +113,7 @@ export class ImpactAssessmentService {
     return {
       campaignId: campaign.id,
       projectId: project.id,
+      cycleId: campaign.cycleId,
       baselineAuditId: project.baselineAuditId,
       verificationAuditId: verificationAudit.id,
       verificationDate: (verificationAudit.completedAt as Date).toISOString(),

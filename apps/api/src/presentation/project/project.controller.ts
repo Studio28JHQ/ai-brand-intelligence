@@ -1,10 +1,18 @@
 import { BadRequestException, Body, Controller, Get, NotFoundException, Param, Post } from '@nestjs/common';
-import type { CampaignMetadata, ConsultantAnswer, ExecutiveDashboard, ProjectMetadata } from '@ai-visibility/contracts';
+import type {
+  CampaignMetadata,
+  ConsultantAnswer,
+  ExecutiveDashboard,
+  OptimizationCycleMetadata,
+  ProjectMetadata,
+} from '@ai-visibility/contracts';
 import { ProjectQueryService } from '../../application/project/project-query.service';
 import { SetProjectBaselineUseCase } from '../../application/project/set-project-baseline.use-case';
 import { ExecutiveDashboardQueryService } from '../../application/dashboard/executive-dashboard.query-service';
 import { CreateCampaignUseCase } from '../../application/campaign/create-campaign.use-case';
 import { CampaignQueryService } from '../../application/campaign/campaign-query.service';
+import { CreateOptimizationCycleUseCase } from '../../application/optimization-cycle/create-optimization-cycle.use-case';
+import { OptimizationCycleQueryService } from '../../application/optimization-cycle/optimization-cycle-query.service';
 import { AiConversationOrchestratorService } from '../../application/ai-conversation/ai-conversation-orchestrator.service';
 import { createConversationSession } from '../../application/ai-conversation/create-conversation-session';
 import type { ConversationIntentType } from '../../application/ai-conversation/conversation-session';
@@ -18,9 +26,11 @@ import { ClientNotFoundError } from '../../domain/client/client.errors';
 import { NoCompletedAuditError } from '../../domain/campaign/campaign.errors';
 import { SetProjectBaselineDto } from './dto/set-project-baseline.dto';
 import { AskConsultantDto } from './dto/ask-consultant.dto';
+import { CreateOptimizationCycleDto } from './dto/create-optimization-cycle.dto';
 import { toProjectMetadata } from './project-metadata.mapper';
 import { toCampaignMetadata } from '../campaign/campaign-metadata.mapper';
 import { toConsultantAnswer } from './consultant-answer.mapper';
+import { toOptimizationCycleMetadata } from '../optimization-cycle/optimization-cycle-metadata.mapper';
 
 const SUPPORTED_CONSULTANT_INTENTS: ReadonlySet<string> = new Set([
   'why',
@@ -38,6 +48,8 @@ export class ProjectController {
     private readonly executiveDashboardQueryService: ExecutiveDashboardQueryService,
     private readonly createCampaignUseCase: CreateCampaignUseCase,
     private readonly campaignQueryService: CampaignQueryService,
+    private readonly createOptimizationCycleUseCase: CreateOptimizationCycleUseCase,
+    private readonly optimizationCycleQueryService: OptimizationCycleQueryService,
     private readonly aiConversationOrchestratorService: AiConversationOrchestratorService,
   ) {}
 
@@ -115,6 +127,35 @@ export class ProjectController {
       throw new NotFoundException(`No campaign found for project: ${id}`);
     }
     return toCampaignMetadata(result.campaign, result.actions);
+  }
+
+  @Post(':id/cycles')
+  async createCycle(
+    @Param('id') id: string,
+    @Body() dto: CreateOptimizationCycleDto,
+  ): Promise<OptimizationCycleMetadata> {
+    if (typeof dto?.goal !== 'string' || dto.goal.trim().length === 0) {
+      throw new BadRequestException('goal is required');
+    }
+
+    try {
+      const cycle = await this.createOptimizationCycleUseCase.execute(id, dto.goal);
+      return toOptimizationCycleMetadata(cycle);
+    } catch (error) {
+      if (error instanceof ProjectNotFoundError) {
+        throw new NotFoundException(error.message);
+      }
+      throw error;
+    }
+  }
+
+  @Get(':id/cycles/current')
+  async getCurrentCycle(@Param('id') id: string): Promise<OptimizationCycleMetadata> {
+    const cycle = await this.optimizationCycleQueryService.getCurrentByProjectId(id);
+    if (!cycle) {
+      throw new NotFoundException(`No optimization cycle found for project: ${id}`);
+    }
+    return toOptimizationCycleMetadata(cycle);
   }
 
   @Post(':id/consultant/ask')

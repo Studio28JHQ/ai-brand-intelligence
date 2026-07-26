@@ -5,6 +5,7 @@ export function toAuditMetadata({ audit, aiVisibilityStatus, executionHistory }:
   return {
     id: audit.id,
     projectId: audit.projectId,
+    cycleId: audit.cycleId,
     url: audit.url,
     status: audit.status,
     startedAt: audit.startedAt ? audit.startedAt.toISOString() : null,

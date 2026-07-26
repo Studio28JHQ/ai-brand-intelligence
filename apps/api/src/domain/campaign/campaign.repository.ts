@@ -8,7 +8,7 @@ export interface NewActionSeed {
 }
 
 export interface CampaignRepository {
-  create(projectId: string, sourceAuditId: string, actionSeeds: NewActionSeed[]): Promise<Campaign>;
+  create(projectId: string, sourceAuditId: string, cycleId: string, actionSeeds: NewActionSeed[]): Promise<Campaign>;
   findById(id: string): Promise<Campaign | null>;
   findLatestByProjectId(projectId: string): Promise<Campaign | null>;
   activate(id: string, activatedAt: Date): Promise<Campaign>;

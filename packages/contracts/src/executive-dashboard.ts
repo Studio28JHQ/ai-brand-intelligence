@@ -3,6 +3,7 @@ import type { AuditStatus } from './audit';
 import type { OptimizationItem } from './optimization-plan';
 import type { CampaignProgressSummary } from './optimization-campaign';
 import type { ImpactAssessmentSummary } from './impact-assessment';
+import type { CycleStatus } from './optimization-cycle';
 
 export interface DashboardProjectOverview {
   projectId: string;
@@ -34,6 +35,15 @@ export interface DashboardRecentActivity {
   lastExecutionAt: string | null;
 }
 
+export interface DashboardCycleOverview {
+  id: string;
+  goal: string;
+  status: CycleStatus;
+  currentPhase: CycleStatus;
+  startDate: string | null;
+  endDate: string | null;
+}
+
 export interface ExecutiveDashboard {
   project: DashboardProjectOverview;
   visibility: DashboardVisibilityOverview;
@@ -41,4 +51,5 @@ export interface ExecutiveDashboard {
   recentActivity: DashboardRecentActivity;
   campaign: CampaignProgressSummary | null;
   campaignImpact: ImpactAssessmentSummary | null;
+  currentCycle: DashboardCycleOverview | null;
 }

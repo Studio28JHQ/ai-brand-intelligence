@@ -4,6 +4,7 @@ import { InvalidCampaignStateTransitionError } from './campaign.errors';
 export interface CampaignProps {
   id: string;
   projectId: string;
+  cycleId: string;
   sourceAuditId: string;
   status: CampaignStatus;
   createdAt: Date;
@@ -23,6 +24,7 @@ export class Campaign {
   private constructor(
     public readonly id: string,
     public readonly projectId: string,
+    public readonly cycleId: string,
     public readonly sourceAuditId: string,
     public readonly status: CampaignStatus,
     public readonly createdAt: Date,
@@ -35,6 +37,7 @@ export class Campaign {
     return new Campaign(
       props.id,
       props.projectId,
+      props.cycleId,
       props.sourceAuditId,
       props.status,
       props.createdAt,
@@ -55,6 +58,7 @@ export class Campaign {
     return new Campaign(
       this.id,
       this.projectId,
+      this.cycleId,
       this.sourceAuditId,
       'active',
       this.createdAt,
@@ -69,6 +73,7 @@ export class Campaign {
     return new Campaign(
       this.id,
       this.projectId,
+      this.cycleId,
       this.sourceAuditId,
       'completed',
       this.createdAt,
@@ -83,6 +88,7 @@ export class Campaign {
     return new Campaign(
       this.id,
       this.projectId,
+      this.cycleId,
       this.sourceAuditId,
       'archived',
       this.createdAt,

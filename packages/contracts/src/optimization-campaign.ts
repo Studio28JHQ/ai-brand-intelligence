@@ -19,6 +19,7 @@ export interface OptimizationActionMetadata {
 export interface CampaignMetadata {
   id: string;
   projectId: string;
+  cycleId: string;
   sourceAuditId: string;
   status: CampaignStatus;
   createdAt: string;

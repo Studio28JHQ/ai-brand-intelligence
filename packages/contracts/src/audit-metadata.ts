@@ -5,6 +5,7 @@ import type { WorkflowExecutionRecord } from './workflow-execution-history';
 export interface AuditMetadata {
   id: string;
   projectId: string;
+  cycleId: string;
   url: string;
   status: AuditStatus;
   startedAt: string | null;

@@ -15,6 +15,7 @@ import { BaselineHistoryReadRepository } from '../../infrastructure/project/base
 import { CampaignQueryService } from '../campaign/campaign-query.service';
 import { computeCampaignProgress } from '../campaign/campaign-progress';
 import { ImpactAssessmentService } from '../impact-assessment/impact-assessment.service';
+import { OptimizationCycleQueryService } from '../optimization-cycle/optimization-cycle-query.service';
 import { computeScoreTrend } from './dashboard-visibility-trend';
 
 const TOP_PRIORITY_ACTIONS_LIMIT = 5;
@@ -45,6 +46,7 @@ export class ExecutiveDashboardQueryService {
     private readonly baselineHistoryReadRepository: BaselineHistoryReadRepository,
     private readonly campaignQueryService: CampaignQueryService,
     private readonly impactAssessmentService: ImpactAssessmentService,
+    private readonly optimizationCycleQueryService: OptimizationCycleQueryService,
   ) {}
 
   async getDashboard(projectId: string): Promise<ExecutiveDashboard> {
@@ -84,7 +86,7 @@ export class ExecutiveDashboardQueryService {
     const optimizationItems =
       currentAssessment && latestCompleted
         ? generateOptimizationPlan(
-            { projectId: project.id, auditId: latestCompleted.id },
+            { projectId: project.id, auditId: latestCompleted.id, cycleId: latestCompleted.cycleId },
             findings,
             currentAssessment,
             knowledgeGraph,
@@ -109,6 +111,8 @@ export class ExecutiveDashboardQueryService {
           }))
           .catch(() => null)
       : null;
+
+    const currentCycle = await this.optimizationCycleQueryService.getCurrentByProjectId(projectId);
 
     return {
       project: {
@@ -141,6 +145,16 @@ export class ExecutiveDashboardQueryService {
       },
       campaign: latestCampaign ? computeCampaignProgress(latestCampaign.campaign, latestCampaign.actions) : null,
       campaignImpact,
+      currentCycle: currentCycle
+        ? {
+            id: currentCycle.id,
+            goal: currentCycle.goal,
+            status: currentCycle.status,
+            currentPhase: currentCycle.currentPhase,
+            startDate: currentCycle.startDate ? currentCycle.startDate.toISOString() : null,
+            endDate: currentCycle.endDate ? currentCycle.endDate.toISOString() : null,
+          }
+        : null,
     };
   }
 }

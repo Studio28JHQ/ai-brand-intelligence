@@ -19,6 +19,7 @@ import { CLIENT_REPOSITORY, ClientRepository } from '../../domain/client/client.
 import { derivePrimaryDomain, deriveClientName } from '../../domain/client/primary-domain';
 import { ClientNotFoundError } from '../../domain/client/client.errors';
 import { WorkflowExecutionHistoryRepository } from '../../infrastructure/audit/workflow-execution-history.repository';
+import { EnsureActiveCycleUseCase } from '../optimization-cycle/ensure-active-cycle.use-case';
 import { ExecuteAuditUseCase } from './execute-audit.use-case';
 
 @Injectable()
@@ -29,6 +30,7 @@ export class CreateAuditUseCase {
     @Inject(CLIENT_REPOSITORY) private readonly clientRepository: ClientRepository,
     private readonly executeAuditUseCase: ExecuteAuditUseCase,
     private readonly workflowExecutionHistoryRepository: WorkflowExecutionHistoryRepository,
+    private readonly ensureActiveCycleUseCase: EnsureActiveCycleUseCase,
   ) {}
 
   async execute(rawUrl: string, correlationId: string, clientId?: string): Promise<AuditSnapshot> {
@@ -44,7 +46,8 @@ export class CreateAuditUseCase {
       project = await this.projectRepository.create(client.id, deriveProjectName(canonicalWebsite), canonicalWebsite);
     }
 
-    const audit = await this.auditRepository.create(project.id, url.value);
+    const cycle = await this.ensureActiveCycleUseCase.execute(project.id);
+    const audit = await this.auditRepository.create(project.id, url.value, cycle.id);
     await this.projectRepository.updateLastAudit(project.id, audit.id);
 
     emitTelemetryEvent({

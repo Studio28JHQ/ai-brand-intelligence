@@ -67,7 +67,7 @@ export function buildAuditSummary(snapshot: AuditSnapshot): CreateAuditResponse 
     },
     optimizationPlan: {
       items: generateOptimizationPlan(
-        { projectId: snapshot.audit.projectId, auditId: snapshot.audit.id },
+        { projectId: snapshot.audit.projectId, auditId: snapshot.audit.id, cycleId: snapshot.audit.cycleId },
         snapshot.findings,
         snapshot.aiVisibility,
         snapshot.knowledgeGraph,

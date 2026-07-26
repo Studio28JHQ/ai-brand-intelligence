@@ -16,6 +16,7 @@ export interface CampaignActionsVerified {
 export interface ImpactAssessment {
   campaignId: string;
   projectId: string;
+  cycleId: string;
   baselineAuditId: string;
   verificationAuditId: string;
   verificationDate: string;

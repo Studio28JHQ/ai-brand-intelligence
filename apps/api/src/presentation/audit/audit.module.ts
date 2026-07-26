@@ -26,12 +26,14 @@ import { AiVisibilityStep } from '../../infrastructure/audit/ai-visibility.step'
 import { WorkflowAdapter } from '../../infrastructure/audit/workflow.adapter';
 import { AuditRepositoryModule } from '../../infrastructure/audit/audit-repository.module';
 import { ClientRepositoryModule } from '../../infrastructure/client/client-repository.module';
+import { OptimizationCycleRepositoryModule } from '../../infrastructure/optimization-cycle/optimization-cycle-repository.module';
 import { DatabaseModule } from '../../infrastructure/database/database.module';
 import { ProjectModule } from '../project/project.module';
+import { EnsureActiveCycleUseCase } from '../../application/optimization-cycle/ensure-active-cycle.use-case';
 import { AuditController } from './audit.controller';
 
 @Module({
-  imports: [DatabaseModule, AuditRepositoryModule, ClientRepositoryModule, ProjectModule],
+  imports: [DatabaseModule, AuditRepositoryModule, ClientRepositoryModule, OptimizationCycleRepositoryModule, ProjectModule],
   controllers: [AuditController],
   providers: [
     CreateAuditUseCase,
@@ -40,6 +42,7 @@ import { AuditController } from './audit.controller';
     AuditComparisonService,
     AiVisibilityStatusRepository,
     WorkflowExecutionHistoryRepository,
+    EnsureActiveCycleUseCase,
     FindingReadRepository,
     EntityReadRepository,
     AiVisibilityReadRepository,

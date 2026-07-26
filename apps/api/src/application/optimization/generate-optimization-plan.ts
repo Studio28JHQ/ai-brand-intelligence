@@ -13,6 +13,7 @@ import {
 export interface OptimizationPlanContext {
   projectId: string;
   auditId: string;
+  cycleId: string;
 }
 
 function buildOptimizationItem(
@@ -39,6 +40,7 @@ function buildOptimizationItem(
     supportingFindingIds,
     projectId: context.projectId,
     auditId: context.auditId,
+    cycleId: context.cycleId,
     optimizationRuleId: rule.ruleId,
     optimizationRuleVersion: rule.version,
     reasoning: buildReasoningModel({ finding, rule, confidence, dependencyWeight, assessment, knowledgeGraph }),

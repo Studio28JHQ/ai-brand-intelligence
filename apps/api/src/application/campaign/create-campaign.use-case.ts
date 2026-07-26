@@ -51,12 +51,18 @@ export class CreateCampaignUseCase {
     ]);
 
     const items = assessment
-      ? generateOptimizationPlan({ projectId, auditId: latestCompleted.id }, findings, assessment, knowledgeGraph)
+      ? generateOptimizationPlan(
+          { projectId, auditId: latestCompleted.id, cycleId: latestCompleted.cycleId },
+          findings,
+          assessment,
+          knowledgeGraph,
+        )
       : [];
 
     return this.campaignRepository.create(
       projectId,
       latestCompleted.id,
+      latestCompleted.cycleId,
       items.map((item) => ({ title: item.title, supportingFindingIds: item.supportingFindingIds })),
     );
   }

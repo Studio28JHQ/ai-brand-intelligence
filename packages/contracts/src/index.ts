@@ -23,3 +23,4 @@ export * from './impact-assessment';
 export * from './reasoning-model';
 export * from './ai-consultant';
 export * from './ai-briefing';
+export * from './optimization-cycle';

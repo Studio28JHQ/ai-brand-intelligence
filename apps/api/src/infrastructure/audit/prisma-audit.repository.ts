@@ -8,6 +8,7 @@ import { PRISMA_CLIENT } from '../database/database.module';
 interface AuditRecord {
   id: string;
   projectId: string;
+  cycleId: string;
   url: string;
   status: string;
   createdAt: Date;
@@ -21,8 +22,8 @@ interface AuditRecord {
 export class PrismaAuditRepository implements AuditRepository {
   constructor(@Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient) {}
 
-  async create(projectId: string, url: string): Promise<Audit> {
-    const record = await this.prisma.auditRequest.create({ data: { projectId, url } });
+  async create(projectId: string, url: string, cycleId: string): Promise<Audit> {
+    const record = await this.prisma.auditRequest.create({ data: { projectId, url, cycleId } });
     return this.toDomain(record);
   }
 
@@ -91,6 +92,7 @@ export class PrismaAuditRepository implements AuditRepository {
     return Audit.fromPersistence({
       id: record.id,
       projectId: record.projectId,
+      cycleId: record.cycleId,
       url: record.url,
       status: record.status as AuditStatus,
       createdAt: record.createdAt,

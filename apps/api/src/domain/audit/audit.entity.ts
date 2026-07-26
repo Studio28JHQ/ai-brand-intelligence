@@ -5,6 +5,7 @@ export type AuditStatus = 'pending' | 'running' | 'completed' | 'failed' | 'canc
 export interface AuditProps {
   id: string;
   projectId: string;
+  cycleId: string;
   url: string;
   status: AuditStatus;
   createdAt: Date;
@@ -26,6 +27,7 @@ export class Audit {
   private constructor(
     public readonly id: string,
     public readonly projectId: string,
+    public readonly cycleId: string,
     public readonly url: string,
     public readonly status: AuditStatus,
     public readonly createdAt: Date,
@@ -39,6 +41,7 @@ export class Audit {
     return new Audit(
       props.id,
       props.projectId,
+      props.cycleId,
       props.url,
       props.status,
       props.createdAt,
@@ -60,6 +63,7 @@ export class Audit {
     return new Audit(
       this.id,
       this.projectId,
+      this.cycleId,
       this.url,
       'running',
       this.createdAt,
@@ -75,6 +79,7 @@ export class Audit {
     return new Audit(
       this.id,
       this.projectId,
+      this.cycleId,
       this.url,
       'completed',
       this.createdAt,
@@ -90,6 +95,7 @@ export class Audit {
     return new Audit(
       this.id,
       this.projectId,
+      this.cycleId,
       this.url,
       'failed',
       this.createdAt,
@@ -105,6 +111,7 @@ export class Audit {
     return new Audit(
       this.id,
       this.projectId,
+      this.cycleId,
       this.url,
       'cancelled',
       this.createdAt,
