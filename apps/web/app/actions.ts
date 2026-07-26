@@ -6,6 +6,7 @@ import type {
   AuditMetadata,
   ClientMetadata,
   CreateAuditResponse,
+  ExecutiveDashboard,
   ProjectMetadata,
 } from '@ai-visibility/contracts';
 
@@ -100,6 +101,22 @@ export async function setProjectBaseline(projectId: string, auditId: string): Pr
     return response.ok;
   } catch {
     return false;
+  }
+}
+
+export async function getDashboard(projectId: string): Promise<ExecutiveDashboard | null> {
+  const config = loadConfig();
+
+  try {
+    const response = await fetch(`${config.API_URL}/projects/${projectId}/dashboard`, { cache: 'no-store' });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return (await response.json()) as ExecutiveDashboard;
+  } catch {
+    return null;
   }
 }
 

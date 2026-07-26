@@ -117,6 +117,9 @@ export default function Home() {
                   <p>Current Baseline: {project.baselineAuditId ?? 'N/A'}</p>
                   <p>Baseline Set At: {project.baselineSetAt ?? 'N/A'}</p>
                   <p>Baseline Status: {project.baselineAuditId ? 'Set' : 'Not Set'}</p>
+                  <p>
+                    <Link href={`/projects/${project.id}/dashboard`}>Open Dashboard</Link>
+                  </p>
                   <ul>
                     {audits
                       .filter((audit) => audit.projectId === project.id)

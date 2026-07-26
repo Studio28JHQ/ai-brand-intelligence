@@ -17,3 +17,4 @@ export * from './workflow-execution-history';
 export * from './project-metadata';
 export * from './audit-comparison';
 export * from './client-metadata';
+export * from './executive-dashboard';

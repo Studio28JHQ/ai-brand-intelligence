@@ -9,7 +9,7 @@ To hold ideas, architectural improvements, and capabilities that are outside cur
 - **F3 — Audit Lifecycle & Workflow Runtime**: Delivered. Audit state machine, execution context isolation, repository/query layer, Audit Summary view, Audit Workspace, Workflow Progress, Workflow Execution History, Rule Set versioning, Capability Registry, Execution Plan/Workflow Runtime split, Product Capability Catalog.
 - **F4 — Project Management**: Delivered. Project aggregate (`F4-S01`), Project Baselines (`F4-S02`), Audit Comparison Service (`F4-S03`).
 - **F5 — Production Readiness**: Delivered. Health and Diagnostics module (`F5-S01`), unified Telemetry module (`F5-S02`).
-- **F6 — Pilot Readiness**: In progress. Client aggregate delivered (`F6-S01`, see `docs/04_PROJECT/DECISION_LOG.md#cto-059`).
+- **F6 — Pilot Readiness**: In progress. Client aggregate delivered (`F6-S01`, see `docs/04_PROJECT/DECISION_LOG.md#cto-059`). Executive Dashboard delivered (`F6-S02`, see `docs/04_PROJECT/DECISION_LOG.md#cto-061`) — a per-Project read view (Project overview, Visibility overview, Priority Actions, Recent Activity) composed entirely from existing Read Models, with no new persistence and no Business Engine calls.
 
 # Deferred Ideas
 
@@ -28,6 +28,13 @@ Ideas explicitly routed here by a sprint rather than implemented, grouped by the
 - Charts
 - PDF export
 - Notifications
+
+**Executive Dashboard** (deferred from `F6-S02`)
+- Charts
+- Filters
+- PDF export
+- Dashboard widget customization
+- Multi-project dashboard view
 
 **Health & diagnostics** (deferred from `F5-S01`)
 - Metrics

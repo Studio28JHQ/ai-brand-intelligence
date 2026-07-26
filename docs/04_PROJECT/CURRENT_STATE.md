@@ -11,7 +11,7 @@ Complete. Repository structure, quality tooling, and local infrastructure config
 - **F3 — Audit Lifecycle & Workflow Runtime**: Audit state machine (pending → running → completed/failed/cancelled), execution context isolation, Audit repository/query layer, Audit Summary read view, Audit Workspace (`apps/web`), Workflow Progress tracking, Workflow Execution History persistence, Rule Set versioning, Capability Registry, Execution Plan/Workflow Runtime split (`packages/core`), and the Product Capability Catalog.
 - **F4 — Project Management**: Project aggregate (owns Audits, auto-provisioned from a URL's origin), Project Baselines (a designated reference Audit Snapshot per Project, with tracked baseline-change history), and the Audit Comparison Service (on-demand diff of two completed Audit Snapshots — new/resolved/unchanged findings, entity changes, AI Visibility changes; nothing persisted).
 - **F5 — Production Readiness**: Health and Diagnostics module (`/health`, `/health/live`, `/health/ready` — liveness, readiness, dependency status for database/Redis/object storage, Workflow Runtime availability, application version), and the unified Telemetry module (`packages/shared/src/telemetry`) — a Standard Telemetry Event model with an Event Publisher abstraction, correlation ID propagated end-to-end from the HTTP request through the Workflow Runtime into every Business Engine invocation.
-- **F6 — Pilot Readiness**: Client aggregate (`F6-S01`) — the top-level entity that owns Projects, enabling one workspace to serve multiple customers.
+- **F6 — Pilot Readiness**: Client aggregate (`F6-S01`) — the top-level entity that owns Projects, enabling one workspace to serve multiple customers. Executive Dashboard (`F6-S02`) — a per-Project read view (`GET /projects/:id/dashboard`) composed entirely from existing Read Models: Project/Client/Audit repositories, the Finding/AI Visibility/Baseline History read repositories, and the existing recommendation-derivation function. See `docs/03_PRODUCT/FUTURE_ROADMAP.md` for full sprint detail.
 
 # Domain Hierarchy
 
@@ -31,7 +31,7 @@ This hierarchy lives entirely within the Interface Layer as defined by `docs/01_
 
 # Current Phase
 
-F6 — Pilot Readiness, in progress. Client aggregate delivered (`F6-S01`).
+F6 — Pilot Readiness, in progress. Client aggregate (`F6-S01`) and Executive Dashboard (`F6-S02`) delivered.
 
 # Next Sprint
 
