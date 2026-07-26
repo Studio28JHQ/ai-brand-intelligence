@@ -1,4 +1,7 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { loadConfig } from '@ai-visibility/config';
 import { HealthModule } from './presentation/health/health.module';
 import { ClientModule } from './presentation/client/client.module';
 import { ProjectModule } from './presentation/project/project.module';
@@ -8,8 +11,11 @@ import { BriefingModule } from './presentation/briefing/briefing.module';
 import { OptimizationCycleModule } from './presentation/optimization-cycle/optimization-cycle.module';
 import { DatabaseModule } from './infrastructure/database/database.module';
 
+const config = loadConfig();
+
 @Module({
   imports: [
+    ThrottlerModule.forRoot([{ name: 'default', ttl: config.RATE_LIMIT_TTL_MS, limit: config.RATE_LIMIT_LIMIT }]),
     DatabaseModule,
     HealthModule,
     ClientModule,
@@ -19,5 +25,6 @@ import { DatabaseModule } from './infrastructure/database/database.module';
     BriefingModule,
     OptimizationCycleModule,
   ],
+  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}

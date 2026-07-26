@@ -53,6 +53,9 @@ All configuration is env-var driven (`packages/config`, validated with zod — e
 | `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` / `POSTGRES_PORT` | `postgres` / `postgres` / `app` / `5432` |
 | `REDIS_HOST` / `REDIS_PORT` | `localhost` / `6379` |
 | `MINIO_HOST` / `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` / `MINIO_API_PORT` / `MINIO_CONSOLE_PORT` | `localhost` / `minioadmin` / `minioadmin` / `9000` / `9001` |
+| `CORS_ORIGIN` / `RATE_LIMIT_TTL_MS` / `RATE_LIMIT_LIMIT` / `REQUEST_TIMEOUT_MS` / `LOG_LEVEL` | `http://localhost:3000` / `60000` / `120` / `30000` / unset (`debug` in development, `info` in production) |
+
+**In production** (`NODE_ENV=production`), the Backend additionally *requires* `DATABASE_URL`, `POSTGRES_PASSWORD`, `MINIO_ROOT_USER`, and `MINIO_ROOT_PASSWORD` to be set explicitly and refuses to start otherwise — see `docs/04_PROJECT/PRODUCTION_READINESS.md`.
 
 ## URLs
 
@@ -81,6 +84,10 @@ Health checks: `GET /health`, `GET /health/live`, `GET /health/ready` (the last 
 - **`pnpm install` fails with `ERR_PNPM_IGNORED_BUILDS`** — a new dependency introduced a postinstall script pnpm doesn't yet have a policy for. Run `pnpm approve-builds`, or add an explicit `true`/`false` entry under `allowBuilds` in `pnpm-workspace.yaml`.
 - **Prisma migration errors** — confirm `DATABASE_URL` points at a reachable Postgres instance and that no other process is holding conflicting schema locks; `pnpm --filter @ai-visibility/database run migrate:deploy` is safe to re-run.
 - **Want a clean slate** — `docker compose -f docker/docker-compose.yml down -v` removes all containers and volumes (this deletes all local data, including the demo workspace); re-run `./scripts/start-alpha.sh` afterward to rebuild everything from scratch.
+
+## Production
+
+The Backend applies security headers (`helmet`), response compression, CORS restricted to `CORS_ORIGIN`, request-body validation, a global rate limit, and a per-request timeout by default — see `docs/04_PROJECT/PRODUCTION_READINESS.md` for the full checklist and rationale. Deployment orchestration (containers, CI/CD, infrastructure-as-code) is out of this repository's current scope; this section covers only what the application itself does to behave safely once deployed.
 
 ## Documentation
 
