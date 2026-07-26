@@ -6,7 +6,10 @@ import { CreateCampaignUseCase } from '../../application/campaign/create-campaig
 import { CampaignQueryService } from '../../application/campaign/campaign-query.service';
 import { ImpactAssessmentService } from '../../application/impact-assessment/impact-assessment.service';
 import { AiContextBuilderService } from '../../application/ai-context/ai-context-builder.service';
+import { AiConversationOrchestratorService } from '../../application/ai-conversation/ai-conversation-orchestrator.service';
+import { AI_PROVIDER } from '../../application/ai-conversation/ai-provider';
 import { AuditComparisonService } from '../../application/comparison/audit-comparison.service';
+import { NoOpAiProvider } from '../../infrastructure/ai-conversation/no-op-ai-provider';
 import { BaselineHistoryReadRepository } from '../../infrastructure/project/baseline-history-read.repository';
 import { FindingReadRepository } from '../../infrastructure/comparison/finding-read.repository';
 import { EntityReadRepository } from '../../infrastructure/comparison/entity-read.repository';
@@ -36,6 +39,8 @@ import { ProjectController } from './project.controller';
     CampaignQueryService,
     ImpactAssessmentService,
     AiContextBuilderService,
+    AiConversationOrchestratorService,
+    { provide: AI_PROVIDER, useClass: NoOpAiProvider },
     AuditComparisonService,
     BaselineHistoryReadRepository,
     FindingReadRepository,
