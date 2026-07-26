@@ -10,13 +10,13 @@
     "seed:demo": "node scripts/seed-demo.js"
   },
   "dependencies": {
+    "@ai-visibility/ai-visibility-engine": "workspace:*",
+    "@ai-visibility/analysis-engine": "workspace:*",
     "@ai-visibility/config": "workspace:*",
     "@ai-visibility/contracts": "workspace:*",
     "@ai-visibility/core": "workspace:*",
     "@ai-visibility/crawler-engine": "workspace:*",
     "@ai-visibility/database": "workspace:*",
-    "@ai-visibility/ai-visibility-engine": "workspace:*",
-    "@ai-visibility/analysis-engine": "workspace:*",
     "@ai-visibility/discovery-engine": "workspace:*",
     "@ai-visibility/entity-engine": "workspace:*",
     "@ai-visibility/inventory-engine": "workspace:*",
@@ -25,8 +25,10 @@
     "@nestjs/common": "^11.1.28",
     "@nestjs/core": "^11.1.28",
     "@nestjs/platform-express": "^11.1.28",
+    "@nestjs/swagger": "^11.4.6",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.2"
+    "rxjs": "^7.8.2",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.24",

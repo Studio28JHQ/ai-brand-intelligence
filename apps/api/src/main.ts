@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { loadConfig } from '@ai-visibility/config';
 import { AppModule } from './app.module';
 import { correlationIdMiddleware } from './shared/middleware/correlation-id.middleware';
@@ -16,6 +17,16 @@ async function bootstrap() {
   app.useGlobalInterceptors(new LoggingInterceptor());
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.enableShutdownHooks();
+
+  const swaggerDocument = SwaggerModule.createDocument(
+    app,
+    new DocumentBuilder()
+      .setTitle('AI Visibility Auditor API')
+      .setDescription('HTTP API for the AI Visibility Auditor platform.')
+      .setVersion('0.0.0')
+      .build(),
+  );
+  SwaggerModule.setup('docs', app, swaggerDocument);
 
   await app.listen(config.PORT);
 }

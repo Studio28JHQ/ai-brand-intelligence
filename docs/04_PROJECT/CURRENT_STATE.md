@@ -145,9 +145,19 @@ Each stage is documented in its own section above (Optimization Cycle, Verificat
 
 **Known, accepted limitation**: the only Analysis Rules implemented are execution-status checks (`F6-S06`) that pass for any successfully-crawled site, so a real Audit against a real URL typically yields zero actionable Findings/Optimization Items/Campaign Actions. The full pipeline is nonetheless verified correct — every `F6`/`F7` sprint validated it with synthetic data. Adding real content-quality Analysis Rules is a new business capability, out of this ticket's scope.
 
+# Local Development
+
+Full setup, startup, environment variables, and troubleshooting live in the repository root `README.md` — not duplicated here. This section records only what changed and why (`F8-S03`, see `CTO-076`).
+
+**Alpha Bootstrap**: `scripts/start-alpha.sh` boots the entire local environment with one command — Docker infrastructure (PostgreSQL/Redis/MinIO) → wait for PostgreSQL readiness → `prisma migrate deploy` → `pnpm -r build` → start the Backend → start the Frontend → run the `F8-S02` demo seed (`apps/api/scripts/seed-demo.js`) automatically — then prints a fixed "Alpha Ready" URL summary and stays attached so `Ctrl+C` cleanly stops the Backend/Frontend (Docker infrastructure is left running). It requires nothing beyond what `README.md`'s Prerequisites section lists.
+
+**Port assignment**: the Backend now defaults to port `3001` and the Frontend is pinned to port `3000` (`next dev -p 3000` / `next start -p 3000`, `apps/web/package.json`) — previously both independently defaulted to `3000` (Next.js's own default, and `packages/config`'s prior `PORT` default), a collision when running both locally. `API_URL` already defaulted to `http://localhost:3001` before this change; it now correctly matches the Backend's own default port, so the Frontend reaches the Backend correctly out of the box with zero environment variables set.
+
+**Swagger/OpenAPI**: `apps/api/src/main.ts` now calls `SwaggerModule.setup('docs', app, document)` (`@nestjs/swagger`, `DocumentBuilder`) — served at `GET /docs` (`GET /docs-json` for the raw OpenAPI document), auto-grouped by controller. No per-endpoint `@ApiOperation`/`@ApiTags` decorators were added — NestJS's SwaggerModule derives a working document from existing route/DTO typing alone, and adding exhaustive annotations was judged out of this ticket's "prioritize usability over new functionality" scope.
+
 # Current Phase
 
-F7 — AI Consultant, in progress. F8 — Pilot Hardening, in progress. F6 — Pilot Readiness fully delivered (`F6-S01` through `F6-S07`). AI Context Builder (`F7-S01`), AI Conversation Orchestrator (`F7-S02`), AI Consultant Chat MVP (`F7-S03`), AI Daily Briefing (`F7-S04`), Optimization Cycle (`F7-S05`, Pilot Readiness), and Executive Client Report (`F7-S06`, Pilot Readiness) delivered. End-to-End Pilot Workflow validated (`F8-S01`, Pilot Hardening). Pilot Readiness Assessment complete (`F8-S02`, Pilot Hardening) — see `docs/04_PROJECT/PILOT_CHECKLIST.md`.
+F7 — AI Consultant, in progress. F8 — Pilot Hardening, in progress. F6 — Pilot Readiness fully delivered (`F6-S01` through `F6-S07`). AI Context Builder (`F7-S01`), AI Conversation Orchestrator (`F7-S02`), AI Consultant Chat MVP (`F7-S03`), AI Daily Briefing (`F7-S04`), Optimization Cycle (`F7-S05`, Pilot Readiness), and Executive Client Report (`F7-S06`, Pilot Readiness) delivered. End-to-End Pilot Workflow validated (`F8-S01`, Pilot Hardening). Pilot Readiness Assessment complete (`F8-S02`, Pilot Hardening) — see `docs/04_PROJECT/PILOT_CHECKLIST.md`. Local Development Bootstrap complete (`F8-S03`, Pilot Hardening) — see `README.md` and `CTO-076`.
 
 # Next Sprint
 

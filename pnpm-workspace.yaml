@@ -4,6 +4,7 @@ packages:
   - "services/*"
 allowBuilds:
   '@prisma/engines': true
+  '@scarf/scarf': false
   prisma: true
   sharp: false
 minimumReleaseAgeExclude:
