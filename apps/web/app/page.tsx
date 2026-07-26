@@ -95,7 +95,12 @@ export default function Home() {
       {!loading && clients.length === 0 && projects.length === 0 && (
         <EmptyState
           title="Welcome to your workspace"
-          description="Paste a URL below and click Analyze to run your first Audit — a Client and Project are created for you automatically. Or create a Client explicitly first if you want to group multiple Projects under one customer."
+          description="New here? Our guided setup walks you through your agency, your first client, and your first AI Visibility report. Or paste a URL below and click Analyze to run your first Audit right away — a Client and Project are created for you automatically."
+          action={
+            <Link href="/onboarding" className="btn btn-primary btn-sm">
+              Get Started
+            </Link>
+          }
         />
       )}
 
