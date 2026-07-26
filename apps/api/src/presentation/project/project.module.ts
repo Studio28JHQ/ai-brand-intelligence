@@ -7,6 +7,7 @@ import { CampaignQueryService } from '../../application/campaign/campaign-query.
 import { ImpactAssessmentService } from '../../application/impact-assessment/impact-assessment.service';
 import { CreateOptimizationCycleUseCase } from '../../application/optimization-cycle/create-optimization-cycle.use-case';
 import { OptimizationCycleQueryService } from '../../application/optimization-cycle/optimization-cycle-query.service';
+import { ExecutiveClientReportBuilderService } from '../../application/executive-client-report/executive-client-report-builder.service';
 import { AiContextBuilderService } from '../../application/ai-context/ai-context-builder.service';
 import { AiConversationOrchestratorService } from '../../application/ai-conversation/ai-conversation-orchestrator.service';
 import { AI_PROVIDER } from '../../application/ai-conversation/ai-provider';
@@ -44,6 +45,7 @@ import { ProjectController } from './project.controller';
     ImpactAssessmentService,
     CreateOptimizationCycleUseCase,
     OptimizationCycleQueryService,
+    ExecutiveClientReportBuilderService,
     AiContextBuilderService,
     AiConversationOrchestratorService,
     { provide: AI_PROVIDER, useClass: StructuredFactAiProvider },

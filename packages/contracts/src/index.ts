@@ -24,3 +24,4 @@ export * from './reasoning-model';
 export * from './ai-consultant';
 export * from './ai-briefing';
 export * from './optimization-cycle';
+export * from './executive-client-report';
