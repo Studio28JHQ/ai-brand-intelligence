@@ -5,6 +5,7 @@ import { ExecutiveDashboardQueryService } from '../../application/dashboard/exec
 import { CreateCampaignUseCase } from '../../application/campaign/create-campaign.use-case';
 import { CampaignQueryService } from '../../application/campaign/campaign-query.service';
 import { ImpactAssessmentService } from '../../application/impact-assessment/impact-assessment.service';
+import { AiContextBuilderService } from '../../application/ai-context/ai-context-builder.service';
 import { AuditComparisonService } from '../../application/comparison/audit-comparison.service';
 import { BaselineHistoryReadRepository } from '../../infrastructure/project/baseline-history-read.repository';
 import { FindingReadRepository } from '../../infrastructure/comparison/finding-read.repository';
@@ -34,6 +35,7 @@ import { ProjectController } from './project.controller';
     CreateCampaignUseCase,
     CampaignQueryService,
     ImpactAssessmentService,
+    AiContextBuilderService,
     AuditComparisonService,
     BaselineHistoryReadRepository,
     FindingReadRepository,
