@@ -1,6 +1,7 @@
 import type { VisibilityStatus } from './ai-visibility';
 import type { AuditStatus } from './audit';
 import type { OptimizationItem } from './optimization-plan';
+import type { CampaignProgressSummary } from './optimization-campaign';
 
 export type VisibilityScoreTrend = 'improved' | 'declined' | 'unchanged' | 'unknown';
 
@@ -39,4 +40,5 @@ export interface ExecutiveDashboard {
   visibility: DashboardVisibilityOverview;
   priorityActions: OptimizationItem[];
   recentActivity: DashboardRecentActivity;
+  campaign: CampaignProgressSummary | null;
 }

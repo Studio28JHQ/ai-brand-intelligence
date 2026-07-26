@@ -9,7 +9,7 @@ To hold ideas, architectural improvements, and capabilities that are outside cur
 - **F3 — Audit Lifecycle & Workflow Runtime**: Delivered. Audit state machine, execution context isolation, repository/query layer, Audit Summary view, Audit Workspace, Workflow Progress, Workflow Execution History, Rule Set versioning, Capability Registry, Execution Plan/Workflow Runtime split, Product Capability Catalog.
 - **F4 — Project Management**: Delivered. Project aggregate (`F4-S01`), Project Baselines (`F4-S02`), Audit Comparison Service (`F4-S03`).
 - **F5 — Production Readiness**: Delivered. Health and Diagnostics module (`F5-S01`), unified Telemetry module (`F5-S02`).
-- **F6 — Pilot Readiness**: In progress. Client aggregate delivered (`F6-S01`, see `docs/04_PROJECT/DECISION_LOG.md#cto-059`). Executive Dashboard delivered (`F6-S02`, see `docs/04_PROJECT/DECISION_LOG.md#cto-061`) — a per-Project read view (Project overview, Visibility overview, Priority Actions, Recent Activity) composed entirely from existing Read Models, with no new persistence and no Business Engine calls. Optimization Planner delivered (`F6-S03`, see `docs/04_PROJECT/DECISION_LOG.md#cto-062`) — the Optimization Plan is a projection derived from Findings and Project/Audit context, with a deterministic prioritization model (expected impact, estimated effort, confidence, and dependencies between Optimization Items based on the Workflow Runtime's fixed execution order), exposed through the Audit response and the Executive Dashboard's Priority Actions; nothing persisted.
+- **F6 — Pilot Readiness**: In progress. Client aggregate delivered (`F6-S01`, see `docs/04_PROJECT/DECISION_LOG.md#cto-059`). Executive Dashboard delivered (`F6-S02`, see `docs/04_PROJECT/DECISION_LOG.md#cto-061`) — a per-Project read view (Project overview, Visibility overview, Priority Actions, Recent Activity) composed entirely from existing Read Models, with no new persistence and no Business Engine calls. Optimization Planner delivered (`F6-S03`, see `docs/04_PROJECT/DECISION_LOG.md#cto-062`) — the Optimization Plan is a projection derived from Findings and Project/Audit context, with a deterministic prioritization model (expected impact, estimated effort, confidence, and dependencies between Optimization Items based on the Workflow Runtime's fixed execution order), exposed through the Audit response and the Executive Dashboard's Priority Actions; nothing persisted. Optimization Campaign delivered (`F6-S04`, see `docs/04_PROJECT/DECISION_LOG.md#cto-063`) — a persisted aggregate (`draft → active → completed → archived`) created from a Project's current Optimization Plan, containing Optimization Actions (`pending → in-progress → completed → verified`) that track execution over time; the Dashboard shows the latest Campaign's progress.
 
 # Deferred Ideas
 
@@ -42,6 +42,14 @@ Ideas explicitly routed here by a sprint rather than implemented, grouped by the
 - Assignments
 - Approval workflow
 - Automatic implementation
+
+**Optimization Campaign** (deferred from `F6-S04`)
+- User assignments
+- Comments
+- Notifications
+- Due dates
+- Automation
+- External integrations
 
 **Health & diagnostics** (deferred from `F5-S01`)
 - Metrics

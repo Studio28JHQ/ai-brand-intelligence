@@ -11,7 +11,7 @@ Complete. Repository structure, quality tooling, and local infrastructure config
 - **F3 — Audit Lifecycle & Workflow Runtime**: Audit state machine (pending → running → completed/failed/cancelled), execution context isolation, Audit repository/query layer, Audit Summary read view, Audit Workspace (`apps/web`), Workflow Progress tracking, Workflow Execution History persistence, Rule Set versioning, Capability Registry, Execution Plan/Workflow Runtime split (`packages/core`), and the Product Capability Catalog.
 - **F4 — Project Management**: Project aggregate (owns Audits, auto-provisioned from a URL's origin), Project Baselines (a designated reference Audit Snapshot per Project, with tracked baseline-change history), and the Audit Comparison Service (on-demand diff of two completed Audit Snapshots — new/resolved/unchanged findings, entity changes, AI Visibility changes; nothing persisted).
 - **F5 — Production Readiness**: Health and Diagnostics module (`/health`, `/health/live`, `/health/ready` — liveness, readiness, dependency status for database/Redis/object storage, Workflow Runtime availability, application version), and the unified Telemetry module (`packages/shared/src/telemetry`) — a Standard Telemetry Event model with an Event Publisher abstraction, correlation ID propagated end-to-end from the HTTP request through the Workflow Runtime into every Business Engine invocation.
-- **F6 — Pilot Readiness**: Client aggregate (`F6-S01`) — the top-level entity that owns Projects, enabling one workspace to serve multiple customers. Executive Dashboard (`F6-S02`) — a per-Project read view (`GET /projects/:id/dashboard`) composed entirely from existing Read Models: Project/Client/Audit repositories, the Finding/AI Visibility/Baseline History read repositories, and the Optimization Planner. Optimization Planner (`F6-S03`) — `apps/api/src/application/optimization/`: the Optimization Plan is a projection derived from Findings and Project/Audit context (never persisted), containing Optimization Items with a deterministic prioritization model (expected impact, estimated effort, confidence, and dependencies between Optimization Items based on the Workflow Runtime's fixed execution order); exposed through the Audit response (`optimizationPlan`) and the Dashboard's Priority Actions. See `docs/03_PRODUCT/FUTURE_ROADMAP.md` for full sprint detail.
+- **F6 — Pilot Readiness**: Client aggregate (`F6-S01`) — the top-level entity that owns Projects, enabling one workspace to serve multiple customers. Executive Dashboard (`F6-S02`) — a per-Project read view (`GET /projects/:id/dashboard`) composed entirely from existing Read Models: Project/Client/Audit repositories, the Finding/AI Visibility/Baseline History read repositories, the Optimization Planner, and the Optimization Campaign. Optimization Planner (`F6-S03`) — `apps/api/src/application/optimization/`: the Optimization Plan is a projection derived from Findings and Project/Audit context (never persisted), containing Optimization Items with a deterministic prioritization model (expected impact, estimated effort, confidence, and dependencies between Optimization Items based on the Workflow Runtime's fixed execution order); exposed through the Audit response (`optimizationPlan`) and the Dashboard's Priority Actions. Optimization Campaign (`F6-S04`) — `apps/api/src/domain/campaign/`, `application/campaign/`, `infrastructure/campaign/`, `presentation/campaign/`: a genuinely persisted aggregate (unlike the Plan) created from a Project's current Optimization Plan, tracking execution through `draft → active → completed → archived`, containing Optimization Actions (`pending → in-progress → completed → verified`), all transitions manual and agency-triggered. See `docs/03_PRODUCT/FUTURE_ROADMAP.md` for full sprint detail.
 
 # Domain Hierarchy
 
@@ -20,18 +20,21 @@ The Interface Layer's business domain is now organized as:
 ```
 Client
  └── Project
-      └── Audit
+      ├── Audit
+      └── Optimization Campaign
+           └── Optimization Action
 ```
 
 - **Client** — the top-level entity (an agency's customer). Stores name, industry, primary domain, status (`active`/`inactive`), and creation date. Every Project belongs to exactly one Client.
 - **Project** — owns Audits for a single canonical website. Auto-provisioned (find-or-create by canonical website, and by Client primary domain when no Client is specified) so the existing `POST /audits { url }` contract keeps working unchanged; a Client can also be created explicitly and passed as `clientId` so multiple Projects can share one Client.
 - **Audit** — a single analysis run against a Project's URL, producing an immutable Audit Snapshot (findings, entities, knowledge graph, AI Visibility assessment).
+- **Optimization Campaign** — belongs to exactly one Project; tracks execution of one Optimization Plan (itself a projection over one Audit's Findings, see `CTO-062`) through its own lifecycle. Contains Optimization Actions, each referencing the Optimization Item it came from, its Project, and the Audit Snapshot that originated it. See `CTO-063`.
 
-This hierarchy lives entirely within the Interface Layer as defined by `docs/01_ARCHITECTURE/DEPENDENCY_MODEL.md`. It introduces no new layer and does not change any Business Engine, the Workflow Layer, or the allowed dependency directions — Client, Project, and Audit are Interface Layer aggregates with their own domain/application/infrastructure/presentation slices in `apps/api/src/{domain,application,infrastructure,presentation}/{client,project,audit}`.
+This hierarchy lives entirely within the Interface Layer as defined by `docs/01_ARCHITECTURE/DEPENDENCY_MODEL.md`. It introduces no new layer and does not change any Business Engine, the Workflow Layer, or the allowed dependency directions — Client, Project, Audit, and Optimization Campaign are Interface Layer aggregates with their own domain/application/infrastructure/presentation slices in `apps/api/src/{domain,application,infrastructure,presentation}/{client,project,audit,campaign}`.
 
 # Current Phase
 
-F6 — Pilot Readiness, in progress. Client aggregate (`F6-S01`), Executive Dashboard (`F6-S02`), and Optimization Planner (`F6-S03`) delivered.
+F6 — Pilot Readiness, in progress. Client aggregate (`F6-S01`), Executive Dashboard (`F6-S02`), Optimization Planner (`F6-S03`), and Optimization Campaign (`F6-S04`) delivered.
 
 # Next Sprint
 

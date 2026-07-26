@@ -43,8 +43,43 @@ model Project {
 
   audits          AuditRequest[]
   baselineHistory ProjectBaselineHistory[]
+  campaigns       OptimizationCampaign[]
 
   @@map("projects")
+}
+
+model OptimizationCampaign {
+  id            String    @id @default(uuid())
+  projectId     String    @map("project_id")
+  sourceAuditId String    @map("source_audit_id")
+  status        String    @default("draft")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  activatedAt   DateTime? @map("activated_at")
+  completedAt   DateTime? @map("completed_at")
+  archivedAt    DateTime? @map("archived_at")
+
+  project Project              @relation(fields: [projectId], references: [id])
+  actions OptimizationAction[]
+
+  @@map("optimization_campaigns")
+}
+
+model OptimizationAction {
+  id                   String    @id @default(uuid())
+  campaignId           String    @map("campaign_id")
+  projectId            String    @map("project_id")
+  auditId              String    @map("audit_id")
+  title                String
+  supportingFindingIds Json      @map("supporting_finding_ids")
+  status               String    @default("pending")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  startedAt            DateTime? @map("started_at")
+  completedAt          DateTime? @map("completed_at")
+  verifiedAt           DateTime? @map("verified_at")
+
+  campaign OptimizationCampaign @relation(fields: [campaignId], references: [id])
+
+  @@map("optimization_actions")
 }
 
 model ProjectBaselineHistory {

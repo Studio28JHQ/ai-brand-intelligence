@@ -56,6 +56,26 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
           </section>
 
           <section>
+            <h2>Optimization Campaign</h2>
+            {!dashboard.campaign && <p>No campaign yet.</p>}
+            {dashboard.campaign && (
+              <>
+                <p>Campaign ID: {dashboard.campaign.campaignId}</p>
+                <p>Status: {dashboard.campaign.status}</p>
+                <p>Total Actions: {dashboard.campaign.totalActions}</p>
+                <p>Pending: {dashboard.campaign.pendingActions}</p>
+                <p>In Progress: {dashboard.campaign.inProgressActions}</p>
+                <p>Completed: {dashboard.campaign.completedActions}</p>
+                <p>Verified: {dashboard.campaign.verifiedActions}</p>
+                <p>Progress: {dashboard.campaign.progressPercentage}%</p>
+              </>
+            )}
+            <p>
+              <Link href={`/projects/${id}/campaign`}>Manage Campaign</Link>
+            </p>
+          </section>
+
+          <section>
             <h2>Recent Activity</h2>
             <p>Latest Completed Audit: {dashboard.recentActivity.latestCompletedAuditId ?? 'N/A'}</p>
             <p>Latest Completed Audit Date: {dashboard.recentActivity.latestCompletedAuditDate ?? 'N/A'}</p>

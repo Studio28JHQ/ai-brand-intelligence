@@ -11,6 +11,8 @@ import { Audit } from '../../domain/audit/audit.entity';
 import { FindingReadRepository } from '../../infrastructure/comparison/finding-read.repository';
 import { AiVisibilityReadRepository } from '../../infrastructure/comparison/ai-visibility-read.repository';
 import { BaselineHistoryReadRepository } from '../../infrastructure/project/baseline-history-read.repository';
+import { CampaignQueryService } from '../campaign/campaign-query.service';
+import { computeCampaignProgress } from '../campaign/campaign-progress';
 import { computeScoreTrend } from './dashboard-visibility-trend';
 
 const TOP_PRIORITY_ACTIONS_LIMIT = 5;
@@ -38,6 +40,7 @@ export class ExecutiveDashboardQueryService {
     private readonly findingReadRepository: FindingReadRepository,
     private readonly aiVisibilityReadRepository: AiVisibilityReadRepository,
     private readonly baselineHistoryReadRepository: BaselineHistoryReadRepository,
+    private readonly campaignQueryService: CampaignQueryService,
   ) {}
 
   async getDashboard(projectId: string): Promise<ExecutiveDashboard> {
@@ -83,6 +86,8 @@ export class ExecutiveDashboardQueryService {
           )
         : [];
 
+    const latestCampaign = await this.campaignQueryService.getLatestByProjectId(projectId);
+
     return {
       project: {
         projectId: project.id,
@@ -112,6 +117,7 @@ export class ExecutiveDashboardQueryService {
         lastExecutionStatus: lastExecution?.status ?? null,
         lastExecutionAt: lastExecution?.createdAt ? lastExecution.createdAt.toISOString() : null,
       },
+      campaign: latestCampaign ? computeCampaignProgress(latestCampaign.campaign, latestCampaign.actions) : null,
     };
   }
 }

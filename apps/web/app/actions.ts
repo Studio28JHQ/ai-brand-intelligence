@@ -4,6 +4,7 @@ import { loadConfig } from '@ai-visibility/config';
 import type {
   AuditComparisonResult,
   AuditMetadata,
+  CampaignMetadata,
   ClientMetadata,
   CreateAuditResponse,
   ExecutiveDashboard,
@@ -117,6 +118,78 @@ export async function getDashboard(projectId: string): Promise<ExecutiveDashboar
     return (await response.json()) as ExecutiveDashboard;
   } catch {
     return null;
+  }
+}
+
+export async function createCampaign(projectId: string): Promise<{ error?: string }> {
+  const config = loadConfig();
+
+  try {
+    const response = await fetch(`${config.API_URL}/projects/${projectId}/campaigns`, { method: 'POST' });
+
+    if (!response.ok) {
+      const body = await response.json();
+      return { error: body?.error?.message ?? 'Failed to create campaign' };
+    }
+
+    return {};
+  } catch {
+    return { error: 'Failed to reach the backend' };
+  }
+}
+
+export async function getLatestCampaign(projectId: string): Promise<CampaignMetadata | null> {
+  const config = loadConfig();
+
+  try {
+    const response = await fetch(`${config.API_URL}/projects/${projectId}/campaigns/latest`, { cache: 'no-store' });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return (await response.json()) as CampaignMetadata;
+  } catch {
+    return null;
+  }
+}
+
+export async function setCampaignStatus(
+  campaignId: string,
+  status: 'active' | 'completed' | 'archived',
+): Promise<boolean> {
+  const config = loadConfig();
+
+  try {
+    const response = await fetch(`${config.API_URL}/campaigns/${campaignId}/status`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+export async function setActionStatus(
+  campaignId: string,
+  actionId: string,
+  status: 'in-progress' | 'completed' | 'verified',
+): Promise<boolean> {
+  const config = loadConfig();
+
+  try {
+    const response = await fetch(`${config.API_URL}/campaigns/${campaignId}/actions/${actionId}/status`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    });
+
+    return response.ok;
+  } catch {
+    return false;
   }
 }
 
