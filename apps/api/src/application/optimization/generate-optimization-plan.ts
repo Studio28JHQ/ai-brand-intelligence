@@ -1,4 +1,10 @@
-import type { AiVisibilityAssessment, Finding, KnowledgeGraphResult, OptimizationItem } from '@ai-visibility/contracts';
+import type {
+  AiVisibilityAssessment,
+  Finding,
+  KnowledgeGraphResult,
+  OptimizationItem,
+  PatternReference,
+} from '@ai-visibility/contracts';
 import { resolveOptimizationRule } from '../optimization-knowledge-base/optimization-knowledge-base';
 import type { OptimizationRuleVersion } from '../optimization-knowledge-base/optimization-rule';
 import { buildReasoningModel } from '../reasoning/build-reasoning-model';
@@ -23,6 +29,7 @@ function buildOptimizationItem(
   allSourceEngines: ReadonlyArray<string>,
   assessment: AiVisibilityAssessment,
   knowledgeGraph: KnowledgeGraphResult,
+  patternsByRuleId: ReadonlyMap<string, PatternReference>,
 ): OptimizationItem {
   const supportingFindingIds = [finding.id];
   const estimatedEffort = deriveEstimatedEffort(supportingFindingIds.length);
@@ -43,15 +50,26 @@ function buildOptimizationItem(
     cycleId: context.cycleId,
     optimizationRuleId: rule.ruleId,
     optimizationRuleVersion: rule.version,
-    reasoning: buildReasoningModel({ finding, rule, confidence, dependencyWeight, assessment, knowledgeGraph }),
+    reasoning: buildReasoningModel({
+      finding,
+      rule,
+      confidence,
+      dependencyWeight,
+      assessment,
+      knowledgeGraph,
+      patternReference: patternsByRuleId.get(rule.ruleId) ?? null,
+    }),
   };
 }
+
+const NO_PATTERNS: ReadonlyMap<string, PatternReference> = new Map();
 
 export function generateOptimizationPlan(
   context: OptimizationPlanContext,
   findings: ReadonlyArray<Finding>,
   assessment: AiVisibilityAssessment,
   knowledgeGraph: KnowledgeGraphResult,
+  patternsByRuleId: ReadonlyMap<string, PatternReference> = NO_PATTERNS,
 ): OptimizationItem[] {
   const actionableFindings = findings.filter((finding) => finding.severity !== 'none');
 
@@ -73,6 +91,6 @@ export function generateOptimizationPlan(
   const allSourceEngines = resolvedFindings.map(({ finding }) => finding.sourceEngine);
 
   return resolvedFindings.map(({ finding, rule }) =>
-    buildOptimizationItem(context, finding, rule, allSourceEngines, assessment, knowledgeGraph),
+    buildOptimizationItem(context, finding, rule, allSourceEngines, assessment, knowledgeGraph, patternsByRuleId),
   );
 }

@@ -46,6 +46,19 @@ export interface ExpectedOutcomeFact {
   targetDimension: string;
 }
 
+/**
+ * A reference to a reusable Optimization Pattern (see `optimization-pattern.ts`) whose
+ * `optimizationRuleId` matches this Item's own — aggregate, anonymized counts only, never a
+ * Client/Project identifier. `null` when no recurring pattern has been discovered for this rule yet.
+ */
+export interface PatternReference {
+  patternId: string;
+  optimizationRuleId: string;
+  confidence: OptimizationLevel;
+  occurrenceCount: number;
+  distinctProjectCount: number;
+}
+
 export interface ReasoningModel {
   triggeringFindings: TriggeringFindingReference[];
   appliedRules: AppliedOptimizationRuleReference[];
@@ -55,4 +68,5 @@ export interface ReasoningModel {
   expectedOutcome: ExpectedOutcomeFact;
   confidence: OptimizationLevel;
   assumptions: AssumptionFact[];
+  patternReference: PatternReference | null;
 }

@@ -9,6 +9,7 @@ import { AuditModule } from './presentation/audit/audit.module';
 import { CampaignModule } from './presentation/campaign/campaign.module';
 import { BriefingModule } from './presentation/briefing/briefing.module';
 import { OptimizationCycleModule } from './presentation/optimization-cycle/optimization-cycle.module';
+import { OptimizationPatternModule } from './presentation/optimization-pattern/optimization-pattern.module';
 import { DatabaseModule } from './infrastructure/database/database.module';
 
 const config = loadConfig();
@@ -24,6 +25,7 @@ const config = loadConfig();
     CampaignModule,
     BriefingModule,
     OptimizationCycleModule,
+    OptimizationPatternModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

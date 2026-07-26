@@ -5,6 +5,7 @@ import { FindingReadRepository } from '../../infrastructure/comparison/finding-r
 import { AiVisibilityReadRepository } from '../../infrastructure/comparison/ai-visibility-read.repository';
 import { KnowledgeGraphReadRepository } from '../../infrastructure/comparison/knowledge-graph-read.repository';
 import { generateOptimizationPlan } from '../optimization/generate-optimization-plan';
+import { OptimizationPatternQueryService } from '../optimization-pattern/optimization-pattern-query.service';
 
 @Injectable()
 export class AuditAnalysisQueryService {
@@ -13,6 +14,7 @@ export class AuditAnalysisQueryService {
     private readonly findingReadRepository: FindingReadRepository,
     private readonly aiVisibilityReadRepository: AiVisibilityReadRepository,
     private readonly knowledgeGraphReadRepository: KnowledgeGraphReadRepository,
+    private readonly optimizationPatternQueryService: OptimizationPatternQueryService,
   ) {}
 
   async getByAuditId(auditId: string): Promise<AuditAnalysisView | null> {
@@ -21,10 +23,11 @@ export class AuditAnalysisQueryService {
       return null;
     }
 
-    const [findings, assessment, knowledgeGraph] = await Promise.all([
+    const [findings, assessment, knowledgeGraph, patternsByRuleId] = await Promise.all([
       this.findingReadRepository.findByAuditId(auditId),
       this.aiVisibilityReadRepository.findByAuditId(auditId),
       this.knowledgeGraphReadRepository.findByAuditId(auditId),
+      this.optimizationPatternQueryService.findActivePatternsByRuleId(),
     ]);
 
     const optimizationPlan = assessment
@@ -33,6 +36,7 @@ export class AuditAnalysisQueryService {
           findings,
           assessment,
           knowledgeGraph,
+          patternsByRuleId,
         )
       : [];
 

@@ -24,6 +24,7 @@ import { ClientRepositoryModule } from '../../infrastructure/client/client-repos
 import { CampaignRepositoryModule } from '../../infrastructure/campaign/campaign-repository.module';
 import { OptimizationCycleRepositoryModule } from '../../infrastructure/optimization-cycle/optimization-cycle-repository.module';
 import { DatabaseModule } from '../../infrastructure/database/database.module';
+import { OptimizationPatternModule } from '../optimization-pattern/optimization-pattern.module';
 import { ProjectController } from './project.controller';
 
 @Module({
@@ -34,6 +35,7 @@ import { ProjectController } from './project.controller';
     ClientRepositoryModule,
     CampaignRepositoryModule,
     OptimizationCycleRepositoryModule,
+    OptimizationPatternModule,
   ],
   controllers: [ProjectController],
   providers: [

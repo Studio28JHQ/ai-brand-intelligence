@@ -6,6 +6,7 @@ import type {
   KnowledgeGraphFact,
   KnowledgeGraphResult,
   OptimizationLevel,
+  PatternReference,
   ReasoningModel,
 } from '@ai-visibility/contracts';
 import type { OptimizationRuleVersion } from '../optimization-knowledge-base/optimization-rule';
@@ -67,6 +68,7 @@ export interface ReasoningContext {
   dependencyWeight: OptimizationLevel;
   assessment: AiVisibilityAssessment;
   knowledgeGraph: KnowledgeGraphResult;
+  patternReference?: PatternReference | null;
 }
 
 export function buildReasoningModel(context: ReasoningContext): ReasoningModel {
@@ -91,5 +93,6 @@ export function buildReasoningModel(context: ReasoningContext): ReasoningModel {
     expectedOutcome: { impactLevel: rule.expectedImpact, targetDimension: 'ai-visibility' },
     confidence: context.confidence,
     assumptions: buildAssumptions(context.dependencyWeight),
+    patternReference: context.patternReference ?? null,
   };
 }

@@ -31,11 +31,19 @@ import { ClientRepositoryModule } from '../../infrastructure/client/client-repos
 import { OptimizationCycleRepositoryModule } from '../../infrastructure/optimization-cycle/optimization-cycle-repository.module';
 import { DatabaseModule } from '../../infrastructure/database/database.module';
 import { ProjectModule } from '../project/project.module';
+import { OptimizationPatternModule } from '../optimization-pattern/optimization-pattern.module';
 import { EnsureActiveCycleUseCase } from '../../application/optimization-cycle/ensure-active-cycle.use-case';
 import { AuditController } from './audit.controller';
 
 @Module({
-  imports: [DatabaseModule, AuditRepositoryModule, ClientRepositoryModule, OptimizationCycleRepositoryModule, ProjectModule],
+  imports: [
+    DatabaseModule,
+    AuditRepositoryModule,
+    ClientRepositoryModule,
+    OptimizationCycleRepositoryModule,
+    ProjectModule,
+    OptimizationPatternModule,
+  ],
   controllers: [AuditController],
   providers: [
     CreateAuditUseCase,

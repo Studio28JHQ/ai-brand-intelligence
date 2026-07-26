@@ -49,6 +49,25 @@ model Project {
   @@map("projects")
 }
 
+// Deliberately has NO foreign key to Project/Client/Audit anywhere on this model — a Pattern is
+// cross-tenant aggregate intelligence (keyed only by the static, code-defined `optimizationRuleId`
+// from the Optimization Knowledge Base), and the schema itself makes it structurally impossible to
+// join a Pattern row back to any specific Client/Project, not just a convention enforced in code.
+model OptimizationPattern {
+  id                   String    @id @default(uuid())
+  optimizationRuleId   String    @unique @map("optimization_rule_id")
+  category             String
+  occurrenceCount      Int       @map("occurrence_count")
+  distinctProjectCount Int       @map("distinct_project_count")
+  confidence           String
+  status               String
+  discoveredAt         DateTime  @map("discovered_at")
+  lastRecomputedAt     DateTime  @map("last_recomputed_at")
+  invalidatedAt        DateTime? @map("invalidated_at")
+
+  @@map("optimization_patterns")
+}
+
 model OptimizationCycle {
   id        String    @id @default(uuid())
   projectId String    @map("project_id")

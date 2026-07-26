@@ -17,6 +17,7 @@ import { CampaignQueryService, CampaignQueryResult } from '../campaign/campaign-
 import { ImpactAssessmentService } from '../impact-assessment/impact-assessment.service';
 import { generateOptimizationPlan } from '../optimization/generate-optimization-plan';
 import { currentVersion, listOptimizationRules } from '../optimization-knowledge-base/optimization-knowledge-base';
+import { OptimizationPatternQueryService } from '../optimization-pattern/optimization-pattern-query.service';
 import { AI_CONTEXT_VERSION, AiContext } from './ai-context';
 
 function latestByTimestamp(audits: Audit[], selectTimestamp: (audit: Audit) => Date | null): Audit | null {
@@ -95,6 +96,7 @@ export class AiContextBuilderService {
     private readonly knowledgeGraphReadRepository: KnowledgeGraphReadRepository,
     private readonly campaignQueryService: CampaignQueryService,
     private readonly impactAssessmentService: ImpactAssessmentService,
+    private readonly optimizationPatternQueryService: OptimizationPatternQueryService,
   ) {}
 
   async build(projectId: string): Promise<Readonly<AiContext>> {
@@ -113,12 +115,13 @@ export class AiContextBuilderService {
     const completedAudits = projectAudits.filter((audit) => audit.status === 'completed');
     const latestCompleted = latestByTimestamp(completedAudits, (audit) => audit.completedAt);
 
-    const [findings, assessment, knowledgeGraph] = await Promise.all([
+    const [findings, assessment, knowledgeGraph, patternsByRuleId] = await Promise.all([
       latestCompleted ? this.findingReadRepository.findByAuditId(latestCompleted.id) : Promise.resolve([]),
       latestCompleted ? this.aiVisibilityReadRepository.findByAuditId(latestCompleted.id) : Promise.resolve(null),
       latestCompleted
         ? this.knowledgeGraphReadRepository.findByAuditId(latestCompleted.id)
         : Promise.resolve({ nodes: [], relationships: [] }),
+      this.optimizationPatternQueryService.findActivePatternsByRuleId(),
     ]);
 
     const optimizationPlan =
@@ -128,6 +131,7 @@ export class AiContextBuilderService {
             findings,
             assessment,
             knowledgeGraph,
+            patternsByRuleId,
           )
         : [];
 
