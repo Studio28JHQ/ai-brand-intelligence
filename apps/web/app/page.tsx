@@ -13,6 +13,7 @@ import {
   listProjects,
   setProjectBaseline,
 } from './actions';
+import { DailyBriefing } from './daily-briefing';
 
 const initialState: CreateAuditState = {};
 
@@ -66,6 +67,8 @@ export default function Home() {
   return (
     <main>
       <h1>Audit Workspace</h1>
+
+      <DailyBriefing />
 
       <form action={formAction}>
         <input type="url" name="url" placeholder="https://example.com" required />

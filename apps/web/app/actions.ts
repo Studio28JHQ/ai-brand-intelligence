@@ -4,6 +4,7 @@ import { loadConfig } from '@ai-visibility/config';
 import type {
   AuditComparisonResult,
   AuditMetadata,
+  BriefingModel,
   CampaignMetadata,
   ClientMetadata,
   ConsultantAnswer,
@@ -282,6 +283,22 @@ export async function createAudit(
     return { result: body as CreateAuditResponse };
   } catch {
     return { error: 'Failed to reach the backend' };
+  }
+}
+
+export async function getDailyBriefing(): Promise<BriefingModel | null> {
+  const config = loadConfig();
+
+  try {
+    const response = await fetch(`${config.API_URL}/briefing/daily`, { cache: 'no-store' });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return (await response.json()) as BriefingModel;
+  } catch {
+    return null;
   }
 }
 

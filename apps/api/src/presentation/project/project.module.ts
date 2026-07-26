@@ -48,6 +48,6 @@ import { ProjectController } from './project.controller';
     AiVisibilityReadRepository,
     KnowledgeGraphReadRepository,
   ],
-  exports: [ProjectRepositoryModule],
+  exports: [ProjectRepositoryModule, ClientRepositoryModule, AiContextBuilderService],
 })
 export class ProjectModule {}

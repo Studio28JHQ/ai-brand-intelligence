@@ -4,9 +4,10 @@ import { ClientModule } from './presentation/client/client.module';
 import { ProjectModule } from './presentation/project/project.module';
 import { AuditModule } from './presentation/audit/audit.module';
 import { CampaignModule } from './presentation/campaign/campaign.module';
+import { BriefingModule } from './presentation/briefing/briefing.module';
 import { DatabaseModule } from './infrastructure/database/database.module';
 
 @Module({
-  imports: [DatabaseModule, HealthModule, ClientModule, ProjectModule, AuditModule, CampaignModule],
+  imports: [DatabaseModule, HealthModule, ClientModule, ProjectModule, AuditModule, CampaignModule, BriefingModule],
 })
 export class AppModule {}
