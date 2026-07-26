@@ -44,10 +44,12 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
               {dashboard.priorityActions.map((action, index) => (
                 <li key={`${action.title}-${index}`}>
                   <p>Title: {action.title}</p>
-                  <p>Rationale: {action.rationale}</p>
+                  <p>Description: {action.description}</p>
+                  <p>Business Rationale: {action.rationale}</p>
                   <p>Priority: {action.priority}</p>
+                  <p>Expected Impact: {action.expectedImpact}</p>
                   <p>Estimated Effort: {action.estimatedEffort}</p>
-                  <p>Expected Improvement: {action.expectedImprovement}</p>
+                  <p>Related Findings: {action.relatedFindingIds.join(', ')}</p>
                 </li>
               ))}
             </ul>

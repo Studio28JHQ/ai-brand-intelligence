@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
-import type { ExecutiveDashboard, RecommendationPriority } from '@ai-visibility/contracts';
-import { generateRecommendations } from '../../presentation/audit/recommendation.service';
+import type { ExecutiveDashboard } from '@ai-visibility/contracts';
+import { generateRecommendations } from '../recommendation/generate-recommendations';
+import { deriveExpectedImpact, sortByPriority } from '../recommendation/recommendation-prioritization';
 import { PROJECT_REPOSITORY, ProjectRepository } from '../../domain/project/project.repository';
 import { ProjectNotFoundError } from '../../domain/project/project.errors';
 import { CLIENT_REPOSITORY, ClientRepository } from '../../domain/client/client.repository';
@@ -11,7 +12,8 @@ import { FindingReadRepository } from '../../infrastructure/comparison/finding-r
 import { AiVisibilityReadRepository } from '../../infrastructure/comparison/ai-visibility-read.repository';
 import { BaselineHistoryReadRepository } from '../../infrastructure/project/baseline-history-read.repository';
 import { computeScoreTrend } from './dashboard-visibility-trend';
-import { buildPriorityActions } from './dashboard-priority-action';
+
+const TOP_PRIORITY_ACTIONS_LIMIT = 5;
 
 function latestByTimestamp(audits: Audit[], selectTimestamp: (audit: Audit) => Date | null): Audit | null {
   return audits.reduce<Audit | null>((latest, audit) => {
@@ -25,16 +27,6 @@ function latestByTimestamp(audits: Audit[], selectTimestamp: (audit: Audit) => D
     }
     return latest;
   }, null);
-}
-
-function derivePriority(assessmentStatus: 'ready' | 'needs-improvement' | 'not-ready'): RecommendationPriority {
-  if (assessmentStatus === 'not-ready') {
-    return 'high';
-  }
-  if (assessmentStatus === 'needs-improvement') {
-    return 'medium';
-  }
-  return 'low';
 }
 
 @Injectable()
@@ -78,11 +70,18 @@ export class ExecutiveDashboardQueryService {
     const currentScore = currentAssessment?.status ?? null;
     const baselineScore = baselineAssessment?.status ?? null;
     const actionableFindings = findings.filter((finding) => finding.severity !== 'none');
-    const isCritical = currentAssessment ? derivePriority(currentAssessment.status) === 'high' : false;
+    const isCritical = currentAssessment ? deriveExpectedImpact(currentAssessment.status) === 'high' : false;
     const criticalFindings = isCritical ? actionableFindings.length : 0;
     const opportunities = actionableFindings.length - criticalFindings;
 
-    const recommendations = currentAssessment ? generateRecommendations(findings, currentAssessment) : [];
+    const recommendations =
+      currentAssessment && latestCompleted
+        ? generateRecommendations(
+            { projectId: project.id, auditId: latestCompleted.id },
+            findings,
+            currentAssessment,
+          )
+        : [];
 
     return {
       project: {
@@ -104,7 +103,7 @@ export class ExecutiveDashboardQueryService {
         criticalFindings,
         opportunities,
       },
-      priorityActions: buildPriorityActions(recommendations),
+      priorityActions: sortByPriority(recommendations).slice(0, TOP_PRIORITY_ACTIONS_LIMIT),
       recentActivity: {
         latestCompletedAuditId: latestCompleted?.id ?? null,
         latestCompletedAuditDate: latestCompleted?.completedAt ? latestCompleted.completedAt.toISOString() : null,

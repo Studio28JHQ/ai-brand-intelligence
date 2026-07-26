@@ -1,10 +1,8 @@
 import type { VisibilityStatus } from './ai-visibility';
 import type { AuditStatus } from './audit';
-import type { RecommendationPriority } from './recommendation';
+import type { Recommendation } from './recommendation';
 
 export type VisibilityScoreTrend = 'improved' | 'declined' | 'unchanged' | 'unknown';
-
-export type EffortLevel = 'low' | 'medium' | 'high';
 
 export interface DashboardProjectOverview {
   projectId: string;
@@ -27,15 +25,6 @@ export interface DashboardVisibilityOverview {
   opportunities: number;
 }
 
-export interface DashboardPriorityAction {
-  title: string;
-  rationale: string;
-  priority: RecommendationPriority;
-  estimatedEffort: EffortLevel;
-  expectedImprovement: EffortLevel;
-  relatedFindingIds: string[];
-}
-
 export interface DashboardRecentActivity {
   latestCompletedAuditId: string | null;
   latestCompletedAuditDate: string | null;
@@ -48,6 +37,6 @@ export interface DashboardRecentActivity {
 export interface ExecutiveDashboard {
   project: DashboardProjectOverview;
   visibility: DashboardVisibilityOverview;
-  priorityActions: DashboardPriorityAction[];
+  priorityActions: Recommendation[];
   recentActivity: DashboardRecentActivity;
 }

@@ -1,7 +1,7 @@
 import type { CreateAuditResponse, CrawlResult, EngineResult, InventoryResult } from '@ai-visibility/contracts';
 import { AuditSnapshot } from '../../domain/audit/audit-snapshot';
 import { DiscoveryResult } from '../../domain/audit/discovery-result';
-import { generateRecommendations } from './recommendation.service';
+import { generateRecommendations } from '../../application/recommendation/generate-recommendations';
 
 export function buildAuditSummary(snapshot: AuditSnapshot): CreateAuditResponse {
   const discovery = (snapshot.engineResults.discovery as EngineResult<DiscoveryResult>).output!;
@@ -66,7 +66,11 @@ export function buildAuditSummary(snapshot: AuditSnapshot): CreateAuditResponse 
       assessedAt: snapshot.aiVisibility.assessedAt,
     },
     recommendation: {
-      recommendations: generateRecommendations(snapshot.findings, snapshot.aiVisibility),
+      recommendations: generateRecommendations(
+        { projectId: snapshot.audit.projectId, auditId: snapshot.audit.id },
+        snapshot.findings,
+        snapshot.aiVisibility,
+      ),
     },
     progress: [...snapshot.progress],
     executionHistory: [...snapshot.history],

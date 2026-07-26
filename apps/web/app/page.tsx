@@ -405,8 +405,11 @@ export default function Home() {
                 {state.result.recommendation.recommendations.map((item) => (
                   <li key={item.title + item.relatedFindingIds.join(',')}>
                     <p>Title: {item.title}</p>
-                    <p>Rationale: {item.rationale}</p>
+                    <p>Description: {item.description}</p>
+                    <p>Business Rationale: {item.rationale}</p>
                     <p>Priority: {item.priority}</p>
+                    <p>Expected Impact: {item.expectedImpact}</p>
+                    <p>Estimated Effort: {item.estimatedEffort}</p>
                     <p>Related Findings: {item.relatedFindingIds.join(', ') || 'None'}</p>
                     <p>Status: {item.status}</p>
                   </li>
