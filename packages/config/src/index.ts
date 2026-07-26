@@ -23,6 +23,12 @@ const envSchema = z.object({
   RATE_LIMIT_LIMIT: z.coerce.number().int().positive().default(120),
   REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).optional(),
+  // Authentication (F9-S02)
+  JWT_SECRET: z.string().default('dev-only-jwt-secret-do-not-use-in-production'),
+  JWT_SESSION_EXPIRATION_MINUTES: z.coerce.number().int().positive().default(60),
+  JWT_REMEMBER_ME_EXPIRATION_DAYS: z.coerce.number().int().positive().default(30),
+  OTP_EXPIRATION_MINUTES: z.coerce.number().int().positive().default(10),
+  EMAIL_FROM: z.string().default('no-reply@ai-visibility-auditor.local'),
 });
 
 export type PlatformConfig = z.infer<typeof envSchema>;
@@ -35,7 +41,13 @@ export type PlatformConfig = z.infer<typeof envSchema>;
 // NODE_ENV=production. It is not called automatically by `loadConfig` itself: `loadConfig` is
 // shared by every app in the monorepo, and `next start` always sets NODE_ENV=production for the
 // web app too, which has no Postgres/MinIO credentials of its own to provide.
-const REQUIRED_IN_PRODUCTION = ['DATABASE_URL', 'POSTGRES_PASSWORD', 'MINIO_ROOT_USER', 'MINIO_ROOT_PASSWORD'] as const;
+const REQUIRED_IN_PRODUCTION = [
+  'DATABASE_URL',
+  'POSTGRES_PASSWORD',
+  'MINIO_ROOT_USER',
+  'MINIO_ROOT_PASSWORD',
+  'JWT_SECRET',
+] as const;
 
 export function assertProductionSecrets(config: PlatformConfig): void {
   if (config.NODE_ENV !== 'production') {

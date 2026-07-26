@@ -16,6 +16,46 @@ model PlatformMeta {
   @@map("platform_meta")
 }
 
+// Identity is a deliberately separate bounded context from Client (the agency's own customer,
+// CTO-059) — a User is the agency staff member signing in to use the platform. No foreign key
+// from any business model (Client/Project/Audit/...) points at User, and vice versa: this sprint
+// keeps authentication isolated behind its own module, per F9-S02's "Do not couple business
+// modules to authentication."
+model User {
+  id           String    @id @default(uuid())
+  firstName    String    @map("first_name")
+  lastName     String    @map("last_name")
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  status       String    @default("pending-verification")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  verifiedAt   DateTime? @map("verified_at")
+
+  otpCodes OtpCode[]
+
+  @@map("users")
+}
+
+// OTP codes are never stored in plain text (`codeHash`, not `code`) and are purpose-scoped
+// (email-verification vs password-reset) so a code issued for one purpose can never be replayed
+// for the other. `consumedAt` enforces single-use; expiration is checked against `expiresAt` at
+// verification time rather than a background sweep, matching this codebase's "compute on demand,
+// no scheduled jobs" convention (`CTO-082`).
+model OtpCode {
+  id         String    @id @default(uuid())
+  userId     String    @map("user_id")
+  purpose    String
+  codeHash   String    @map("code_hash")
+  expiresAt  DateTime  @map("expires_at")
+  consumedAt DateTime? @map("consumed_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, purpose])
+  @@map("otp_codes")
+}
+
 model Client {
   id            String   @id @default(uuid())
   name          String

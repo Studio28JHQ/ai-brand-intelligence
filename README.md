@@ -54,8 +54,11 @@ All configuration is env-var driven (`packages/config`, validated with zod — e
 | `REDIS_HOST` / `REDIS_PORT` | `localhost` / `6379` |
 | `MINIO_HOST` / `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` / `MINIO_API_PORT` / `MINIO_CONSOLE_PORT` | `localhost` / `minioadmin` / `minioadmin` / `9000` / `9001` |
 | `CORS_ORIGIN` / `RATE_LIMIT_TTL_MS` / `RATE_LIMIT_LIMIT` / `REQUEST_TIMEOUT_MS` / `LOG_LEVEL` | `http://localhost:3000` / `60000` / `120` / `30000` / unset (`debug` in development, `info` in production) |
+| `JWT_SECRET` / `JWT_SESSION_EXPIRATION_MINUTES` / `JWT_REMEMBER_ME_EXPIRATION_DAYS` / `OTP_EXPIRATION_MINUTES` / `EMAIL_FROM` | dev-only default / `60` / `30` / `10` / `no-reply@ai-visibility-auditor.local` |
 
-**In production** (`NODE_ENV=production`), the Backend additionally *requires* `DATABASE_URL`, `POSTGRES_PASSWORD`, `MINIO_ROOT_USER`, and `MINIO_ROOT_PASSWORD` to be set explicitly and refuses to start otherwise — see `docs/04_PROJECT/PRODUCTION_READINESS.md`.
+**In production** (`NODE_ENV=production`), the Backend additionally *requires* `DATABASE_URL`, `POSTGRES_PASSWORD`, `MINIO_ROOT_USER`, `MINIO_ROOT_PASSWORD`, and `JWT_SECRET` to be set explicitly and refuses to start otherwise — see `docs/04_PROJECT/PRODUCTION_READINESS.md`.
+
+No SMTP/transactional-email provider is configured in this environment — OTP verification codes (registration, password reset) are written to the Backend's own log instead of a real inbox; see `docs/04_PROJECT/AUTHENTICATION.md`.
 
 ## URLs
 

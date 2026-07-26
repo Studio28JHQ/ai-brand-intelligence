@@ -10,6 +10,7 @@ import { CampaignModule } from './presentation/campaign/campaign.module';
 import { BriefingModule } from './presentation/briefing/briefing.module';
 import { OptimizationCycleModule } from './presentation/optimization-cycle/optimization-cycle.module';
 import { OptimizationPatternModule } from './presentation/optimization-pattern/optimization-pattern.module';
+import { AuthModule } from './presentation/auth/auth.module';
 import { DatabaseModule } from './infrastructure/database/database.module';
 
 const config = loadConfig();
@@ -26,6 +27,7 @@ const config = loadConfig();
     BriefingModule,
     OptimizationCycleModule,
     OptimizationPatternModule,
+    AuthModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
