@@ -494,3 +494,22 @@ These four levels are scored and combined (impact weighted highest; low effort a
 **Verified via the actual documented procedure, not a manual substitute**: `./scripts/start-alpha.sh` was run twice from a genuinely clean state (`lsof` confirmed nothing on 3000/3001 beforehand) — first to reproduce the failure exactly as reported, then again after the fix to confirm the "AI Visibility Auditor - Alpha Ready" banner is reached and both servers stay up. `curl http://localhost:3001/health` returned 200; `POST /auth/register` returned a valid `201` response; and the full `Landing → Sign In → Register → user persisted in Postgres → /verify-email` flow was walked in a real browser against the servers this run of the script produced.
 
 **Scope boundary**: No application code changed — this is entirely `scripts/start-alpha.sh` and `apps/api/scripts/seed-demo.js`, both operational/dev-workflow tooling. Every domain rule, endpoint, and UI behavior from `F4`–`F9-S02-HF01` is untouched.
+
+# CTO-087
+
+**Title**: `pnpm dev` — a single, root-level command as the one and only supported way to start local development
+**Sprint**: `BLOCKER-001` (One Command Local Development)
+**Decision**: No new documentation file. `docs/04_PROJECT/AUTHENTICATION.md`-style deep dive isn't warranted here — this is a workflow/DX fix, recorded here per convention, with `README.md`'s Development section rewritten as the ticket's DOCUMENTATION section requires.
+
+**Gap identified**: `./scripts/start-alpha.sh` (added `CTO-076`, hardened `CTO-086`) already did everything the ticket's IMPLEMENTATION section asks for — start infrastructure, wait for readiness, run migrations, build, start Backend and Frontend, wait for both to be healthy, seed demo data, fail with an actionable message on timeout — but the root `package.json` had no `scripts` block at all. A developer had no `pnpm`-native entry point and had to already know the shell script's path, which is exactly the kind of "must manually determine which service is missing" friction this ticket is scoped to eliminate. Fixed by adding a single root script: `"dev": "./scripts/start-alpha.sh"`. No change was made to the script's own startup logic — `CTO-086` already made it resilient to the one real failure mode found in this repository's dev database.
+
+**Verified end-to-end from this repository's working tree** (dependencies already installed; a literal fresh `git clone` was not repeated, consistent with every prior ticket's verification scope this session — the startup command itself is clone-order-independent, since it only assumes `pnpm install` has run): with ports 3000/3001 confirmed empty beforehand, `pnpm dev` was run to completion and reached the "Alpha Ready" banner. Then, exactly as the ticket's HEALTH VALIDATION and SELF VALIDATION sections specify:
+- `GET http://localhost:3001/health` → `200`
+- `GET http://localhost:3000` (Landing) → `200`
+- `GET http://localhost:3001/docs` (Swagger) → `200`
+- `POST http://localhost:3001/auth/register` via curl → `201`, `emailDelivered: true`
+- Full browser walk: Landing → `/register` → form submitted → redirected to `/verify-email?...&purpose=email-verification` → confirmed via direct Postgres query that the user was persisted (`status = 'pending-verification'`) with an `otp_codes` row (`purpose = 'email-verification'`) — i.e. User persisted, OTP generated, verification flow started, exactly as the ticket's DEFINITION OF DONE requires.
+
+**Documentation**: `README.md`'s `## Prerequisites`/`## Installation`/`## Startup`/`## URLs`/`## Troubleshooting` sections were consolidated into a single `## Development` section covering only what the ticket's DOCUMENTATION section names — Prerequisites, Installation, the single startup command, Expected URLs, Troubleshooting — per the ticket's explicit "Document ONLY" instruction. The previously-documented "Manual steps" alternative and the full environment-variable reference table were removed from `README.md` (the latter's essential production-only entries remain pointed-to via `docs/04_PROJECT/PRODUCTION_READINESS.md`) — keeping exactly one documented way to start the platform is the point of this ticket, so documenting a second, manual way alongside it would undercut it.
+
+**Scope boundary**: No application or domain code changed. `apps/api/scripts/seed-demo.js` and `scripts/start-alpha.sh` are untouched from their `CTO-086` state — this ticket's only functional change is the new root `package.json` `dev` script; everything else is documentation.

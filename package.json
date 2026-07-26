@@ -2,5 +2,8 @@
   "name": "ai-visibility-auditor",
   "version": "0.0.0",
   "private": true,
-  "packageManager": "pnpm@11.10.0"
+  "packageManager": "pnpm@11.10.0",
+  "scripts": {
+    "dev": "./scripts/start-alpha.sh"
+  }
 }
