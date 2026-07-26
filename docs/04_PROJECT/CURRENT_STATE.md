@@ -147,7 +147,7 @@ Each stage is documented in its own section above (Optimization Cycle, Verificat
 
 # Current Phase
 
-F7 — AI Consultant, in progress. F8 — Pilot Hardening, in progress. F6 — Pilot Readiness fully delivered (`F6-S01` through `F6-S07`). AI Context Builder (`F7-S01`), AI Conversation Orchestrator (`F7-S02`), AI Consultant Chat MVP (`F7-S03`), AI Daily Briefing (`F7-S04`), Optimization Cycle (`F7-S05`, Pilot Readiness), and Executive Client Report (`F7-S06`, Pilot Readiness) delivered. End-to-End Pilot Workflow validated (`F8-S01`, Pilot Hardening).
+F7 — AI Consultant, in progress. F8 — Pilot Hardening, in progress. F6 — Pilot Readiness fully delivered (`F6-S01` through `F6-S07`). AI Context Builder (`F7-S01`), AI Conversation Orchestrator (`F7-S02`), AI Consultant Chat MVP (`F7-S03`), AI Daily Briefing (`F7-S04`), Optimization Cycle (`F7-S05`, Pilot Readiness), and Executive Client Report (`F7-S06`, Pilot Readiness) delivered. End-to-End Pilot Workflow validated (`F8-S01`, Pilot Hardening). Pilot Readiness Assessment complete (`F8-S02`, Pilot Hardening) — see `docs/04_PROJECT/PILOT_CHECKLIST.md`.
 
 # Next Sprint
 

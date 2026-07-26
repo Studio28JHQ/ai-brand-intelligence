@@ -6,10 +6,15 @@ import { createCampaign, getLatestCampaign, setActionStatus, setCampaignStatus }
 
 export function CampaignManager({ projectId }: { projectId: string }) {
   const [campaign, setCampaign] = useState<CampaignMetadata | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | undefined>(undefined);
+  const [statusMessage, setStatusMessage] = useState<string | undefined>(undefined);
 
   const refresh = () => {
-    getLatestCampaign(projectId).then(setCampaign);
+    getLatestCampaign(projectId).then((result) => {
+      setCampaign(result);
+      setLoading(false);
+    });
   };
 
   useEffect(refresh, [projectId]);
@@ -17,6 +22,7 @@ export function CampaignManager({ projectId }: { projectId: string }) {
   const handleCreate = async () => {
     const { error: createError } = await createCampaign(projectId);
     setError(createError);
+    setStatusMessage(createError ? undefined : 'Campaign created.');
     if (!createError) {
       refresh();
     }
@@ -26,7 +32,8 @@ export function CampaignManager({ projectId }: { projectId: string }) {
     if (!campaign) {
       return;
     }
-    await setCampaignStatus(campaign.id, status);
+    const success = await setCampaignStatus(campaign.id, status);
+    setStatusMessage(success ? `Campaign advanced to '${status}'.` : 'Failed to update campaign status.');
     refresh();
   };
 
@@ -34,7 +41,8 @@ export function CampaignManager({ projectId }: { projectId: string }) {
     if (!campaign) {
       return;
     }
-    await setActionStatus(campaign.id, actionId, status);
+    const success = await setActionStatus(campaign.id, actionId, status);
+    setStatusMessage(success ? `Action advanced to '${status}'.` : 'Failed to update action status.');
     refresh();
   };
 
@@ -59,9 +67,11 @@ export function CampaignManager({ projectId }: { projectId: string }) {
           Create Campaign from Current Optimization Plan
         </button>
       </p>
-      {error && <p>{error}</p>}
+      {error && <p>Error: {error}</p>}
+      {statusMessage && <p>{statusMessage}</p>}
 
-      {!campaign && <p>No campaign yet for this project.</p>}
+      {loading && <p>Loading Campaign...</p>}
+      {!loading && !campaign && <p>No campaign yet for this project.</p>}
 
       {campaign && (
         <div>

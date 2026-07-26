@@ -22,20 +22,27 @@ export default function Home() {
   const [audits, setAudits] = useState<AuditMetadata[]>([]);
   const [projects, setProjects] = useState<ProjectMetadata[]>([]);
   const [clients, setClients] = useState<ClientMetadata[]>([]);
+  const [loading, setLoading] = useState(true);
   const [compareTargets, setCompareTargets] = useState<Record<string, string>>({});
   const [comparisons, setComparisons] = useState<Record<string, AuditComparisonResult | null>>({});
   const [clientFormError, setClientFormError] = useState<string | undefined>(undefined);
+  const [clientCreatedMessage, setClientCreatedMessage] = useState<string | undefined>(undefined);
+  const [baselineMessage, setBaselineMessage] = useState<string | undefined>(undefined);
 
   const refresh = () => {
-    listAudits().then(setAudits);
-    listProjects().then(setProjects);
-    listClients().then(setClients);
+    Promise.all([listAudits(), listProjects(), listClients()]).then(([nextAudits, nextProjects, nextClients]) => {
+      setAudits(nextAudits);
+      setProjects(nextProjects);
+      setClients(nextClients);
+      setLoading(false);
+    });
   };
 
   useEffect(refresh, [state.result]);
 
   const handleSetBaseline = async (projectId: string, auditId: string) => {
-    await setProjectBaseline(projectId, auditId);
+    const success = await setProjectBaseline(projectId, auditId);
+    setBaselineMessage(success ? `Baseline set to Audit ${auditId}.` : 'Failed to set baseline.');
     refresh();
   };
 
@@ -59,6 +66,7 @@ export default function Home() {
 
     const { error } = await createClient(name, industry, primaryDomain);
     setClientFormError(error);
+    setClientCreatedMessage(error ? undefined : `Client "${name}" created.`);
     if (!error) {
       refresh();
     }
@@ -69,6 +77,19 @@ export default function Home() {
       <h1>Audit Workspace</h1>
 
       <DailyBriefing />
+
+      {loading && <p>Loading workspace...</p>}
+
+      {!loading && clients.length === 0 && projects.length === 0 && (
+        <section>
+          <h2>Get Started</h2>
+          <p>
+            Welcome — this workspace has no Clients or Projects yet. Paste a URL below and click Analyze to run your
+            first Audit (a Client and Project are created for you automatically), or create a Client explicitly first
+            if you want to group multiple Projects under one customer.
+          </p>
+        </section>
+      )}
 
       <form action={formAction}>
         <input type="url" name="url" placeholder="https://example.com" required />
@@ -93,11 +114,14 @@ export default function Home() {
           <input type="text" name="primaryDomain" placeholder="example.com" required />
           <button type="submit">Create Client</button>
         </form>
-        {clientFormError && <p>{clientFormError}</p>}
+        {clientFormError && <p>Error: {clientFormError}</p>}
+        {clientCreatedMessage && <p>{clientCreatedMessage}</p>}
       </section>
 
       <section>
         <h2>Clients</h2>
+        {baselineMessage && <p>{baselineMessage}</p>}
+        {!loading && clients.length === 0 && <p>No Clients yet.</p>}
         {clients.map((client) => (
           <div key={client.id}>
             <h3>{client.name}</h3>
@@ -108,6 +132,9 @@ export default function Home() {
             <p>Created At: {client.createdAt}</p>
 
             <h4>Projects</h4>
+            {projects.filter((project) => project.clientId === client.id).length === 0 && (
+              <p>No Projects for this Client yet.</p>
+            )}
             {projects
               .filter((project) => project.clientId === client.id)
               .map((project) => (
@@ -123,6 +150,7 @@ export default function Home() {
                   <p>
                     <Link href={`/projects/${project.id}/dashboard`}>Open Dashboard</Link>
                   </p>
+                  {audits.filter((audit) => audit.projectId === project.id).length === 0 && <p>No Audits yet.</p>}
                   <ul>
                     {audits
                       .filter((audit) => audit.projectId === project.id)

@@ -15,6 +15,7 @@ const NEXT_CYCLE_STATUS: Record<CycleStatus, CycleStatus | null> = {
 export function CycleManager({ projectId }: { projectId: string }) {
   const [cycle, setCycle] = useState<OptimizationCycleMetadata | null>(null);
   const [loading, setLoading] = useState(true);
+  const [statusMessage, setStatusMessage] = useState<string | undefined>(undefined);
 
   const refresh = () => {
     getCurrentCycle(projectId).then((result) => {
@@ -29,7 +30,8 @@ export function CycleManager({ projectId }: { projectId: string }) {
     if (!cycle) {
       return;
     }
-    await transitionCycleStatus(cycle.id, status);
+    const success = await transitionCycleStatus(cycle.id, status);
+    setStatusMessage(success ? `Cycle advanced to '${status}'.` : 'Failed to update cycle status.');
     refresh();
   };
 
@@ -45,6 +47,7 @@ export function CycleManager({ projectId }: { projectId: string }) {
 
   return (
     <div>
+      {statusMessage && <p>{statusMessage}</p>}
       <p>Cycle ID: {cycle.id}</p>
       <p>Goal: {cycle.goal}</p>
       <p>Status: {cycle.status}</p>

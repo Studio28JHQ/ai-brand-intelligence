@@ -33,11 +33,20 @@ export function DailyBriefing() {
     );
   }
 
-  if (!briefing || briefing.items.length === 0) {
+  if (!briefing) {
     return (
       <section>
         <h2>AI Daily Briefing</h2>
-        <p>Nothing needs your attention right now across {briefing?.projectsSummarized ?? 0} active Project(s).</p>
+        <p>Unable to load the briefing right now. Is the API reachable?</p>
+      </section>
+    );
+  }
+
+  if (briefing.items.length === 0) {
+    return (
+      <section>
+        <h2>AI Daily Briefing</h2>
+        <p>Nothing needs your attention right now across {briefing.projectsSummarized} active Project(s).</p>
       </section>
     );
   }

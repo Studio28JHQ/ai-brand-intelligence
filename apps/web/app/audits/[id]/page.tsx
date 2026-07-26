@@ -18,6 +18,9 @@ export default async function AuditDetailPage({ params }: { params: Promise<{ id
 
       {audit && (
         <div>
+          <p>
+            <Link href={`/projects/${audit.projectId}/dashboard`}>View Project Dashboard</Link>
+          </p>
           <p>Audit ID: {audit.id}</p>
           <p>Target URL: {audit.url}</p>
           <p>Status: {audit.status}</p>
