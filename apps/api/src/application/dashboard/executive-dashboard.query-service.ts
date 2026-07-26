@@ -13,6 +13,7 @@ import { AiVisibilityReadRepository } from '../../infrastructure/comparison/ai-v
 import { BaselineHistoryReadRepository } from '../../infrastructure/project/baseline-history-read.repository';
 import { CampaignQueryService } from '../campaign/campaign-query.service';
 import { computeCampaignProgress } from '../campaign/campaign-progress';
+import { ImpactAssessmentService } from '../impact-assessment/impact-assessment.service';
 import { computeScoreTrend } from './dashboard-visibility-trend';
 
 const TOP_PRIORITY_ACTIONS_LIMIT = 5;
@@ -41,6 +42,7 @@ export class ExecutiveDashboardQueryService {
     private readonly aiVisibilityReadRepository: AiVisibilityReadRepository,
     private readonly baselineHistoryReadRepository: BaselineHistoryReadRepository,
     private readonly campaignQueryService: CampaignQueryService,
+    private readonly impactAssessmentService: ImpactAssessmentService,
   ) {}
 
   async getDashboard(projectId: string): Promise<ExecutiveDashboard> {
@@ -87,6 +89,20 @@ export class ExecutiveDashboardQueryService {
         : [];
 
     const latestCampaign = await this.campaignQueryService.getLatestByProjectId(projectId);
+    const campaignImpact = latestCampaign
+      ? await this.impactAssessmentService
+          .assess(latestCampaign.campaign.id)
+          .then((assessment) => ({
+            campaignId: assessment.campaignId,
+            verificationDate: assessment.verificationDate,
+            aiVisibilityTrend: assessment.aiVisibilityChange.trend,
+            findingsResolvedCount: assessment.findingsResolvedCount,
+            findingsIntroducedCount: assessment.findingsIntroducedCount,
+            improvements: assessment.improvements,
+            remainingOpportunitiesCount: assessment.remainingOpportunities.length,
+          }))
+          .catch(() => null)
+      : null;
 
     return {
       project: {
@@ -118,6 +134,7 @@ export class ExecutiveDashboardQueryService {
         lastExecutionAt: lastExecution?.createdAt ? lastExecution.createdAt.toISOString() : null,
       },
       campaign: latestCampaign ? computeCampaignProgress(latestCampaign.campaign, latestCampaign.actions) : null,
+      campaignImpact,
     };
   }
 }

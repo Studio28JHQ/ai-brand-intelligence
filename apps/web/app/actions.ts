@@ -8,6 +8,7 @@ import type {
   ClientMetadata,
   CreateAuditResponse,
   ExecutiveDashboard,
+  ImpactAssessment,
   ProjectMetadata,
 } from '@ai-visibility/contracts';
 
@@ -190,6 +191,22 @@ export async function setActionStatus(
     return response.ok;
   } catch {
     return false;
+  }
+}
+
+export async function getImpactAssessment(campaignId: string): Promise<ImpactAssessment | null> {
+  const config = loadConfig();
+
+  try {
+    const response = await fetch(`${config.API_URL}/campaigns/${campaignId}/impact-assessment`, { cache: 'no-store' });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return (await response.json()) as ImpactAssessment;
+  } catch {
+    return null;
   }
 }
 

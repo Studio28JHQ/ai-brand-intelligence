@@ -76,6 +76,31 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
           </section>
 
           <section>
+            <h2>Campaign Impact</h2>
+            {!dashboard.campaignImpact && <p>No impact assessment available yet.</p>}
+            {dashboard.campaignImpact && (
+              <>
+                <p>Verification Date: {dashboard.campaignImpact.verificationDate}</p>
+                <p>AI Visibility Trend: {dashboard.campaignImpact.aiVisibilityTrend}</p>
+                <p>Findings Resolved: {dashboard.campaignImpact.findingsResolvedCount}</p>
+                <p>Findings Introduced: {dashboard.campaignImpact.findingsIntroducedCount}</p>
+                <p>Remaining Opportunities: {dashboard.campaignImpact.remainingOpportunitiesCount}</p>
+                <h3>Improvement Summary</h3>
+                {dashboard.campaignImpact.improvements.length === 0 && <p>No improvements recorded yet.</p>}
+                <ul>
+                  {dashboard.campaignImpact.improvements.map((entry, index) => (
+                    <li key={`${entry.category}-${index}`}>
+                      <p>
+                        [{entry.category}] {entry.description}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </section>
+
+          <section>
             <h2>Recent Activity</h2>
             <p>Latest Completed Audit: {dashboard.recentActivity.latestCompletedAuditId ?? 'N/A'}</p>
             <p>Latest Completed Audit Date: {dashboard.recentActivity.latestCompletedAuditDate ?? 'N/A'}</p>

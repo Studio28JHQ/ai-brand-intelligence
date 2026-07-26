@@ -1,14 +1,22 @@
-import { BadRequestException, Body, Controller, Get, NotFoundException, Param, Post } from '@nestjs/common';
-import type { CampaignMetadata, OptimizationActionMetadata } from '@ai-visibility/contracts';
+import { BadRequestException, Body, Controller, Get, NotFoundException, Param, Post, Query } from '@nestjs/common';
+import type { CampaignMetadata, ImpactAssessment, OptimizationActionMetadata } from '@ai-visibility/contracts';
 import { CampaignQueryService } from '../../application/campaign/campaign-query.service';
 import { TransitionCampaignStatusUseCase } from '../../application/campaign/transition-campaign-status.use-case';
 import { TransitionActionStatusUseCase } from '../../application/campaign/transition-action-status.use-case';
+import { ImpactAssessmentService } from '../../application/impact-assessment/impact-assessment.service';
 import {
   CampaignNotFoundError,
   InvalidCampaignStateTransitionError,
   InvalidActionStateTransitionError,
   OptimizationActionNotFoundError,
 } from '../../domain/campaign/campaign.errors';
+import { ProjectNotFoundError } from '../../domain/project/project.errors';
+import { AuditNotFoundError, AuditNotCompletedError } from '../../domain/audit/audit.errors';
+import {
+  NoVerificationAuditError,
+  ProjectBaselineNotSetError,
+  VerificationAuditMismatchError,
+} from '../../domain/impact-assessment/impact-assessment.errors';
 import { TransitionActionStatusDto, TransitionCampaignStatusDto } from './dto/transition-status.dto';
 import { toCampaignMetadata } from './campaign-metadata.mapper';
 
@@ -18,6 +26,7 @@ export class CampaignController {
     private readonly campaignQueryService: CampaignQueryService,
     private readonly transitionCampaignStatusUseCase: TransitionCampaignStatusUseCase,
     private readonly transitionActionStatusUseCase: TransitionActionStatusUseCase,
+    private readonly impactAssessmentService: ImpactAssessmentService,
   ) {}
 
   @Get(':id')
@@ -78,6 +87,29 @@ export class CampaignController {
         throw new NotFoundException(error.message);
       }
       if (error instanceof InvalidActionStateTransitionError) {
+        throw new BadRequestException(error.message);
+      }
+      throw error;
+    }
+  }
+
+  @Get(':id/impact-assessment')
+  async getImpactAssessment(
+    @Param('id') id: string,
+    @Query('verificationAuditId') verificationAuditId?: string,
+  ): Promise<ImpactAssessment> {
+    try {
+      return await this.impactAssessmentService.assess(id, verificationAuditId);
+    } catch (error) {
+      if (error instanceof CampaignNotFoundError || error instanceof ProjectNotFoundError || error instanceof AuditNotFoundError) {
+        throw new NotFoundException(error.message);
+      }
+      if (
+        error instanceof ProjectBaselineNotSetError ||
+        error instanceof NoVerificationAuditError ||
+        error instanceof VerificationAuditMismatchError ||
+        error instanceof AuditNotCompletedError
+      ) {
         throw new BadRequestException(error.message);
       }
       throw error;

@@ -1,5 +1,7 @@
 export type VisibilityStatus = 'ready' | 'needs-improvement' | 'not-ready';
 
+export type VisibilityScoreTrend = 'improved' | 'declined' | 'unchanged' | 'unknown';
+
 export type CompletenessLevel = 'complete' | 'partial' | 'incomplete';
 
 export type CoverageLevel = 'covered' | 'partial' | 'none';

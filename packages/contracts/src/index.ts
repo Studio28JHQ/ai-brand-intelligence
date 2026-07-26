@@ -19,3 +19,4 @@ export * from './audit-comparison';
 export * from './client-metadata';
 export * from './executive-dashboard';
 export * from './optimization-campaign';
+export * from './impact-assessment';
