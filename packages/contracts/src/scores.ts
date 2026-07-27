@@ -1,5 +1,6 @@
 import type { Finding } from './analysis';
 import type { AnalysisSignal } from './signal';
+import type { Heuristic } from './heuristic';
 
 // A category's evaluation coverage, always reported regardless of status — this is what lets a
 // consumer distinguish "scored 100 because every evaluated Rule passed" from "no Rule ever ran."
@@ -29,11 +30,15 @@ export type RuleClassification = 'passed' | 'issue' | 'warning' | 'skipped';
 
 // The full explainability chain for one Rule, in the order a consumer should drill into it:
 // Rule (ruleId/ruleVersion/outcome, on `finding`) -> Finding (`finding` itself, id/category/
-// sourceEngine) -> Evidence (`finding.evidence`) -> Signals (`signals`, the real AnalysisSignals
-// that fed the Heuristic this Rule evaluated). Every field is data already produced by the real
-// pipeline — nothing here is synthesized for display.
+// sourceEngine) -> Heuristic (`heuristic`, the real Heuristic this Rule reads — its own key/
+// version/category, distinct from the Rule's) -> Signals (`signals`, the real AnalysisSignals
+// that fed that Heuristic) -> Evidence (`finding.evidence`). Every field is data already produced
+// by the real pipeline — nothing here is synthesized for display. `heuristic` is `null` only for
+// the three `*-execution` Rules, which check engine status directly rather than reading a
+// Heuristic — an honest gap, not a missing lookup.
 export interface RuleExplanation {
   finding: Finding;
+  heuristic: Heuristic | null;
   signals: AnalysisSignal[];
   classification: RuleClassification;
 }

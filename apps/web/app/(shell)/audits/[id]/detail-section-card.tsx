@@ -1,6 +1,11 @@
 import type { OptimizationItem, RuleExplanation } from '@ai-visibility/contracts';
 import { Badge, Card, EmptyState } from '../../../components/ui';
+import { RecommendationExplainability } from '../../../components/recommendation-explainability';
 import type { PageDetailSection } from './page-detail';
+
+function findRuleForItem(rules: RuleExplanation[], item: OptimizationItem): RuleExplanation | undefined {
+  return rules.find((rule) => item.supportingFindingIds.includes(rule.finding.id));
+}
 
 function RuleLabel({ rule }: { rule: RuleExplanation }) {
   return (
@@ -46,7 +51,7 @@ function EvidenceBlock({ rules }: { rules: RuleExplanation[] }) {
   );
 }
 
-function RecommendationsBlock({ recommendations }: { recommendations: OptimizationItem[] }) {
+function RecommendationsBlock({ recommendations, rules }: { recommendations: OptimizationItem[]; rules: RuleExplanation[] }) {
   if (recommendations.length === 0) {
     return (
       <div>
@@ -66,6 +71,7 @@ function RecommendationsBlock({ recommendations }: { recommendations: Optimizati
               <Badge>{item.priority}</Badge>
             </div>
             <p>{item.description}</p>
+            <RecommendationExplainability item={item} rule={findRuleForItem(rules, item)} />
           </Card>
         ))}
       </div>
@@ -99,7 +105,7 @@ export function DetailSectionCard({ section }: { section: PageDetailSection }) {
         <RuleGroup label="Passed Checks" rules={passed} />
         <RuleGroup label="Skipped (Rule did not run)" rules={skipped} />
         <EvidenceBlock rules={section.rules} />
-        <RecommendationsBlock recommendations={section.recommendations} />
+        <RecommendationsBlock recommendations={section.recommendations} rules={section.rules} />
       </div>
     </Card>
   );

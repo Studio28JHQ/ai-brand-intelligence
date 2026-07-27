@@ -85,7 +85,7 @@ function explainRule(finding: Finding, heuristics: ReadonlyArray<Heuristic>, sig
         .filter((signal): signal is AnalysisSignal => signal !== undefined)
     : [];
 
-  return { finding, signals: contributingSignals, classification: classifyRule(finding) };
+  return { finding, heuristic: heuristic ?? null, signals: contributingSignals, classification: classifyRule(finding) };
 }
 
 function scoreCategory(

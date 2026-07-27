@@ -3,6 +3,8 @@ import { getDashboard } from '../../../../actions';
 import { CycleManager } from './cycle-manager';
 import { Badge, Breadcrumbs, Card, EmptyState, NextStepBanner, PageHeader } from '../../../../components/ui';
 import { ScoresPanel, ScoresSummaryBadge } from '../../../../components/scores-panel';
+import { RecommendationExplainability } from '../../../../components/recommendation-explainability';
+import { findRuleExplanationForItem } from '../../../../lib/recommendation-explainability';
 import { computeNextStep } from '../../../../lib/next-step';
 
 export default async function ExecutiveDashboardPage({ params }: { params: Promise<{ id: string }> }) {
@@ -204,6 +206,10 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
                       </ul>
                     </div>
                   </details>
+                  <RecommendationExplainability
+                    item={action}
+                    rule={dashboard.scores ? findRuleExplanationForItem(dashboard.scores, action) : undefined}
+                  />
                 </Card>
               ))}
             </div>

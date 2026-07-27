@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { getAudit, getAuditAnalysis } from '../../../actions';
 import { Badge, Breadcrumbs, Card, EmptyState, PageHeader } from '../../../components/ui';
 import { ScoresPanel } from '../../../components/scores-panel';
+import { RecommendationExplainability } from '../../../components/recommendation-explainability';
+import { findRuleExplanationForItem } from '../../../lib/recommendation-explainability';
 import { DetailSectionCard } from './detail-section-card';
 import { buildDetailSections, externalLinksSignal, findRuleByRuleId, findSignalByKey } from './page-detail';
 
@@ -175,6 +177,10 @@ export default async function AuditDetailPage({ params }: { params: Promise<{ id
                           {item.optimizationRuleId} (v{item.optimizationRuleVersion})
                         </dd>
                       </dl>
+                      <RecommendationExplainability
+                        item={item}
+                        rule={analysis ? findRuleExplanationForItem(analysis.scores, item) : undefined}
+                      />
                     </Card>
                   ))}
                 </div>
