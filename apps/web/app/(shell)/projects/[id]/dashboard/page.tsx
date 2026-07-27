@@ -26,6 +26,9 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
             <Link href={`/projects/${id}/site-explorer`} className="btn btn-secondary">
               Site Explorer
             </Link>
+            <Link href={`/projects/${id}/compare`} className="btn btn-secondary">
+              Compare Audits
+            </Link>
             <Link href={`/projects/${id}/consultant`} className="btn btn-secondary">
               Ask the AI Consultant
             </Link>

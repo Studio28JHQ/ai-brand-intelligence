@@ -12,6 +12,7 @@ import { ExecuteAuditUseCase } from '../../application/audit/execute-audit.use-c
 import { AuditQueryService } from '../../application/audit/audit-query.service';
 import { AuditAnalysisQueryService } from '../../application/audit/audit-analysis-query.service';
 import { AuditComparisonService } from '../../application/comparison/audit-comparison.service';
+import { PageComparisonService } from '../../application/page-audit/page-comparison.service';
 import { AiVisibilityStatusRepository } from '../../infrastructure/audit/ai-visibility-status.repository';
 import { WorkflowExecutionHistoryRepository } from '../../infrastructure/audit/workflow-execution-history.repository';
 import { FindingReadRepository } from '../../infrastructure/comparison/finding-read.repository';
@@ -57,6 +58,7 @@ import { AuditController } from './audit.controller';
     AuditQueryService,
     AuditAnalysisQueryService,
     AuditComparisonService,
+    PageComparisonService,
     AiVisibilityStatusRepository,
     WorkflowExecutionHistoryRepository,
     EnsureActiveCycleUseCase,

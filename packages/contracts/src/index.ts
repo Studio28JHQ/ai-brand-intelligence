@@ -34,3 +34,4 @@ export * from './signal';
 export * from './heuristic';
 export * from './scores';
 export * from './page-audit';
+export * from './page-comparison';

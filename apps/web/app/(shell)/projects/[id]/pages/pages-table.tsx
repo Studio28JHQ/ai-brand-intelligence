@@ -162,6 +162,7 @@ export function PagesTable({ pages, projectId }: { pages: ProjectPage[]; project
                     </button>
                   </th>
                 ))}
+                <th aria-label="Actions" />
               </tr>
             </thead>
             <tbody>
@@ -181,6 +182,11 @@ export function PagesTable({ pages, projectId }: { pages: ProjectPage[]; project
                   <td>{page.lastAuditAt ?? '—'}</td>
                   <td>{page.findingsCount}</td>
                   <td>{page.priority ? <Badge>{page.priority}</Badge> : <span className="text-tertiary">None</span>}</td>
+                  <td>
+                    <Link href={`/projects/${projectId}/compare?url=${encodeURIComponent(page.url)}`} className="btn btn-secondary btn-sm">
+                      Compare
+                    </Link>
+                  </td>
                 </tr>
               ))}
             </tbody>

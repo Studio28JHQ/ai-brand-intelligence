@@ -16,6 +16,8 @@ import type {
   ExecutiveDashboard,
   ImpactAssessment,
   OptimizationCycleMetadata,
+  PageAuditHistoryEntry,
+  PageComparisonResult,
   ProjectMetadata,
   ProjectPage,
 } from '@ai-visibility/contracts';
@@ -251,6 +253,44 @@ export async function compareAudits(
     }
 
     return (await response.json()) as AuditComparisonResult;
+  } catch {
+    return null;
+  }
+}
+
+export async function getPageAuditHistory(projectId: string, url: string): Promise<PageAuditHistoryEntry[]> {
+  const config = loadConfig();
+
+  try {
+    const response = await fetch(
+      `${config.API_URL}/projects/${projectId}/pages/audits?url=${encodeURIComponent(url)}`,
+      { cache: 'no-store' },
+    );
+
+    if (!response.ok) {
+      return [];
+    }
+
+    return (await response.json()) as PageAuditHistoryEntry[];
+  } catch {
+    return [];
+  }
+}
+
+export async function comparePages(baselineAuditId: string, targetAuditId: string): Promise<PageComparisonResult | null> {
+  const config = loadConfig();
+
+  try {
+    const response = await fetch(
+      `${config.API_URL}/audits/compare/page?baselineAuditId=${baselineAuditId}&targetAuditId=${targetAuditId}`,
+      { cache: 'no-store' },
+    );
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return (await response.json()) as PageComparisonResult;
   } catch {
     return null;
   }

@@ -28,6 +28,13 @@ export class AuditNotCompletedError extends Error {
   }
 }
 
+export class PageComparisonUrlMismatchError extends Error {
+  constructor(baselineAuditId: string, targetAuditId: string) {
+    super(`Cannot compare Audit ${baselineAuditId} and Audit ${targetAuditId}: they audited different URLs.`);
+    this.name = 'PageComparisonUrlMismatchError';
+  }
+}
+
 export class UnknownCapabilityError extends Error {
   constructor(capabilityId: string) {
     super(`Unknown capability: ${capabilityId}`);

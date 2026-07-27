@@ -1532,3 +1532,12 @@ textarea {
   gap: var(--space-2);
   font-size: var(--text-sm);
 }
+
+/* Audit Comparison */
+.compare-row--improved td {
+  background: var(--color-success-surface);
+}
+
+.compare-row--declined td {
+  background: var(--color-danger-surface);
+}

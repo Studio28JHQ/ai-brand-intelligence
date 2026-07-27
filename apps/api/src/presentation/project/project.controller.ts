@@ -1,9 +1,10 @@
-import { BadRequestException, Body, Controller, Get, NotFoundException, Param, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, NotFoundException, Param, Post, Query } from '@nestjs/common';
 import type {
   CampaignMetadata,
   ConsultantAnswer,
   ExecutiveDashboard,
   OptimizationCycleMetadata,
+  PageAuditHistoryEntry,
   ProjectMetadata,
   ProjectPage,
 } from '@ai-visibility/contracts';
@@ -11,6 +12,7 @@ import { ProjectQueryService } from '../../application/project/project-query.ser
 import { SetProjectBaselineUseCase } from '../../application/project/set-project-baseline.use-case';
 import { ExecutiveDashboardQueryService } from '../../application/dashboard/executive-dashboard.query-service';
 import { ProjectPagesQueryService } from '../../application/page-audit/project-pages-query.service';
+import { PageComparisonService } from '../../application/page-audit/page-comparison.service';
 import { CreateCampaignUseCase } from '../../application/campaign/create-campaign.use-case';
 import { CampaignQueryService } from '../../application/campaign/campaign-query.service';
 import { CreateOptimizationCycleUseCase } from '../../application/optimization-cycle/create-optimization-cycle.use-case';
@@ -49,6 +51,7 @@ export class ProjectController {
     private readonly setProjectBaselineUseCase: SetProjectBaselineUseCase,
     private readonly executiveDashboardQueryService: ExecutiveDashboardQueryService,
     private readonly projectPagesQueryService: ProjectPagesQueryService,
+    private readonly pageComparisonService: PageComparisonService,
     private readonly createCampaignUseCase: CreateCampaignUseCase,
     private readonly campaignQueryService: CampaignQueryService,
     private readonly createOptimizationCycleUseCase: CreateOptimizationCycleUseCase,
@@ -93,6 +96,14 @@ export class ProjectController {
       }
       throw error;
     }
+  }
+
+  @Get(':id/pages/audits')
+  async getPageAudits(@Param('id') id: string, @Query('url') url: string): Promise<PageAuditHistoryEntry[]> {
+    if (typeof url !== 'string' || url.trim().length === 0) {
+      throw new BadRequestException('url is required');
+    }
+    return this.pageComparisonService.listAuditsForPage(id, url);
   }
 
   @Post(':id/baseline')

@@ -3,6 +3,7 @@ import { ProjectQueryService } from '../../application/project/project-query.ser
 import { SetProjectBaselineUseCase } from '../../application/project/set-project-baseline.use-case';
 import { ExecutiveDashboardQueryService } from '../../application/dashboard/executive-dashboard.query-service';
 import { ProjectPagesQueryService } from '../../application/page-audit/project-pages-query.service';
+import { PageComparisonService } from '../../application/page-audit/page-comparison.service';
 import { CreateCampaignUseCase } from '../../application/campaign/create-campaign.use-case';
 import { CampaignQueryService } from '../../application/campaign/campaign-query.service';
 import { ImpactAssessmentService } from '../../application/impact-assessment/impact-assessment.service';
@@ -46,6 +47,7 @@ import { ProjectController } from './project.controller';
     SetProjectBaselineUseCase,
     ExecutiveDashboardQueryService,
     ProjectPagesQueryService,
+    PageComparisonService,
     CreateCampaignUseCase,
     CampaignQueryService,
     ImpactAssessmentService,
