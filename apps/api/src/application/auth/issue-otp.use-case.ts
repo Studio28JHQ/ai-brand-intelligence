@@ -18,16 +18,29 @@ const HEADING_BY_PURPOSE: Record<OtpPurpose, string> = {
   'password-reset': 'Reset your password',
 };
 
-function buildEmailContent(user: User, purpose: OtpPurpose, code: string, expirationMinutes: number) {
+function buildEmailContent(user: User, purpose: OtpPurpose, code: string, expirationMinutes: number, webUrl: string) {
   const action = purpose === 'email-verification' ? 'verify your email address' : 'reset your password';
-  return renderEmailTemplate({
-    heading: HEADING_BY_PURPOSE[purpose],
-    bodyLines: [
-      `Hi ${user.firstName},`,
-      `Use this code to ${action}: ${code}`,
-      `This code expires in ${expirationMinutes} minutes and can only be used once. If you didn't request this, you can safely ignore this email.`,
-    ],
-  });
+  const bodyLines = [
+    `Hi ${user.firstName},`,
+    `Use this code to ${action}: ${code}`,
+    `This code expires in ${expirationMinutes} minutes and can only be used once. If you didn't request this, you can safely ignore this email.`,
+  ];
+
+  if (purpose === 'email-verification') {
+    bodyLines.push(
+      "Didn't receive this in time, or the code expired? You can always request a new one from the verification page below — it stays open even if you close this email or your browser.",
+    );
+    return renderEmailTemplate({
+      heading: HEADING_BY_PURPOSE[purpose],
+      bodyLines,
+      cta: {
+        label: 'Verify Email',
+        href: `${webUrl}/verify-email?email=${encodeURIComponent(user.email)}&purpose=email-verification`,
+      },
+    });
+  }
+
+  return renderEmailTemplate({ heading: HEADING_BY_PURPOSE[purpose], bodyLines });
 }
 
 /**
@@ -60,7 +73,7 @@ export class IssueOtpUseCase {
     await this.otpCodeRepository.create(user.id, purpose, codeHash, expiresAt);
 
     try {
-      const { html, text } = buildEmailContent(user, purpose, code, config.OTP_EXPIRATION_MINUTES);
+      const { html, text } = buildEmailContent(user, purpose, code, config.OTP_EXPIRATION_MINUTES, config.WEB_URL);
       await this.emailProvider.send({
         to: user.email,
         subject: SUBJECT_BY_PURPOSE[purpose],

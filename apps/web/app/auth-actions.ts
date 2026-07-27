@@ -148,6 +148,12 @@ export async function loginUser(input: LoginInput): Promise<{ success?: boolean;
   return { success: true };
 }
 
+/** Clears the session cookie set by `loginUser` — the API never sees or invalidates the token itself (it's a stateless JWT, `CTO-084`); it simply expires on its own, so signing out client-side is sufficient. */
+export async function logoutUser(): Promise<void> {
+  const cookieStore = await cookies();
+  cookieStore.delete(SESSION_COOKIE);
+}
+
 export async function getCurrentUser(): Promise<UserMetadata | null> {
   const config = loadConfig();
   const cookieStore = await cookies();

@@ -4,6 +4,9 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(3001),
   API_URL: z.string().url().default('http://localhost:3001'),
+  // The Frontend's own origin — read only by the API, to build links (e.g. the "Verify Email"
+  // button in transactional emails, `F9-S03`) that must point at the Frontend, not the API itself.
+  WEB_URL: z.string().url().default('http://localhost:3000'),
   DATABASE_URL: z.string().default('postgresql://postgres:postgres@localhost:5432/app'),
   POSTGRES_USER: z.string().default('postgres'),
   POSTGRES_PASSWORD: z.string().default('postgres'),
