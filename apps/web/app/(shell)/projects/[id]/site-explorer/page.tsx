@@ -1,12 +1,12 @@
-import Link from 'next/link';
 import { getDashboard, getProjectPages } from '../../../../actions';
 import { Breadcrumbs, Card, PageHeader } from '../../../../components/ui';
-import { PagesTable } from './pages-table';
+import { SiteExplorer } from './site-explorer';
 
-export default async function ProjectPagesPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function SiteExplorerPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const [dashboard, pages] = await Promise.all([getDashboard(id), getProjectPages(id)]);
   const projectName = dashboard?.project.projectName ?? 'Project';
+  const siteLabel = dashboard?.project.primaryDomain ?? dashboard?.project.canonicalWebsite ?? projectName;
 
   return (
     <main className="page">
@@ -14,22 +14,17 @@ export default async function ProjectPagesPage({ params }: { params: Promise<{ i
         items={[
           { label: 'Dashboard', href: '/workspace' },
           { label: projectName, href: `/projects/${id}/dashboard` },
-          { label: 'Pages' },
+          { label: 'Site Explorer' },
         ]}
       />
 
       <PageHeader
-        title="Pages"
-        description="Every distinct URL audited for this Project — one row per crawled page, each linking to its most recent real Audit."
-        actions={
-          <Link href={`/projects/${id}/site-explorer`} className="btn btn-secondary">
-            Open Site Explorer
-          </Link>
-        }
+        title="Site Explorer"
+        description="Every real Page audited for this Project, organized by its real URL structure — Site → Folders → Pages."
       />
 
       <Card>
-        <PagesTable pages={pages} projectId={id} />
+        <SiteExplorer siteLabel={siteLabel} pages={pages} />
       </Card>
     </main>
   );

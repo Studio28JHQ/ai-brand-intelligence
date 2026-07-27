@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import type { ProjectPage } from '@ai-visibility/contracts';
+import type { Finding, ProjectPage, ProjectPageIssueFlags } from '@ai-visibility/contracts';
 import { PROJECT_REPOSITORY, ProjectRepository } from '../../domain/project/project.repository';
 import { AUDIT_REPOSITORY, AuditRepository } from '../../domain/audit/audit.repository';
 import { Audit } from '../../domain/audit/audit.entity';
@@ -13,6 +13,15 @@ import { computeScores } from '../scoring/compute-scores';
 import { generateOptimizationPlan } from '../optimization/generate-optimization-plan';
 import { sortByPriority } from '../optimization/optimization-prioritization';
 
+const NO_ISSUE_FLAGS: ProjectPageIssueFlags = {
+  missingTitle: false,
+  missingH1: false,
+  thinContent: false,
+  missingStructuredData: false,
+  canonicalIssue: false,
+  brokenLinks: null,
+};
+
 function emptyPage(audit: Audit): ProjectPage {
   return {
     url: audit.url,
@@ -24,6 +33,32 @@ function emptyPage(audit: Audit): ProjectPage {
     lastAuditAt: audit.completedAt ? audit.completedAt.toISOString() : null,
     findingsCount: 0,
     priority: null,
+    issues: NO_ISSUE_FLAGS,
+  };
+}
+
+function findByRuleId(findings: ReadonlyArray<Finding>, ruleId: string): Finding | undefined {
+  return findings.find((finding) => finding.ruleId === ruleId);
+}
+
+// Every flag is read directly from a real Rule's Finding.evidence — the same evidence already
+// shown in Score Explainability (F10-S02C) and Page Detail (F10-S03B), just re-surfaced as a
+// filterable boolean. A missing Finding (Rule skipped) safely defaults to `false`, never `true`.
+function computeIssueFlags(findings: ReadonlyArray<Finding>): ProjectPageIssueFlags {
+  const metadata = findByRuleId(findings, 'seo-metadata-quality');
+  const heading = findByRuleId(findings, 'seo-heading-structure');
+  const content = findByRuleId(findings, 'seo-content-depth');
+  const structuredData = findByRuleId(findings, 'seo-structured-data');
+  const indexability = findByRuleId(findings, 'seo-indexability');
+  const blockers = indexability?.evidence.blockers;
+
+  return {
+    missingTitle: metadata?.evidence.titleBand === 'missing',
+    missingH1: Number(heading?.evidence.h1Count ?? -1) === 0,
+    thinContent: content?.evidence.band === 'thin',
+    missingStructuredData: structuredData?.evidence.coverageBand === 'none',
+    canonicalIssue: Array.isArray(blockers) && blockers.includes('canonical-not-self-referencing'),
+    brokenLinks: null,
   };
 }
 
@@ -102,6 +137,7 @@ export class ProjectPagesQueryService {
       lastAuditAt: audit.completedAt ? audit.completedAt.toISOString() : null,
       findingsCount,
       priority,
+      issues: computeIssueFlags(findings),
     };
   }
 }
