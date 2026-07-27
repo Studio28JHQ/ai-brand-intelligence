@@ -18,6 +18,8 @@ import { FindingReadRepository } from '../../infrastructure/comparison/finding-r
 import { EntityReadRepository } from '../../infrastructure/comparison/entity-read.repository';
 import { AiVisibilityReadRepository } from '../../infrastructure/comparison/ai-visibility-read.repository';
 import { KnowledgeGraphReadRepository } from '../../infrastructure/comparison/knowledge-graph-read.repository';
+import { SignalReadRepository } from '../../infrastructure/comparison/signal-read.repository';
+import { HeuristicReadRepository } from '../../infrastructure/comparison/heuristic-read.repository';
 import { DiscoveryStep } from '../../infrastructure/audit/discovery.step';
 import { CrawlerStep } from '../../infrastructure/audit/crawler.step';
 import { InventoryStep } from '../../infrastructure/audit/inventory.step';
@@ -62,6 +64,8 @@ import { AuditController } from './audit.controller';
     EntityReadRepository,
     AiVisibilityReadRepository,
     KnowledgeGraphReadRepository,
+    SignalReadRepository,
+    HeuristicReadRepository,
     { provide: WORKFLOW_PORT, useClass: WorkflowAdapter },
     DiscoveryStep,
     CrawlerStep,

@@ -18,6 +18,8 @@ import { FindingReadRepository } from '../../infrastructure/comparison/finding-r
 import { EntityReadRepository } from '../../infrastructure/comparison/entity-read.repository';
 import { AiVisibilityReadRepository } from '../../infrastructure/comparison/ai-visibility-read.repository';
 import { KnowledgeGraphReadRepository } from '../../infrastructure/comparison/knowledge-graph-read.repository';
+import { SignalReadRepository } from '../../infrastructure/comparison/signal-read.repository';
+import { HeuristicReadRepository } from '../../infrastructure/comparison/heuristic-read.repository';
 import { ProjectRepositoryModule } from '../../infrastructure/project/project-repository.module';
 import { AuditRepositoryModule } from '../../infrastructure/audit/audit-repository.module';
 import { ClientRepositoryModule } from '../../infrastructure/client/client-repository.module';
@@ -57,6 +59,8 @@ import { ProjectController } from './project.controller';
     EntityReadRepository,
     AiVisibilityReadRepository,
     KnowledgeGraphReadRepository,
+    SignalReadRepository,
+    HeuristicReadRepository,
   ],
   exports: [ProjectRepositoryModule, ClientRepositoryModule, AiContextBuilderService, ExecutiveClientReportBuilderService],
 })

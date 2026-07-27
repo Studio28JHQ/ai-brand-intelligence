@@ -1,4 +1,12 @@
-import type { CreateAuditResponse, CrawlResult, EngineResult, InventoryResult } from '@ai-visibility/contracts';
+import type {
+  AiVisibilityResult,
+  CreateAuditResponse,
+  CrawlResult,
+  EngineResult,
+  ExtractionResult,
+  HeuristicResult,
+  InventoryResult,
+} from '@ai-visibility/contracts';
 import { AuditSnapshot } from '../../domain/audit/audit-snapshot';
 import { DiscoveryResult } from '../../domain/audit/discovery-result';
 import { generateOptimizationPlan } from '../../application/optimization/generate-optimization-plan';
@@ -8,6 +16,14 @@ export function buildAuditSummary(snapshot: AuditSnapshot): CreateAuditResponse 
   const discovery = (snapshot.engineResults.discovery as EngineResult<DiscoveryResult>).output!;
   const crawl = (snapshot.engineResults.crawl as EngineResult<CrawlResult>).output!;
   const inventory = (snapshot.engineResults.inventory as EngineResult<InventoryResult>).output!;
+  const extraction = (snapshot.engineResults.extraction as EngineResult<ExtractionResult>).output!;
+  const coreHeuristics = (snapshot.engineResults.heuristics as EngineResult<HeuristicResult>).output!;
+  const aiVisibilityResult = (snapshot.engineResults.aiVisibility as EngineResult<AiVisibilityResult>).output!;
+  const aiVisibilityHeuristics = (
+    snapshot.engineResults.aiVisibilityHeuristics as EngineResult<HeuristicResult>
+  ).output!;
+  const signals = [...extraction.signals, ...aiVisibilityResult.signals];
+  const heuristics = [...coreHeuristics.heuristics, ...aiVisibilityHeuristics.heuristics];
 
   return {
     id: snapshot.audit.id,
@@ -75,7 +91,7 @@ export function buildAuditSummary(snapshot: AuditSnapshot): CreateAuditResponse 
         snapshot.knowledgeGraph,
       ),
     },
-    scores: computeScores(snapshot.findings),
+    scores: computeScores(snapshot.findings, heuristics, signals),
     progress: [...snapshot.progress],
     executionHistory: [...snapshot.history],
   };

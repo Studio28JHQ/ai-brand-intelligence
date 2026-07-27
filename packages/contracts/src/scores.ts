@@ -1,6 +1,10 @@
+import type { Finding } from './analysis';
+import type { AnalysisSignal } from './signal';
+
 // A category's evaluation coverage, always reported regardless of status — this is what lets a
 // consumer distinguish "scored 100 because every evaluated Rule passed" from "no Rule ever ran."
 export interface CategoryScoreCoverage {
+  totalRules: number;
   evaluatedRules: number;
   passedRules: number;
   failedRules: number;
@@ -15,12 +19,23 @@ export interface CategoryScoreCoverage {
 // at all, so `score` is null rather than defaulting to any number.
 export type CategoryScoreStatus = 'ok' | 'incomplete' | 'insufficient-data';
 
+// The full explainability chain for one Rule, in the order a consumer should drill into it:
+// Rule (ruleId/ruleVersion/outcome, on `finding`) -> Finding (`finding` itself, id/category/
+// sourceEngine) -> Evidence (`finding.evidence`) -> Signals (`signals`, the real AnalysisSignals
+// that fed the Heuristic this Rule evaluated). Every field is data already produced by the real
+// pipeline — nothing here is synthesized for display.
+export interface RuleExplanation {
+  finding: Finding;
+  signals: AnalysisSignal[];
+}
+
 export interface CategoryScore extends CategoryScoreCoverage {
   score: number | null;
   status: CategoryScoreStatus;
   issues: string[];
   warnings: string[];
   passedChecks: string[];
+  rules: RuleExplanation[];
 }
 
 export interface Scores {

@@ -4,6 +4,8 @@ import { AUDIT_REPOSITORY, AuditRepository } from '../../domain/audit/audit.repo
 import { FindingReadRepository } from '../../infrastructure/comparison/finding-read.repository';
 import { AiVisibilityReadRepository } from '../../infrastructure/comparison/ai-visibility-read.repository';
 import { KnowledgeGraphReadRepository } from '../../infrastructure/comparison/knowledge-graph-read.repository';
+import { SignalReadRepository } from '../../infrastructure/comparison/signal-read.repository';
+import { HeuristicReadRepository } from '../../infrastructure/comparison/heuristic-read.repository';
 import { generateOptimizationPlan } from '../optimization/generate-optimization-plan';
 import { OptimizationPatternQueryService } from '../optimization-pattern/optimization-pattern-query.service';
 import { computeScores } from '../scoring/compute-scores';
@@ -15,6 +17,8 @@ export class AuditAnalysisQueryService {
     private readonly findingReadRepository: FindingReadRepository,
     private readonly aiVisibilityReadRepository: AiVisibilityReadRepository,
     private readonly knowledgeGraphReadRepository: KnowledgeGraphReadRepository,
+    private readonly signalReadRepository: SignalReadRepository,
+    private readonly heuristicReadRepository: HeuristicReadRepository,
     private readonly optimizationPatternQueryService: OptimizationPatternQueryService,
   ) {}
 
@@ -24,10 +28,12 @@ export class AuditAnalysisQueryService {
       return null;
     }
 
-    const [findings, assessment, knowledgeGraph, patternsByRuleId] = await Promise.all([
+    const [findings, assessment, knowledgeGraph, signals, heuristics, patternsByRuleId] = await Promise.all([
       this.findingReadRepository.findByAuditId(auditId),
       this.aiVisibilityReadRepository.findByAuditId(auditId),
       this.knowledgeGraphReadRepository.findByAuditId(auditId),
+      this.signalReadRepository.findByAuditId(auditId),
+      this.heuristicReadRepository.findByAuditId(auditId),
       this.optimizationPatternQueryService.findActivePatternsByRuleId(),
     ]);
 
@@ -41,6 +47,6 @@ export class AuditAnalysisQueryService {
         )
       : [];
 
-    return { auditId, findings, optimizationPlan, scores: computeScores(findings) };
+    return { auditId, findings, optimizationPlan, scores: computeScores(findings, heuristics, signals) };
   }
 }

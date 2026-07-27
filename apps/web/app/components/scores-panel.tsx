@@ -1,4 +1,4 @@
-import type { CategoryScore, Scores } from '@ai-visibility/contracts';
+import type { AnalysisSignal, CategoryScore, Finding, RuleExplanation, Scores } from '@ai-visibility/contracts';
 import { Badge, Card } from './ui';
 
 const CATEGORY_LABELS: Record<Exclude<keyof Scores, 'overall'>, string> = {
@@ -27,10 +27,85 @@ function ScoreBadge({ score }: { score: number | null }) {
 
 function CoverageLine({ category }: { category: CategoryScore }) {
   return (
-    <p className="text-secondary">
-      {category.evaluatedRules} evaluated ({category.passedRules} passed, {category.failedRules} failed
-      {category.skippedRules > 0 ? `, ${category.skippedRules} skipped` : ''})
-    </p>
+    <dl className="dl">
+      <dt>Total Rules</dt>
+      <dd>{category.totalRules}</dd>
+      <dt>Evaluated</dt>
+      <dd>{category.evaluatedRules}</dd>
+      <dt>Passed</dt>
+      <dd>{category.passedRules}</dd>
+      <dt>Failed</dt>
+      <dd>{category.failedRules}</dd>
+      <dt>Skipped</dt>
+      <dd>{category.skippedRules}</dd>
+    </dl>
+  );
+}
+
+function SignalCard({ signal }: { signal: AnalysisSignal }) {
+  return (
+    <div className="score-explain__signal">
+      <p>
+        <strong>{signal.key}</strong> <span className="text-tertiary">({signal.category}, via {signal.sourceId})</span>
+      </p>
+      <pre className="text-mono">{JSON.stringify(signal.data, null, 2)}</pre>
+    </div>
+  );
+}
+
+function FindingExplanation({ finding }: { finding: Finding }) {
+  return (
+    <>
+      <div className="score-explain__layer">
+        <p className="score-explain__label">Finding</p>
+        <p className="text-secondary">
+          {finding.id} — outcome <Badge>{finding.outcome}</Badge> — severity <Badge>{finding.severity}</Badge>
+        </p>
+      </div>
+      <div className="score-explain__layer">
+        <p className="score-explain__label">Evidence</p>
+        <pre className="text-mono">{JSON.stringify(finding.evidence, null, 2)}</pre>
+      </div>
+    </>
+  );
+}
+
+function RuleExplanationCard({ rule }: { rule: RuleExplanation }) {
+  const { finding, signals } = rule;
+  return (
+    <div className="score-explain__rule">
+      <p>
+        <strong>{finding.ruleId}</strong> <span className="text-tertiary">v{finding.ruleVersion}</span>{' '}
+        <Badge>{finding.outcome}</Badge>
+      </p>
+      <FindingExplanation finding={finding} />
+      <div className="score-explain__layer">
+        <p className="score-explain__label">Signals ({signals.length})</p>
+        {signals.length === 0 ? (
+          <p className="text-secondary">
+            No Signals to show — this Rule's Heuristic did not run, so there is nothing real to attribute.
+          </p>
+        ) : (
+          signals.map((signal) => <SignalCard key={signal.signalId} signal={signal} />)
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CategoryExplainability({ category }: { category: CategoryScore }) {
+  if (category.rules.length === 0) {
+    return null;
+  }
+  return (
+    <details className="score-card__expand">
+      <summary>Rules → Findings → Evidence → Signals ({category.rules.length})</summary>
+      <div className="score-explain">
+        {category.rules.map((rule) => (
+          <RuleExplanationCard key={rule.finding.id} rule={rule} />
+        ))}
+      </div>
+    </details>
   );
 }
 
@@ -38,7 +113,7 @@ export function ScoresPanel({ scores }: { scores: Scores }) {
   return (
     <Card
       title="Scores"
-      description="Deterministic, heuristic scores computed from this audit's Findings — no AI provider required."
+      description="Deterministic, heuristic scores computed from this audit's Findings — no AI provider required. Expand any category to see exactly which Rules, Findings, Evidence, and Signals produced its score."
       actions={
         <Badge variant={scores.overall === null ? 'neutral' : scoreVariant(scores.overall)}>
           {scores.overall === null ? 'Insufficient Data' : `${scores.overall}/100 Overall`}
@@ -82,6 +157,7 @@ export function ScoresPanel({ scores }: { scores: Scores }) {
                   </ul>
                 </div>
               )}
+              <CategoryExplainability category={category} />
             </Card>
           );
         })}
