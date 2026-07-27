@@ -17,9 +17,14 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
         title="Executive Dashboard"
         description={dashboard ? `${dashboard.project.clientName} · ${dashboard.project.primaryDomain}` : undefined}
         actions={
-          <Link href={`/projects/${id}/consultant`} className="btn btn-secondary">
-            Ask the AI Consultant
-          </Link>
+          <div className="cluster">
+            <Link href={`/projects/${id}/pages`} className="btn btn-secondary">
+              View Pages
+            </Link>
+            <Link href={`/projects/${id}/consultant`} className="btn btn-secondary">
+              Ask the AI Consultant
+            </Link>
+          </div>
         }
       />
 

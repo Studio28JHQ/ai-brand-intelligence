@@ -5,10 +5,12 @@ import type {
   ExecutiveDashboard,
   OptimizationCycleMetadata,
   ProjectMetadata,
+  ProjectPage,
 } from '@ai-visibility/contracts';
 import { ProjectQueryService } from '../../application/project/project-query.service';
 import { SetProjectBaselineUseCase } from '../../application/project/set-project-baseline.use-case';
 import { ExecutiveDashboardQueryService } from '../../application/dashboard/executive-dashboard.query-service';
+import { ProjectPagesQueryService } from '../../application/page-audit/project-pages-query.service';
 import { CreateCampaignUseCase } from '../../application/campaign/create-campaign.use-case';
 import { CampaignQueryService } from '../../application/campaign/campaign-query.service';
 import { CreateOptimizationCycleUseCase } from '../../application/optimization-cycle/create-optimization-cycle.use-case';
@@ -46,6 +48,7 @@ export class ProjectController {
     private readonly projectQueryService: ProjectQueryService,
     private readonly setProjectBaselineUseCase: SetProjectBaselineUseCase,
     private readonly executiveDashboardQueryService: ExecutiveDashboardQueryService,
+    private readonly projectPagesQueryService: ProjectPagesQueryService,
     private readonly createCampaignUseCase: CreateCampaignUseCase,
     private readonly campaignQueryService: CampaignQueryService,
     private readonly createOptimizationCycleUseCase: CreateOptimizationCycleUseCase,
@@ -74,6 +77,18 @@ export class ProjectController {
       return await this.executiveDashboardQueryService.getDashboard(id);
     } catch (error) {
       if (error instanceof ProjectNotFoundError || error instanceof ClientNotFoundError) {
+        throw new NotFoundException(error.message);
+      }
+      throw error;
+    }
+  }
+
+  @Get(':id/pages')
+  async getPages(@Param('id') id: string): Promise<ProjectPage[]> {
+    try {
+      return await this.projectPagesQueryService.listByProjectId(id);
+    } catch (error) {
+      if (error instanceof ProjectNotFoundError) {
         throw new NotFoundException(error.message);
       }
       throw error;

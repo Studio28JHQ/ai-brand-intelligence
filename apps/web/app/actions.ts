@@ -17,6 +17,7 @@ import type {
   ImpactAssessment,
   OptimizationCycleMetadata,
   ProjectMetadata,
+  ProjectPage,
 } from '@ai-visibility/contracts';
 
 export interface CreateAuditState {
@@ -126,6 +127,22 @@ export async function getDashboard(projectId: string): Promise<ExecutiveDashboar
     return (await response.json()) as ExecutiveDashboard;
   } catch {
     return null;
+  }
+}
+
+export async function getProjectPages(projectId: string): Promise<ProjectPage[]> {
+  const config = loadConfig();
+
+  try {
+    const response = await fetch(`${config.API_URL}/projects/${projectId}/pages`, { cache: 'no-store' });
+
+    if (!response.ok) {
+      return [];
+    }
+
+    return (await response.json()) as ProjectPage[];
+  } catch {
+    return [];
   }
 }
 

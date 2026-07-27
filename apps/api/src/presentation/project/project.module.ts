@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ProjectQueryService } from '../../application/project/project-query.service';
 import { SetProjectBaselineUseCase } from '../../application/project/set-project-baseline.use-case';
 import { ExecutiveDashboardQueryService } from '../../application/dashboard/executive-dashboard.query-service';
+import { ProjectPagesQueryService } from '../../application/page-audit/project-pages-query.service';
 import { CreateCampaignUseCase } from '../../application/campaign/create-campaign.use-case';
 import { CampaignQueryService } from '../../application/campaign/campaign-query.service';
 import { ImpactAssessmentService } from '../../application/impact-assessment/impact-assessment.service';
@@ -44,6 +45,7 @@ import { ProjectController } from './project.controller';
     ProjectQueryService,
     SetProjectBaselineUseCase,
     ExecutiveDashboardQueryService,
+    ProjectPagesQueryService,
     CreateCampaignUseCase,
     CampaignQueryService,
     ImpactAssessmentService,
