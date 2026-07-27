@@ -42,6 +42,8 @@ cp .env.example .env
 
 See `docs/04_PROJECT/AUTHENTICATION.md`'s "Email Delivery" section for the provider architecture.
 
+**AI providers** (OpenAI, Anthropic, Google Gemini, xAI, OpenRouter, Perplexity) can optionally be configured (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GOOGLE_API_KEY`, `XAI_API_KEY`, `OPENROUTER_API_KEY`, `PERPLEXITY_API_KEY`, all in `.env.example`) — the Backend logs which are configured on every startup and exposes `GET/POST /platform/ai-providers` to inspect and test connectivity. This is configuration infrastructure only: no product feature (AI Consultant, Daily Briefing) uses any of these providers today — see `docs/04_PROJECT/AI_ARCHITECTURE.md`.
+
 ### Starting the platform
 
 ```

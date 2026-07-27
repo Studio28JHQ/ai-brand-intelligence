@@ -28,3 +28,4 @@ export * from './executive-client-report';
 export * from './audit-analysis-view';
 export * from './optimization-pattern';
 export * from './auth';
+export * from './ai-provider-settings';

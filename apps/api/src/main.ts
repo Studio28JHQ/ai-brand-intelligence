@@ -11,6 +11,15 @@ import { LoggingInterceptor } from './shared/interceptors/logging.interceptor';
 import { TimeoutInterceptor } from './shared/interceptors/timeout.interceptor';
 import { GlobalExceptionFilter } from './shared/filters/global-exception.filter';
 import { NestLoggerAdapter } from './shared/logging/nest-logger.adapter';
+import { buildAiProviderSettings } from './application/ai-provider/build-ai-provider-settings';
+
+function logAiProviderSummary(config: ReturnType<typeof loadConfig>): void {
+  const settings = buildAiProviderSettings(config);
+  const lines = settings.map((provider) =>
+    provider.hasApiKey ? `  ✓ ${provider.label}` : `  ✗ ${provider.label} (missing API key)`,
+  );
+  logger.info(`AI Providers\n${lines.join('\n')}`);
+}
 
 async function bootstrap() {
   const config = loadConfig();
@@ -29,6 +38,11 @@ async function bootstrap() {
       replyTo: config.EMAIL_REPLY_TO ?? '(none configured)',
     });
   }
+
+  // Startup validation only — never fails the process. A missing provider is expected and normal;
+  // this is purely visibility into which providers a Test Connection call would actually reach
+  // (`F10-S01`, see `docs/04_PROJECT/DECISION_LOG.md#cto-094`).
+  logAiProviderSummary(config);
 
   const app = await NestFactory.create(AppModule, {
     logger: new NestLoggerAdapter(),

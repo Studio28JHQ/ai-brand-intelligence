@@ -40,6 +40,47 @@ const envSchema = z.object({
   // use case changes.
   EMAIL_PROVIDER: z.enum(['console', 'resend']).default('resend'),
   RESEND_API_KEY: z.string().optional(),
+
+  // AI Provider configuration (F10-S01). Every field is optional and every provider ships with a
+  // working default for everything except the API key — startup must never fail because a provider
+  // is unconfigured. None of these are consumed by any product feature today (the AI Consultant/
+  // Daily Briefing remain the deterministic `StructuredFactAiProvider`, `CTO-069`); this is
+  // connectivity/configuration infrastructure only, kept structurally separate from that pipeline.
+  OPENAI_API_KEY: z.string().optional(),
+  OPENAI_ENABLED: z.coerce.boolean().default(true),
+  OPENAI_DEFAULT_MODEL: z.string().default('gpt-4o-mini'),
+  OPENAI_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
+  OPENAI_MAX_TOKENS: z.coerce.number().int().positive().default(4096),
+
+  ANTHROPIC_API_KEY: z.string().optional(),
+  ANTHROPIC_ENABLED: z.coerce.boolean().default(true),
+  ANTHROPIC_DEFAULT_MODEL: z.string().default('claude-3-5-sonnet-latest'),
+  ANTHROPIC_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
+  ANTHROPIC_MAX_TOKENS: z.coerce.number().int().positive().default(4096),
+
+  GOOGLE_API_KEY: z.string().optional(),
+  GOOGLE_ENABLED: z.coerce.boolean().default(true),
+  GOOGLE_DEFAULT_MODEL: z.string().default('gemini-1.5-flash'),
+  GOOGLE_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
+  GOOGLE_MAX_TOKENS: z.coerce.number().int().positive().default(4096),
+
+  XAI_API_KEY: z.string().optional(),
+  XAI_ENABLED: z.coerce.boolean().default(true),
+  XAI_DEFAULT_MODEL: z.string().default('grok-2-latest'),
+  XAI_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
+  XAI_MAX_TOKENS: z.coerce.number().int().positive().default(4096),
+
+  OPENROUTER_API_KEY: z.string().optional(),
+  OPENROUTER_ENABLED: z.coerce.boolean().default(true),
+  OPENROUTER_DEFAULT_MODEL: z.string().default('openai/gpt-4o-mini'),
+  OPENROUTER_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
+  OPENROUTER_MAX_TOKENS: z.coerce.number().int().positive().default(4096),
+
+  PERPLEXITY_API_KEY: z.string().optional(),
+  PERPLEXITY_ENABLED: z.coerce.boolean().default(true),
+  PERPLEXITY_DEFAULT_MODEL: z.string().default('sonar'),
+  PERPLEXITY_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
+  PERPLEXITY_MAX_TOKENS: z.coerce.number().int().positive().default(4096),
 });
 
 export type PlatformConfig = z.infer<typeof envSchema>;

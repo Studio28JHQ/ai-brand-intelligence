@@ -628,3 +628,45 @@ This was resolved, not silently chosen either way: **`.env.example` now pins `EM
 **Two coordinate-drift testing artifacts** (not app bugs, same class as prior tickets' browser-testing notes): a raw-coordinate click on the User Menu's "Sign Out" landed on a stale viewport position and hit the Sidebar's "Projects" link instead — resolved by switching to `read_page` element refs; Chrome autofill twice overwrote a freshly-typed login email with a saved credential — resolved by explicit select-all-and-delete before typing. Both are established, previously-diagnosed patterns in this browser-automation environment, not defects in this ticket's code.
 
 **Scope boundary**: no change to any business domain (`Client`/`Project`/`Audit`/`Campaign`/`OptimizationCycle`) or its use cases — this ticket is entirely presentation-layer (`apps/web`) plus the two additive `packages/config`/email-template changes named above.
+
+# CTO-094
+
+**Title**: AI Provider configuration infrastructure (OpenAI/Anthropic/Google Gemini/xAI/OpenRouter/Perplexity) — connectivity/settings only, structurally isolated from the product's real, deterministic AI features
+**Sprint**: `F10-S01` — Platform Infrastructure (**second use of this sprint id** — `F10-S01` was already used by "Proactive AI Assistant," AI Product Intelligence phase, delivered earlier this session; same resolution as `CTO-083`'s marketing-page sprint-id collision: proceed on the ticket's actual content, record the collision here rather than overwriting the prior record)
+**Decision**: New reference document, `docs/04_PROJECT/AI_ARCHITECTURE.md` — this is the first ticket to touch anything AI-provider-shaped since `CTO-069`, and the two things ("what actually generates AI Consultant/Daily Briefing text" vs. "what this ticket built") need to be read together to avoid a wrong mental model either way.
+
+**A real scope conflict was raised and resolved before implementation, not silently either way**: the ticket's literal ask — six external LLM providers with genuine "Test Connection" health checks — is, in substance, exactly what `docs/03_PRODUCT/FUTURE_ROADMAP.md` has explicitly deferred across four prior sprints (`F6-S07`'s "LLM integration," `F7-S01`'s "OpenAI integration/Anthropic integration/Gemini integration," `F7-S02`'s "OpenAI/Anthropic/Gemini," `F7-S03`'s scope boundary) and directly bears on the Constitution's "Trust is the product... every metric must be defensible and reproducible" — a real LLM response is not reproducible the way this platform's fully-deterministic `AiProvider` (`CTO-068`/`CTO-069`) is. Per `docs/02_EXECUTION/13_EXECUTION_ENGINE.md`'s Validation Rules ("A task whose requirements conflict with an approved document halts and surfaces the conflict"), this was raised to the CTO rather than resolved unilaterally. Directive received: implement the complete provider *infrastructure* (abstraction, registration, config loading/validation, configured-vs-missing detection, a Platform Settings data model, a real Test Connection interface that only calls out when a key exists) — but do **not** wire any provider into the product's actual answer-generation path, and do not modify `FUTURE_ROADMAP.md`. What follows is that directive, implemented literally.
+
+**Structural isolation, not just a naming convention**: `application/ai-provider/` (this ticket) and `application/ai-conversation/` (`CTO-068`/`CTO-069`, powers the real AI Consultant/Daily Briefing) share no code, no DI token, and no dependency in either direction. `AiProviderConnector.testConnection()` returns only a connectivity/credential result — never a completion, never text a user could see. `AI_PROVIDER` (the conversation-orchestration port) remains bound to `StructuredFactAiProvider`, untouched. This is the one thing most important to get right here: the product did not gain an LLM dependency today, even though six providers' credentials can now be configured and tested.
+
+**Provider abstraction**: `AiProviderConnector` (`application/ai-provider/ai-provider-connector.ts`) — `{ providerId, testConnection() }`. `BaseAiProviderConnector` (`infrastructure/ai-provider/`) owns the one non-negotiable rule structurally, not per-implementation: **the real HTTP call executes only if `hasApiKey` is true**, checked once in the shared base class so no future connector can skip it by mistake; six concrete connectors (OpenAI/Anthropic/Google Gemini/xAI/OpenRouter/Perplexity) each just implement `apiKey()` and `performTestConnection(key)`. `TestAiProviderConnectionUseCase` re-checks the same guard independently (defense in depth) before even resolving a connector, returning `{status: 'not-configured'}` immediately — no connector is invoked, no network call happens, when a provider has no key. **Never mocks success**: every connector, when a key is present, makes a genuine request to the provider's own API and surfaces the *exact* response on failure. Verified live: `OPENAI_API_KEY` set to a deliberately invalid placeholder produced a real HTTPS round-trip to `api.openai.com` and returned OpenAI's own verbatim `401 invalid_api_key` body — proving both "real call, not a mock" and "exact provider error, not a generic message" in one test.
+
+**Six real endpoints, chosen per provider, documented in `AI_ARCHITECTURE.md`**: OpenAI/Anthropic/xAI/Google Gemini each have a genuine free "list models" endpoint used as the connectivity check. OpenRouter's `/models` is public/unauthenticated (wouldn't validate a key), so `/api/v1/auth/key` is used instead — a real, key-scoped endpoint. Perplexity has no documented free discovery endpoint; its Test Connection issues the smallest possible real `/chat/completions` request (`max_tokens: 1`) — the one connector where a Test Connection call can incur a (negligible) real cost, called out explicitly rather than left as an unstated surprise.
+
+**Configuration**: 30 new optional `packages/config` fields (`<PREFIX>_API_KEY`/`_ENABLED`/`_DEFAULT_MODEL`/`_TIMEOUT_MS`/`_MAX_TOKENS` × 6 providers) — every one optional with a working default except the key itself, so `loadConfig()` never throws over an unconfigured provider ("do not fail startup simply because one provider is missing," satisfied structurally, the same way `assertEmailProviderConfigured` is opt-in rather than automatic for `EMAIL_PROVIDER=console`). `buildAiProviderSettings()` (`application/ai-provider/build-ai-provider-settings.ts`) is the single pure function both `main.ts`'s startup log and `AiProviderSettingsService` read, so the two can never drift.
+
+**Platform Settings data model**: `AiProviderSettings` (`packages/contracts/src/ai-provider-settings.ts`) — never carries the raw API key, only `hasApiKey`. `AiProviderStatusStore` tracks `connectionStatus`/`lastSuccessfulTestAt` in memory only (process-lifetime, no new Prisma model — the same "ephemeral operational state, not a business record" reasoning already used elsewhere in this codebase) — explicitly "for future UI," per the ticket; no settings page consumes this yet.
+
+**API**: `GET /platform/ai-providers` (the full settings list) and `POST /platform/ai-providers/:providerId/test-connection` (`presentation/ai-provider/`), mirroring `HealthModule`'s existing `ReadinessService` + per-dependency `*HealthChecker` shape (`CTO-...` health infra) rather than inventing a new module pattern.
+
+**Startup validation**: `main.ts` logs the exact format the ticket's SELF VALIDATION section specifies, verified live against this environment's real (empty) configuration:
+```
+AI Providers
+  ✗ OpenAI (missing API key)
+  ✗ Anthropic (missing API key)
+  ✗ Google Gemini (missing API key)
+  ✗ xAI (missing API key)
+  ✗ OpenRouter (missing API key)
+  ✗ Perplexity (missing API key)
+```
+This never fails startup — confirmed by `pnpm dev` reaching "Alpha Ready" with this log present.
+
+**Outcome — no provider is actually connected**: no API key for any of the six providers exists in this environment (a deliberate, structural fact, not an oversight — this ticket's own directive was infrastructure only). Every environment variable a developer would set to complete live validation is listed below, per the ticket's own OUTPUT requirement.
+
+**Required environment variables per provider** (all in `.env.example`, all optional, all `.env`-loaded, none hardcoded):
+- OpenAI: `OPENAI_API_KEY` (from platform.openai.com/account/api-keys)
+- Anthropic: `ANTHROPIC_API_KEY` (from console.anthropic.com)
+- Google Gemini: `GOOGLE_API_KEY` (from Google AI Studio, aistudio.google.com/apikey)
+- xAI: `XAI_API_KEY` (from console.x.ai)
+- OpenRouter: `OPENROUTER_API_KEY` (from openrouter.ai/keys)
+- Perplexity: `PERPLEXITY_API_KEY` (from perplexity.ai/settings/api)

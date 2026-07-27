@@ -11,6 +11,7 @@ import { BriefingModule } from './presentation/briefing/briefing.module';
 import { OptimizationCycleModule } from './presentation/optimization-cycle/optimization-cycle.module';
 import { OptimizationPatternModule } from './presentation/optimization-pattern/optimization-pattern.module';
 import { AuthModule } from './presentation/auth/auth.module';
+import { AiProviderModule } from './presentation/ai-provider/ai-provider.module';
 import { DatabaseModule } from './infrastructure/database/database.module';
 
 const config = loadConfig();
@@ -28,6 +29,7 @@ const config = loadConfig();
     OptimizationCycleModule,
     OptimizationPatternModule,
     AuthModule,
+    AiProviderModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
