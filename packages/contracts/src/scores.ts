@@ -19,6 +19,14 @@ export interface CategoryScoreCoverage {
 // at all, so `score` is null rather than defaulting to any number.
 export type CategoryScoreStatus = 'ok' | 'incomplete' | 'insufficient-data';
 
+// The same pass/fail/severity decision compute-scores.ts already makes to sort a Finding into
+// its category's issues/warnings/passedChecks — exposed per-Rule so any consumer (e.g. a Page
+// Detail screen grouping Rules by topic rather than by score category) can classify a Finding
+// without re-deriving the decision. 'issue': failed, not a low-severity Optimization Rule.
+// 'warning': failed, low-severity Optimization Rule. 'passed': outcome 'pass'. 'skipped': outcome
+// 'skip' — the Rule's Heuristic never ran, so it is neither a pass nor a failure.
+export type RuleClassification = 'passed' | 'issue' | 'warning' | 'skipped';
+
 // The full explainability chain for one Rule, in the order a consumer should drill into it:
 // Rule (ruleId/ruleVersion/outcome, on `finding`) -> Finding (`finding` itself, id/category/
 // sourceEngine) -> Evidence (`finding.evidence`) -> Signals (`signals`, the real AnalysisSignals
@@ -27,6 +35,7 @@ export type CategoryScoreStatus = 'ok' | 'incomplete' | 'insufficient-data';
 export interface RuleExplanation {
   finding: Finding;
   signals: AnalysisSignal[];
+  classification: RuleClassification;
 }
 
 export interface CategoryScore extends CategoryScoreCoverage {

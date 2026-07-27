@@ -1,4 +1,13 @@
-import type { AnalysisSignal, CategoryScore, CategoryScoreStatus, Finding, Heuristic, RuleExplanation, Scores } from '@ai-visibility/contracts';
+import type {
+  AnalysisSignal,
+  CategoryScore,
+  CategoryScoreStatus,
+  Finding,
+  Heuristic,
+  RuleClassification,
+  RuleExplanation,
+  Scores,
+} from '@ai-visibility/contracts';
 import { resolveOptimizationRule } from '../optimization-knowledge-base/optimization-knowledge-base';
 
 type ScoreKey = keyof Omit<Scores, 'overall'>;
@@ -49,6 +58,19 @@ function statusFor(evaluatedRules: number): CategoryScoreStatus {
   return evaluatedRules < MINIMUM_EVALUATED_RULES ? 'incomplete' : 'ok';
 }
 
+// The single pass/fail/severity decision every consumer of a Finding's status derives from —
+// computed once here so a category's issues/warnings/passedChecks and a single Rule's own
+// classification (Score Explainability, F10-S02C) can never disagree with each other.
+function classifyRule(finding: Finding): RuleClassification {
+  if (finding.outcome === 'skip') {
+    return 'skipped';
+  }
+  if (finding.outcome === 'pass') {
+    return 'passed';
+  }
+  return resolveOptimizationRule(finding.ruleId)?.severity === 'low' ? 'warning' : 'issue';
+}
+
 // The Signals that actually fed the Heuristic behind this Finding — real traceability, not a
 // guess: looked up through the Heuristic's own `contributingSignalKeys`, never through pattern
 // matching on the Finding's category or evidence shape. Empty when the Rule was skipped (its
@@ -63,7 +85,7 @@ function explainRule(finding: Finding, heuristics: ReadonlyArray<Heuristic>, sig
         .filter((signal): signal is AnalysisSignal => signal !== undefined)
     : [];
 
-  return { finding, signals: contributingSignals };
+  return { finding, signals: contributingSignals, classification: classifyRule(finding) };
 }
 
 function scoreCategory(
@@ -71,36 +93,14 @@ function scoreCategory(
   heuristics: ReadonlyArray<Heuristic>,
   signals: ReadonlyArray<AnalysisSignal>,
 ): CategoryScore {
-  const passedChecks: string[] = [];
-  const issues: string[] = [];
-  const warnings: string[] = [];
-  const rules: RuleExplanation[] = [];
-  let passedRules = 0;
-  let failedRules = 0;
-  let skippedRules = 0;
+  const rules = categoryFindings.map((finding) => explainRule(finding, heuristics, signals));
 
-  for (const finding of categoryFindings) {
-    rules.push(explainRule(finding, heuristics, signals));
-
-    if (finding.outcome === 'skip') {
-      skippedRules += 1;
-      continue;
-    }
-
-    if (finding.outcome === 'pass') {
-      passedRules += 1;
-      passedChecks.push(describeFinding(finding));
-      continue;
-    }
-
-    failedRules += 1;
-    const rule = resolveOptimizationRule(finding.ruleId);
-    if (rule?.severity === 'low') {
-      warnings.push(describeFinding(finding));
-    } else {
-      issues.push(describeFinding(finding));
-    }
-  }
+  const passedChecks = rules.filter((rule) => rule.classification === 'passed').map((rule) => describeFinding(rule.finding));
+  const issues = rules.filter((rule) => rule.classification === 'issue').map((rule) => describeFinding(rule.finding));
+  const warnings = rules.filter((rule) => rule.classification === 'warning').map((rule) => describeFinding(rule.finding));
+  const skippedRules = rules.filter((rule) => rule.classification === 'skipped').length;
+  const passedRules = passedChecks.length;
+  const failedRules = issues.length + warnings.length;
 
   const evaluatedRules = passedRules + failedRules;
   // Never fabricated: a category with zero evaluated Rules gets `score: null`, never a numeric
