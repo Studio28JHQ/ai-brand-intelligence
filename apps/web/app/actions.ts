@@ -347,6 +347,41 @@ export async function createAudit(
   }
 }
 
+export interface RunAuditResult {
+  auditId?: string;
+  error?: string;
+}
+
+// Real POST /audits under the hood — the same synchronous Workflow Runtime `createAudit` already
+// uses (this platform has no async job queue, so a 201 here means the Audit already ran to
+// completion). Kept separate from `createAudit` because callers of this one need the new Audit's
+// id directly (to navigate to it), not the `useActionState` form-state shape `createAudit` returns.
+export async function runNewAudit(url: string): Promise<RunAuditResult> {
+  if (url.trim().length === 0) {
+    return { error: 'URL is required' };
+  }
+
+  const config = loadConfig();
+
+  try {
+    const response = await fetch(`${config.API_URL}/audits`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url }),
+    });
+
+    const body = await response.json();
+
+    if (!response.ok) {
+      return { error: body?.error?.message ?? 'Could not start the Audit.' };
+    }
+
+    return { auditId: (body as CreateAuditResponse).id };
+  } catch {
+    return { error: 'Could not reach the API.' };
+  }
+}
+
 export async function getAuditAnalysis(auditId: string): Promise<AuditAnalysisView | null> {
   const config = loadConfig();
 

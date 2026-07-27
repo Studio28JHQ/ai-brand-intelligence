@@ -4,6 +4,7 @@ import { CycleManager } from './cycle-manager';
 import { Badge, Breadcrumbs, Card, EmptyState, NextStepBanner, PageHeader } from '../../../../components/ui';
 import { ScoresPanel, ScoresSummaryBadge } from '../../../../components/scores-panel';
 import { RecommendationExplainability } from '../../../../components/recommendation-explainability';
+import { RunAuditModal } from '../../../../components/run-audit-modal';
 import { findRuleExplanationForItem } from '../../../../lib/recommendation-explainability';
 import { computeNextStep } from '../../../../lib/next-step';
 
@@ -20,6 +21,7 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
         description={dashboard ? `${dashboard.project.clientName} · ${dashboard.project.primaryDomain}` : undefined}
         actions={
           <div className="cluster">
+            <RunAuditModal defaultUrl={dashboard?.project.canonicalWebsite} />
             <Link href={`/projects/${id}/pages`} className="btn btn-secondary">
               View Pages
             </Link>
@@ -46,7 +48,7 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
         <div className="stack">
           <NextStepBanner step={computeNextStep(dashboard, id)} />
 
-          <Card title="Project Overview">
+          <Card title="Project Overview" actions={<RunAuditModal defaultUrl={dashboard.project.canonicalWebsite} />}>
             <dl className="dl">
               <dt>Project</dt>
               <dd>{dashboard.project.projectName}</dd>

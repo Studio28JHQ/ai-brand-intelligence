@@ -28,6 +28,21 @@ export class AuditNotCompletedError extends Error {
   }
 }
 
+export class DuplicateAuditExecutionError extends Error {
+  // `inFlightAuditId` is `null` when this is raised from the database-level backstop (a unique
+  // constraint violation, PrismaAuditRepository.create) rather than the application-level check
+  // (CreateAuditUseCase) — the database only tells us the insert collided, not which existing row
+  // it collided with, so the message stays honest about not knowing the specific Audit id.
+  constructor(projectId: string, inFlightAuditId: string | null) {
+    super(
+      inFlightAuditId
+        ? `Project ${projectId} already has an Audit in progress (${inFlightAuditId}). Wait for it to finish before starting another.`
+        : `Project ${projectId} already has an Audit in progress. Wait for it to finish before starting another.`,
+    );
+    this.name = 'DuplicateAuditExecutionError';
+  }
+}
+
 export class PageComparisonUrlMismatchError extends Error {
   constructor(baselineAuditId: string, targetAuditId: string) {
     super(`Cannot compare Audit ${baselineAuditId} and Audit ${targetAuditId}: they audited different URLs.`);

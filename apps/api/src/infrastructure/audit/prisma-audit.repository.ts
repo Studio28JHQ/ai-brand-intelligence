@@ -1,9 +1,17 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { PrismaClient } from '@ai-visibility/database';
 import { Audit, AuditStatus } from '../../domain/audit/audit.entity';
-import { AuditNotFoundError } from '../../domain/audit/audit.errors';
+import { AuditNotFoundError, DuplicateAuditExecutionError } from '../../domain/audit/audit.errors';
 import { AuditRepository } from '../../domain/audit/audit.repository';
 import { PRISMA_CLIENT } from '../database/database.module';
+
+// Prisma maps a raw Postgres unique-violation (SQLSTATE 23505) to this shape even for indexes it
+// doesn't know about from schema.prisma — the partial unique index this guards
+// (`audit_requests_one_in_flight_per_project`, migration 20260727225907) is exactly that case,
+// verified live against a real conflicting insert before relying on it here.
+function isUniqueConstraintViolation(error: unknown): boolean {
+  return typeof error === 'object' && error !== null && 'code' in error && (error as { code?: unknown }).code === 'P2002';
+}
 
 interface AuditRecord {
   id: string;
@@ -23,8 +31,19 @@ export class PrismaAuditRepository implements AuditRepository {
   constructor(@Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient) {}
 
   async create(projectId: string, url: string, cycleId: string): Promise<Audit> {
-    const record = await this.prisma.auditRequest.create({ data: { projectId, url, cycleId } });
-    return this.toDomain(record);
+    try {
+      const record = await this.prisma.auditRequest.create({ data: { projectId, url, cycleId } });
+      return this.toDomain(record);
+    } catch (error) {
+      if (isUniqueConstraintViolation(error)) {
+        // The application-level check in CreateAuditUseCase already tries to catch this earlier
+        // and with a friendlier error (naming the actual in-flight Audit); this is the
+        // database-enforced backstop for the narrow window where two requests both pass that
+        // check before either has persisted its own row — same real Error type either way.
+        throw new DuplicateAuditExecutionError(projectId, null);
+      }
+      throw error;
+    }
   }
 
   async markRunning(id: string, startedAt: Date): Promise<Audit> {

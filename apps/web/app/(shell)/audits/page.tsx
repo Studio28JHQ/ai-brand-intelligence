@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { listAudits, listProjects } from '../../actions';
 import { Badge, Breadcrumbs, EmptyState, PageHeader } from '../../components/ui';
+import { RunAuditModal } from '../../components/run-audit-modal';
 
 function shortId(id: string): string {
   return id.slice(0, 8);
@@ -15,7 +16,11 @@ export default async function AuditsPage() {
   return (
     <main className="page">
       <Breadcrumbs items={[{ label: 'Dashboard', href: '/workspace' }, { label: 'Audits' }]} />
-      <PageHeader title="Audits" description="Every AI Visibility Audit run across your Projects." />
+      <PageHeader
+        title="Audits"
+        description="Every AI Visibility Audit run across your Projects."
+        actions={<RunAuditModal />}
+      />
 
       {sorted.length === 0 && <EmptyState title="No Audits yet" description="Run one from the Projects page." />}
 

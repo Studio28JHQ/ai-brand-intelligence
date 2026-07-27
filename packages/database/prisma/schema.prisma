@@ -172,6 +172,11 @@ model ProjectBaselineHistory {
   @@map("project_baseline_history")
 }
 
+// A Project may have at most one Request in ('pending' | 'running') at a time — enforced by a
+// partial unique index on (project_id) WHERE status IN ('pending', 'running')
+// (migration 20260727225907_prevent_duplicate_in_flight_audits, F10-S04A). Prisma's schema DSL
+// cannot express a partial index, so it exists only in the migration, not as an `@@unique` here;
+// `CreateAuditUseCase` maps the resulting constraint violation to `DuplicateAuditExecutionError`.
 model AuditRequest {
   id          String    @id @default(uuid())
   projectId   String    @map("project_id")

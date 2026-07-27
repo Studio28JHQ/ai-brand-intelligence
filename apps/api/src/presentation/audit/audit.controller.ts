@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, NotFoundException, Param, Post, Query, Req } from '@nestjs/common';
+import { BadRequestException, Body, ConflictException, Controller, Get, NotFoundException, Param, Post, Query, Req } from '@nestjs/common';
 import type { Request } from 'express';
 import type {
   AuditAnalysisView,
@@ -16,6 +16,7 @@ import {
   InvalidAuditUrlError,
   AuditNotFoundError,
   AuditNotCompletedError,
+  DuplicateAuditExecutionError,
   PageComparisonUrlMismatchError,
 } from '../../domain/audit/audit.errors';
 import { ClientNotFoundError } from '../../domain/client/client.errors';
@@ -131,6 +132,9 @@ export class AuditController {
       }
       if (error instanceof ClientNotFoundError) {
         throw new NotFoundException(error.message);
+      }
+      if (error instanceof DuplicateAuditExecutionError) {
+        throw new ConflictException(error.message);
       }
       throw error;
     }

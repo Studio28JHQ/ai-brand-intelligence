@@ -13,6 +13,7 @@ import type {
 import { AuditUrl } from '../../domain/audit/audit-url.vo';
 import { AUDIT_REPOSITORY, AuditRepository } from '../../domain/audit/audit.repository';
 import { AuditSnapshot } from '../../domain/audit/audit-snapshot';
+import { DuplicateAuditExecutionError } from '../../domain/audit/audit.errors';
 import { PROJECT_REPOSITORY, ProjectRepository } from '../../domain/project/project.repository';
 import { deriveCanonicalWebsite, deriveProjectName } from '../../domain/project/canonical-website';
 import { CLIENT_REPOSITORY, ClientRepository } from '../../domain/client/client.repository';
@@ -44,6 +45,18 @@ export class CreateAuditUseCase {
         : await this.resolveOrCreateDefaultClient(url.value);
 
       project = await this.projectRepository.create(client.id, deriveProjectName(canonicalWebsite), canonicalWebsite);
+    }
+
+    // One Audit at a time per Project: the Workflow Runtime executes an Audit's steps
+    // synchronously within this single request, so a genuine overlap only happens if a second
+    // request for the same Project arrives while an earlier one is still mid-flight — but the
+    // guard is real and authoritative regardless of timing, not just a UI convenience.
+    const projectAudits = await this.auditRepository.findAll();
+    const inFlightAudit = projectAudits.find(
+      (existing) => existing.projectId === project!.id && (existing.status === 'pending' || existing.status === 'running'),
+    );
+    if (inFlightAudit) {
+      throw new DuplicateAuditExecutionError(project.id, inFlightAudit.id);
     }
 
     const cycle = await this.ensureActiveCycleUseCase.execute(project.id);
