@@ -1,7 +1,1 @@
-export interface DiscoveryResult {
-  normalizedUrl: string;
-  robotsTxtUrl: string;
-  robotsTxtDetected: boolean;
-  sitemapUrl: string;
-  sitemapDetected: boolean;
-}
+export type { DiscoveryResult } from '@ai-visibility/contracts';

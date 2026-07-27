@@ -1,6 +1,6 @@
 import { loadConfig } from '@ai-visibility/config';
 import { getPrismaClient } from '@ai-visibility/database';
-import type { AiVisibilityAssessment } from '@ai-visibility/contracts';
+import type { AiVisibilityAssessment, AnalysisSignal } from '@ai-visibility/contracts';
 
 export async function saveAssessment(assessment: AiVisibilityAssessment): Promise<void> {
   const config = loadConfig();
@@ -25,5 +25,31 @@ export async function saveAssessment(assessment: AiVisibilityAssessment): Promis
       missingSignals: assessment.missingSignals,
       assessedAt: new Date(assessment.assessedAt),
     },
+  });
+}
+
+// Signals are immutable and append-only (see @ai-visibility/extraction-engine's identical
+// convention) — insert-only, no update/upsert path.
+export async function saveSignals(auditId: string, signals: AnalysisSignal[]): Promise<void> {
+  if (signals.length === 0) {
+    return;
+  }
+
+  const config = loadConfig();
+  const prisma = getPrismaClient(config.DATABASE_URL);
+
+  await prisma.signal.createMany({
+    data: signals.map((signal) => ({
+      id: signal.signalId,
+      auditId,
+      key: signal.key,
+      category: signal.category,
+      data: signal.data as object,
+      sourceType: signal.sourceType,
+      sourceId: signal.sourceId,
+      confidence: signal.confidence,
+      timestamp: new Date(signal.timestamp),
+      fingerprint: signal.fingerprint,
+    })),
   });
 }

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getAudit, getAuditAnalysis } from '../../../actions';
 import { Badge, Breadcrumbs, Card, EmptyState, PageHeader } from '../../../components/ui';
+import { ScoresPanel } from '../../../components/scores-panel';
 
 export default async function AuditDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -78,6 +79,8 @@ export default async function AuditDetailPage({ params }: { params: Promise<{ id
 
           {audit.status === 'completed' && (
             <>
+              {analysis && <ScoresPanel scores={analysis.scores} />}
+
               <Card title="Findings">
                 {(!analysis || analysis.findings.length === 0) && (
                   <EmptyState title="No Findings recorded" description="Nothing to fix — this Audit didn't identify any issues." />

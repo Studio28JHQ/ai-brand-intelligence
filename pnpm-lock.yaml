@@ -37,12 +37,21 @@ importers:
       '@ai-visibility/entity-engine':
         specifier: workspace:*
         version: link:../../services/entity
+      '@ai-visibility/extraction-engine':
+        specifier: workspace:*
+        version: link:../../services/extraction
+      '@ai-visibility/heuristics-engine':
+        specifier: workspace:*
+        version: link:../../services/heuristics
       '@ai-visibility/inventory-engine':
         specifier: workspace:*
         version: link:../../services/inventory
       '@ai-visibility/knowledge-graph-engine':
         specifier: workspace:*
         version: link:../../services/knowledge-graph
+      '@ai-visibility/rules':
+        specifier: workspace:*
+        version: link:../../packages/rules
       '@ai-visibility/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -139,6 +148,19 @@ importers:
         specifier: ^5.7.3
         version: 5.9.3
 
+  packages/analyzers:
+    dependencies:
+      '@ai-visibility/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.20.1
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
   packages/config:
     dependencies:
       zod:
@@ -218,6 +240,9 @@ importers:
 
   services/ai-visibility:
     dependencies:
+      '@ai-visibility/analyzers':
+        specifier: workspace:*
+        version: link:../../packages/analyzers
       '@ai-visibility/config':
         specifier: workspace:*
         version: link:../../packages/config
@@ -290,6 +315,9 @@ importers:
       '@ai-visibility/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@ai-visibility/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
       '@ai-visibility/database':
         specifier: workspace:*
         version: link:../../packages/database
@@ -305,6 +333,53 @@ importers:
         version: 5.9.3
 
   services/entity:
+    dependencies:
+      '@ai-visibility/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@ai-visibility/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@ai-visibility/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@ai-visibility/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.20.1
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
+  services/extraction:
+    dependencies:
+      '@ai-visibility/analyzers':
+        specifier: workspace:*
+        version: link:../../packages/analyzers
+      '@ai-visibility/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@ai-visibility/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@ai-visibility/database':
+        specifier: workspace:*
+        version: link:../../packages/database
+      '@ai-visibility/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.20.1
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
+  services/heuristics:
     dependencies:
       '@ai-visibility/config':
         specifier: workspace:*

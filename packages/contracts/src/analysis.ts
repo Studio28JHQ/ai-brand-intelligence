@@ -1,4 +1,6 @@
-export type RuleOutcome = 'pass' | 'fail';
+// 'skip': the Rule's required upstream Signal/Heuristic was not present, so it never reached a
+// real pass/fail judgment — distinct from 'fail' (the check ran and did not pass).
+export type RuleOutcome = 'pass' | 'fail' | 'skip';
 
 export type FindingSeverity = 'none' | 'warning';
 

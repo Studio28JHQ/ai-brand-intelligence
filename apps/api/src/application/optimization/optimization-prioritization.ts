@@ -14,7 +14,22 @@ const MEDIUM_PRIORITY_THRESHOLD = 10;
 // The order the Workflow Runtime always executes Business Engines in. An
 // Optimization Item tied to an earlier stage genuinely blocks Items tied to
 // later stages — later stages depend on earlier ones having run successfully.
-const PIPELINE_ORDER = ['discovery', 'crawl', 'inventory', 'analysis', 'entity', 'knowledgeGraph', 'aiVisibility'];
+// 'analysis' covers Core Rule findings (they run right after Core Heuristics, before the
+// Knowledge Graph); 'aiVisibilityAnalysis' is the distinct, later sourceEngine tag used by the
+// AI Visibility rule, so it ranks after 'aiVisibility' instead of colliding with 'analysis'.
+const PIPELINE_ORDER = [
+  'discovery',
+  'crawl',
+  'inventory',
+  'extraction',
+  'heuristics',
+  'analysis',
+  'entity',
+  'knowledgeGraph',
+  'aiVisibility',
+  'aiVisibilityHeuristics',
+  'aiVisibilityAnalysis',
+];
 
 function pipelineRank(sourceEngine: string): number {
   const index = PIPELINE_ORDER.indexOf(sourceEngine);

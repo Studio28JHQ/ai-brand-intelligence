@@ -29,6 +29,22 @@ export function buildFullAuditCapabilityCatalog(): CapabilityCatalog {
   );
   catalog.register(
     {
+      id: 'page-extraction',
+      name: 'Page Extraction',
+      description: 'Runs pluggable analyzers over the crawled page and produces normalized Signals.',
+    },
+    'extraction',
+  );
+  catalog.register(
+    {
+      id: 'core-heuristics',
+      name: 'Core Heuristics',
+      description: 'Combines page-level Signals into judgment-ready Heuristics.',
+    },
+    'heuristics',
+  );
+  catalog.register(
+    {
       id: 'rule-analysis',
       name: 'Rule Analysis',
       description: 'Evaluates audit rules and produces normalized findings.',
@@ -58,6 +74,22 @@ export function buildFullAuditCapabilityCatalog(): CapabilityCatalog {
       description: 'Assesses how well the site can be understood by AI systems.',
     },
     'aiVisibility',
+  );
+  catalog.register(
+    {
+      id: 'ai-visibility-heuristics',
+      name: 'AI Visibility Heuristics',
+      description: 'Combines the AI Visibility analyzer Signals into judgment-ready Heuristics.',
+    },
+    'aiVisibilityHeuristics',
+  );
+  catalog.register(
+    {
+      id: 'ai-visibility-rule-analysis',
+      name: 'AI Visibility Rule Analysis',
+      description: 'Evaluates AI Visibility rules and merges the resulting findings into the audit.',
+    },
+    'aiVisibilityAnalysis',
   );
 
   return catalog;

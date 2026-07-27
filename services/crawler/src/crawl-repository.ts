@@ -15,6 +15,7 @@ export async function saveCrawlResult(auditId: string, result: CrawlResult): Pro
       headers: result.headers,
       html: result.html,
       success: result.success,
+      redirectChain: result.redirectChain,
     },
     update: {
       finalUrl: result.finalUrl,
@@ -22,6 +23,7 @@ export async function saveCrawlResult(auditId: string, result: CrawlResult): Pro
       headers: result.headers,
       html: result.html,
       success: result.success,
+      redirectChain: result.redirectChain,
     },
   });
 }

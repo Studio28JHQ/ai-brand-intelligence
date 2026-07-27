@@ -6,6 +6,7 @@ import { AiVisibilityReadRepository } from '../../infrastructure/comparison/ai-v
 import { KnowledgeGraphReadRepository } from '../../infrastructure/comparison/knowledge-graph-read.repository';
 import { generateOptimizationPlan } from '../optimization/generate-optimization-plan';
 import { OptimizationPatternQueryService } from '../optimization-pattern/optimization-pattern-query.service';
+import { computeScores } from '../scoring/compute-scores';
 
 @Injectable()
 export class AuditAnalysisQueryService {
@@ -40,6 +41,6 @@ export class AuditAnalysisQueryService {
         )
       : [];
 
-    return { auditId, findings, optimizationPlan };
+    return { auditId, findings, optimizationPlan, scores: computeScores(findings) };
   }
 }

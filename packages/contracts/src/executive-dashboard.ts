@@ -4,6 +4,7 @@ import type { OptimizationItem } from './optimization-plan';
 import type { CampaignProgressSummary } from './optimization-campaign';
 import type { ImpactAssessmentSummary } from './impact-assessment';
 import type { CycleStatus } from './optimization-cycle';
+import type { Scores } from './scores';
 
 export interface DashboardProjectOverview {
   projectId: string;
@@ -52,4 +53,5 @@ export interface ExecutiveDashboard {
   campaign: CampaignProgressSummary | null;
   campaignImpact: ImpactAssessmentSummary | null;
   currentCycle: DashboardCycleOverview | null;
+  scores: Scores | null;
 }

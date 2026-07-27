@@ -7,6 +7,7 @@ import type { AiVisibilitySummary } from './ai-visibility';
 import type { OptimizationPlan } from './optimization-plan';
 import type { WorkflowProgress } from './workflow-progress';
 import type { WorkflowExecutionRecord } from './workflow-execution-history';
+import type { Scores } from './scores';
 
 export type AuditStatus = 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
 
@@ -31,6 +32,7 @@ export interface CreateAuditResponse {
   knowledgeGraph?: KnowledgeGraphSummary;
   aiVisibility?: AiVisibilitySummary;
   optimizationPlan?: OptimizationPlan;
+  scores?: Scores;
   progress?: WorkflowProgress[];
   executionHistory?: WorkflowExecutionRecord[];
 }

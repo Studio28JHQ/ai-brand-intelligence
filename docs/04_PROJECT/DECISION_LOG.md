@@ -670,3 +670,38 @@ This never fails startup — confirmed by `pnpm dev` reaching "Alpha Ready" with
 - xAI: `XAI_API_KEY` (from console.x.ai)
 - OpenRouter: `OPENROUTER_API_KEY` (from openrouter.ai/keys)
 - Perplexity: `PERPLEXITY_API_KEY` (from perplexity.ai/settings/api)
+
+# CTO-095
+
+**Title**: Score Engine made never-fabricating — a category score is null ("Insufficient Data") until real Rules evaluate it, and thin categories are marked "Incomplete" rather than presented as fully confident
+**Sprint**: `F10-S02B` — Real Scoring Engine
+**Decision**: This ticket implements the findings of the `F10-S02A` Score Engine Audit, scoped to exactly the audit's scoring-fabrication findings — not the full punch list. `apps/api/src/application/scoring/compute-scores.ts` (`CategoryScore`, `Scores`, `packages/contracts/src/scores.ts`) no longer has any code path that returns `score: 100` for a category with zero evaluated Rules. Previously, `emptyCategoryScore()` returned `{ score: 100, ... }` whenever a category had no Findings — indistinguishable in the API response from "every check passed." That function no longer exists.
+
+**Three category states, not two**: `CategoryScore.status` is `'ok' | 'incomplete' | 'insufficient-data'`, computed from `evaluatedRules` (real pass/fail judgments only, excluding skipped ones):
+- `evaluatedRules === 0` → `score: null`, status `'insufficient-data'` — the Scores Panel (`apps/web/app/components/scores-panel.tsx`) renders this as "Insufficient Data," never a number.
+- `0 < evaluatedRules < MINIMUM_EVALUATED_RULES (2)` → status `'incomplete'` — the score is still real (computed from actually-evaluated Rules, never fabricated), just visibly flagged as backed by too few checks to be a confident signal. This directly addresses the Audit's P1 finding: `content`, `performance`, and `ai-visibility` each have exactly one Rule today, so a binary pass/fail collapses their score to strictly 0 or 100 — real audits against `example.com`/`github.com`/`openai.com` (below) show exactly this: `performance` landed on 100 for all three (one check, always passed), while `content`/`aiVisibility` varied — all three now carry `status: 'incomplete'` so a consumer knows not to read them with the same confidence as a 4-Rule category like `seo`.
+- `evaluatedRules >= 2` → status `'ok'`.
+
+**Every `CategoryScore` now exposes `evaluatedRules`/`passedRules`/`failedRules`/`skippedRules`** (`CategoryScoreCoverage`, `packages/contracts/src/scores.ts`), computed directly from the category's Findings rather than only being derivable by recounting `issues`/`warnings`/`passedChecks` string arrays.
+
+**A new `'skip'` `RuleOutcome`, distinct from `'fail'`**: `packages/rules/src/rule.ts` and `packages/contracts/src/analysis.ts` both gained `'skip'` alongside `'pass'`/`'fail'`. Every one of the 11 Analysis Rules under `services/analysis/src/rules/heuristics/*.rule.ts` previously returned `outcome: 'fail'` when its required Heuristic was missing (upstream Signal absent) — this misreported "we never got to check this" as "this failed," which both inflated `failedRules`/`issues` and (before this ticket) was structurally indistinguishable from a real failure. Each now returns `outcome: 'skip'` in that branch instead; `classifySeverity` (`services/analysis/src/classify-finding.ts`) already mapped anything other than `'fail'` to `severity: 'none'`, so `'skip'` Findings are automatically excluded from `generateOptimizationPlan`'s actionable-Findings filter with no change needed there. `discovery-execution`/`crawl-execution`/`inventory-execution` (category `'execution'`, excluded from scoring entirely) were left as pass/fail — a failed engine execution is a real failure, not a skip.
+
+**Overall Score excludes, never fabricates, insufficient-data categories**: `computeScores`'s Overall is the rounded mean of only the categories whose `score !== null`. A category with `evaluatedRules === 0` is dropped from the average entirely — not treated as 0 (which would artificially depress Overall) and not treated as 100 (which would artificially inflate it). Verified structurally: `computeScores([])` (no Findings at all) returns every category `null`/`'insufficient-data'` and `overall: null`; a category whose only Finding is `'skip'` returns `score: null` and does not change `overall` for the other, real categories.
+
+**Verified live — three real audits, scores differing because of real Findings**, run against a locally started API (`pnpm --filter @ai-visibility/database run migrate:deploy` against the already-running local Postgres/Redis/MinIO, `pnpm --filter @ai-visibility/api run start:prod`), `POST /audits` against each target with no seeding or mocking of any kind:
+
+| Category | example.com | github.com | openai.com |
+|---|---|---|---|
+| seo | 25 (1/4 passed) | 75 (3/4 passed) | 0 (0/4 passed) |
+| aiVisibility | 0 — incomplete | 100 — incomplete | 0 — incomplete |
+| technical | 50 (1/2 passed) | 50 (1/2 passed) | 100 (2/2 passed) |
+| content | 0 — incomplete | 100 — incomplete | 0 — incomplete |
+| accessibility | 100 (2/2 passed) | 50 (1/2 passed) | 50 (1/2 passed) |
+| performance | 100 — incomplete | 100 — incomplete | 100 — incomplete |
+| **overall** | **46** | **79** | **42** |
+
+Every difference traces to a real, evidenced Finding — e.g. `github.com` is the only one of the three whose `ai-visibility-readiness` Rule passed (Knowledge Graph built from its real crawl reached `status: 'ready'`); `openai.com` failed all four `seo` Rules including `seo-indexability` and `seo-metadata-quality` against its real crawled HTML; `example.com`'s real word count landed in the `content-depth` heuristic's `'thin'` band while `github.com`'s did not. `skippedRules` was `0` across all eighteen category results in this run — every Rule's upstream Heuristic was present because all three sites crawled successfully; the `'insufficient-data'`/all-skipped path was instead verified directly against `compute-scores.ts` with synthetic empty and all-skip Finding arrays (shown above), since no reachable real site leaves a Heuristic missing.
+
+**Rejected alternative**: Adding new Rules to `content`/`performance`/`ai-visibility` so every category could reach the `MINIMUM_EVALUATED_RULES` threshold "for real." Rejected as out of scope for this ticket — inventing new Heuristics/Rules is exactly the kind of new business logic `F10-S02A`'s recommendation #2 named as a *future* option, not something this ticket's Requirements/Acceptance Criteria asked for; this ticket's job was to stop the existing category scores from lying about their own confidence, not to manufacture additional checks.
+
+**Scope boundary**: The Audit's P4 (severity-weighted scoring), P5 (heuristic/rule category-taxonomy reconciliation), P6 (silent `describeFinding` ID fallback), P7 (`deriveConfidence()` hardcoded to `'high'`), and P8 (Dashboard `currentScore`/`baselineScore` naming) were not addressed — none were named in this ticket's Requirements, and `P8` in particular was already a deliberate, documented decision (`CTO-061`'s "Score trend and Priority Actions": no numeric AI Visibility score exists in the domain model by design), not a defect. See `docs/03_PRODUCT/FUTURE_ROADMAP.md`.

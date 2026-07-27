@@ -4,6 +4,7 @@ export interface CrawlResult {
   headers: Record<string, string>;
   html: string;
   success: boolean;
+  redirectChain: string[];
 }
 
 export interface CrawlSummary {
@@ -11,4 +12,5 @@ export interface CrawlSummary {
   finalUrl: string;
   htmlSizeBytes: number;
   success: boolean;
+  redirectChain: string[];
 }

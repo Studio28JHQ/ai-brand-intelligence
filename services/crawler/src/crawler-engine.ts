@@ -2,25 +2,53 @@ import { emitTelemetryEvent } from '@ai-visibility/shared';
 import type { CrawlResult } from '@ai-visibility/contracts';
 import { saveCrawlResult } from './crawl-repository';
 
+const MAX_REDIRECT_HOPS = 10;
+
 async function performCrawl(url: string): Promise<CrawlResult> {
+  const redirectChain: string[] = [];
+  let currentUrl = url;
+
   try {
-    const response = await fetch(url, { method: 'GET', redirect: 'follow' });
-    const html = await response.text();
+    for (let hop = 0; hop <= MAX_REDIRECT_HOPS; hop += 1) {
+      const response = await fetch(currentUrl, { method: 'GET', redirect: 'manual' });
+
+      if (response.status >= 300 && response.status < 400) {
+        const location = response.headers.get('location');
+        if (!location) {
+          break;
+        }
+        redirectChain.push(currentUrl);
+        currentUrl = new URL(location, currentUrl).href;
+        continue;
+      }
+
+      const html = await response.text();
+      return {
+        finalUrl: currentUrl,
+        httpStatus: response.status,
+        headers: Object.fromEntries(response.headers.entries()),
+        html,
+        success: response.ok,
+        redirectChain,
+      };
+    }
 
     return {
-      finalUrl: response.url,
-      httpStatus: response.status,
-      headers: Object.fromEntries(response.headers.entries()),
-      html,
-      success: response.ok,
-    };
-  } catch {
-    return {
-      finalUrl: url,
+      finalUrl: currentUrl,
       httpStatus: 0,
       headers: {},
       html: '',
       success: false,
+      redirectChain,
+    };
+  } catch {
+    return {
+      finalUrl: currentUrl,
+      httpStatus: 0,
+      headers: {},
+      html: '',
+      success: false,
+      redirectChain,
     };
   }
 }

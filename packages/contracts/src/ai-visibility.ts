@@ -1,3 +1,5 @@
+import type { AnalysisSignal } from './signal';
+
 export type VisibilityStatus = 'ready' | 'needs-improvement' | 'not-ready';
 
 export type VisibilityScoreTrend = 'improved' | 'declined' | 'unchanged' | 'unknown';
@@ -18,6 +20,7 @@ export interface AiVisibilityAssessment {
 
 export interface AiVisibilityResult {
   assessment: AiVisibilityAssessment;
+  signals: AnalysisSignal[];
 }
 
 export interface AiVisibilitySummary {

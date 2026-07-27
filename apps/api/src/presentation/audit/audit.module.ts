@@ -21,10 +21,14 @@ import { KnowledgeGraphReadRepository } from '../../infrastructure/comparison/kn
 import { DiscoveryStep } from '../../infrastructure/audit/discovery.step';
 import { CrawlerStep } from '../../infrastructure/audit/crawler.step';
 import { InventoryStep } from '../../infrastructure/audit/inventory.step';
+import { ExtractionStep } from '../../infrastructure/audit/extraction.step';
+import { CoreHeuristicsStep } from '../../infrastructure/audit/core-heuristics.step';
 import { AnalysisStep } from '../../infrastructure/audit/analysis.step';
 import { EntityStep } from '../../infrastructure/audit/entity.step';
 import { KnowledgeGraphStep } from '../../infrastructure/audit/knowledge-graph.step';
 import { AiVisibilityStep } from '../../infrastructure/audit/ai-visibility.step';
+import { AiVisibilityHeuristicsStep } from '../../infrastructure/audit/ai-visibility-heuristics.step';
+import { AiVisibilityAnalysisStep } from '../../infrastructure/audit/ai-visibility-analysis.step';
 import { WorkflowAdapter } from '../../infrastructure/audit/workflow.adapter';
 import { AuditRepositoryModule } from '../../infrastructure/audit/audit-repository.module';
 import { ClientRepositoryModule } from '../../infrastructure/client/client-repository.module';
@@ -62,30 +66,42 @@ import { AuditController } from './audit.controller';
     DiscoveryStep,
     CrawlerStep,
     InventoryStep,
+    ExtractionStep,
+    CoreHeuristicsStep,
     AnalysisStep,
     EntityStep,
     KnowledgeGraphStep,
     AiVisibilityStep,
+    AiVisibilityHeuristicsStep,
+    AiVisibilityAnalysisStep,
     {
       provide: AUDIT_EXECUTION_PLAN,
       useFactory: (
         discoveryStep: DiscoveryStep,
         crawlerStep: CrawlerStep,
         inventoryStep: InventoryStep,
+        extractionStep: ExtractionStep,
+        coreHeuristicsStep: CoreHeuristicsStep,
         analysisStep: AnalysisStep,
         entityStep: EntityStep,
         knowledgeGraphStep: KnowledgeGraphStep,
         aiVisibilityStep: AiVisibilityStep,
+        aiVisibilityHeuristicsStep: AiVisibilityHeuristicsStep,
+        aiVisibilityAnalysisStep: AiVisibilityAnalysisStep,
       ): ExecutionPlan => {
         const registry = new CapabilityRegistry();
         [
           discoveryStep,
           crawlerStep,
           inventoryStep,
+          extractionStep,
+          coreHeuristicsStep,
           analysisStep,
           entityStep,
           knowledgeGraphStep,
           aiVisibilityStep,
+          aiVisibilityHeuristicsStep,
+          aiVisibilityAnalysisStep,
         ].forEach((step) => registry.register(toCapability(step)));
 
         const catalog = buildFullAuditCapabilityCatalog();
@@ -96,10 +112,14 @@ import { AuditController } from './audit.controller';
         DiscoveryStep,
         CrawlerStep,
         InventoryStep,
+        ExtractionStep,
+        CoreHeuristicsStep,
         AnalysisStep,
         EntityStep,
         KnowledgeGraphStep,
         AiVisibilityStep,
+        AiVisibilityHeuristicsStep,
+        AiVisibilityAnalysisStep,
       ],
     },
   ],

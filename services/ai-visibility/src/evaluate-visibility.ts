@@ -1,5 +1,7 @@
+import { createSignal } from '@ai-visibility/analyzers';
 import type {
   AiVisibilityAssessment,
+  AnalysisSignal,
   CompletenessLevel,
   CoverageLevel,
   KnowledgeGraphResult,
@@ -94,4 +96,25 @@ export function evaluateVisibility(auditId: string, graph: KnowledgeGraphResult)
     missingSignals,
     assessedAt: new Date().toISOString(),
   };
+}
+
+// Normalizes the already-computed assessment into the shared AnalysisSignal shape so the
+// Heuristic/Rules layers can treat it uniformly with every other analyzer's output. This does
+// not add new judgment — it's the same assessment, restated as an observation.
+export function buildAiVisibilitySignals(assessment: AiVisibilityAssessment): AnalysisSignal[] {
+  return [
+    createSignal({
+      key: 'visibility-assessment',
+      category: 'ai-visibility',
+      sourceType: 'analyzer',
+      sourceId: 'ai-visibility',
+      data: {
+        status: assessment.status,
+        graphCompleteness: assessment.graphCompleteness,
+        entityCoverage: assessment.entityCoverage,
+        relationshipCoverage: assessment.relationshipCoverage,
+        missingSignals: assessment.missingSignals,
+      },
+    }),
+  ];
 }

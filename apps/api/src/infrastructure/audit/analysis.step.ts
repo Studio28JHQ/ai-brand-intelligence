@@ -9,7 +9,7 @@ export class AnalysisStep implements WorkflowStep {
 
   async run(context: WorkflowContext): Promise<WorkflowContext> {
     const startedAt = new Date();
-    const output = await runAnalysis(context.auditId, context.results, context.correlationId);
+    const output = await runAnalysis(context.auditId, context.results, context.correlationId, 'core');
     const completedAt = new Date();
 
     const analysis: EngineResult<AnalysisResult> = {

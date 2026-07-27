@@ -16,6 +16,7 @@ import { CampaignQueryService } from '../campaign/campaign-query.service';
 import { computeCampaignProgress } from '../campaign/campaign-progress';
 import { ImpactAssessmentService } from '../impact-assessment/impact-assessment.service';
 import { OptimizationCycleQueryService } from '../optimization-cycle/optimization-cycle-query.service';
+import { computeScores } from '../scoring/compute-scores';
 import { computeScoreTrend } from './dashboard-visibility-trend';
 
 const TOP_PRIORITY_ACTIONS_LIMIT = 5;
@@ -155,6 +156,7 @@ export class ExecutiveDashboardQueryService {
             endDate: currentCycle.endDate ? currentCycle.endDate.toISOString() : null,
           }
         : null,
+      scores: latestCompleted ? computeScores(findings) : null,
     };
   }
 }

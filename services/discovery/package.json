@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@ai-visibility/config": "workspace:*",
+    "@ai-visibility/contracts": "workspace:*",
     "@ai-visibility/database": "workspace:*",
     "@ai-visibility/shared": "workspace:*"
   },

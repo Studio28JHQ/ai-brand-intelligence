@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { getDashboard } from '../../../../actions';
 import { CycleManager } from './cycle-manager';
 import { Badge, Breadcrumbs, Card, EmptyState, NextStepBanner, PageHeader } from '../../../../components/ui';
+import { ScoresPanel, ScoresSummaryBadge } from '../../../../components/scores-panel';
 import { computeNextStep } from '../../../../lib/next-step';
 
 export default async function ExecutiveDashboardPage({ params }: { params: Promise<{ id: string }> }) {
@@ -59,6 +60,10 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
           <div className="grid-2">
             <Card title="Visibility Overview">
               <dl className="dl">
+                <dt>Overall Score</dt>
+                <dd>
+                  <ScoresSummaryBadge scores={dashboard.scores} />
+                </dd>
                 <dt>AI Visibility Score</dt>
                 <dd>{dashboard.visibility.currentScore ? <Badge>{dashboard.visibility.currentScore}</Badge> : 'N/A'}</dd>
                 <dt>Baseline Score</dt>
@@ -93,6 +98,17 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
               </dl>
             </Card>
           </div>
+
+          {dashboard.scores ? (
+            <ScoresPanel scores={dashboard.scores} />
+          ) : (
+            <Card title="Scores">
+              <EmptyState
+                title="No scores yet"
+                description="Scores are computed heuristically from a completed Audit's Findings — run an Audit for this Project to see them here."
+              />
+            </Card>
+          )}
 
           <Card title="Optimization Plan — Priority Actions">
             {dashboard.priorityActions.length === 0 && (

@@ -5,6 +5,7 @@ export interface OptimizationRuleVersion {
   version: string;
   category: string;
   severity: OptimizationLevel;
+  title: string;
   businessRationale: string;
   resolutionStrategy: string;
   expectedImpact: OptimizationLevel;

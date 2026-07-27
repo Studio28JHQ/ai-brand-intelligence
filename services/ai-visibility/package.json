@@ -8,6 +8,7 @@
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
+    "@ai-visibility/analyzers": "workspace:*",
     "@ai-visibility/config": "workspace:*",
     "@ai-visibility/contracts": "workspace:*",
     "@ai-visibility/database": "workspace:*",

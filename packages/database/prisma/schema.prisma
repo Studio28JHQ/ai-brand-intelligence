@@ -190,6 +190,8 @@ model AuditRequest {
   discoveryResult         DiscoveryResult?
   crawlResult             CrawlResult?
   inventoryResult         InventoryResult?
+  signals                 Signal[]
+  heuristicResults        HeuristicResult[]
   findings                Finding[]
   entities                Entity[]
   graphNodes              GraphNode[]
@@ -216,18 +218,56 @@ model DiscoveryResult {
 }
 
 model CrawlResult {
-  id         String   @id @default(uuid())
-  auditId    String   @unique @map("audit_id")
-  finalUrl   String   @map("final_url")
-  httpStatus Int      @map("http_status")
-  headers    Json
-  html       String
-  success    Boolean
-  createdAt  DateTime @default(now()) @map("created_at")
+  id            String   @id @default(uuid())
+  auditId       String   @unique @map("audit_id")
+  finalUrl      String   @map("final_url")
+  httpStatus    Int      @map("http_status")
+  headers       Json
+  html          String
+  success       Boolean
+  redirectChain Json     @map("redirect_chain")
+  createdAt     DateTime @default(now()) @map("created_at")
 
   audit AuditRequest @relation(fields: [auditId], references: [id])
 
   @@map("crawl_results")
+}
+
+// Signals are immutable and append-only: no unique constraint on auditId (an audit produces
+// many rows across two phases — core extraction, then the later AI Visibility analyzer), and no
+// application code ever updates an existing row.
+model Signal {
+  id         String   @id
+  auditId    String   @map("audit_id")
+  key        String
+  category   String
+  data       Json
+  sourceType String   @map("source_type")
+  sourceId   String   @map("source_id")
+  confidence Float
+  timestamp  DateTime
+  fingerprint String
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  audit AuditRequest @relation(fields: [auditId], references: [id])
+
+  @@index([auditId])
+  @@map("signals")
+}
+
+// One row per Heuristic Engine invocation (core scope, then later ai-visibility scope) — not
+// unique per audit, since this engine runs twice per audit by design.
+model HeuristicResult {
+  id         String   @id @default(uuid())
+  auditId    String   @map("audit_id")
+  scope      String
+  heuristics Json
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  audit AuditRequest @relation(fields: [auditId], references: [id])
+
+  @@index([auditId])
+  @@map("heuristic_results")
 }
 
 model InventoryResult {

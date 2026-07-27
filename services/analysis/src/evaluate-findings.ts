@@ -1,6 +1,7 @@
 import { RuleEvaluator } from '@ai-visibility/rules';
 import type { Finding, WorkflowResult } from '@ai-visibility/contracts';
 import { buildRuleRegistry } from './rules/rule-registry';
+import type { AnalysisScope } from './rules/rule-registry';
 import { classifySeverity } from './classify-finding';
 
 export interface EvaluateFindingsOutcome {
@@ -8,8 +9,12 @@ export interface EvaluateFindingsOutcome {
   ruleSetVersion: string;
 }
 
-export function evaluateFindings(auditId: string, workflowResult: WorkflowResult): EvaluateFindingsOutcome {
-  const registry = buildRuleRegistry();
+export function evaluateFindings(
+  auditId: string,
+  workflowResult: WorkflowResult,
+  scope: AnalysisScope,
+): EvaluateFindingsOutcome {
+  const registry = buildRuleRegistry(scope);
   const evaluator = new RuleEvaluator<WorkflowResult>();
   const evaluations = evaluator.evaluate(registry.getAll(), workflowResult);
 

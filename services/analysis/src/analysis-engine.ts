@@ -1,12 +1,14 @@
 import { emitTelemetryEvent } from '@ai-visibility/shared';
 import type { AnalysisResult, WorkflowResult } from '@ai-visibility/contracts';
 import { evaluateFindings } from './evaluate-findings';
+import type { AnalysisScope } from './rules/rule-registry';
 import { saveFindings } from './analysis-repository';
 
 export async function runAnalysis(
   auditId: string,
   workflowResult: WorkflowResult,
   correlationId: string,
+  scope: AnalysisScope,
 ): Promise<AnalysisResult> {
   emitTelemetryEvent({
     name: 'engine.started',
@@ -14,11 +16,11 @@ export async function runAnalysis(
     severity: 'info',
     correlationId,
     source: 'analysis',
-    data: { auditId },
+    data: { auditId, scope },
   });
 
   try {
-    const { findings, ruleSetVersion } = evaluateFindings(auditId, workflowResult);
+    const { findings, ruleSetVersion } = evaluateFindings(auditId, workflowResult, scope);
     await saveFindings(findings);
 
     emitTelemetryEvent({
@@ -27,7 +29,7 @@ export async function runAnalysis(
       severity: 'info',
       correlationId,
       source: 'analysis',
-      data: { auditId },
+      data: { auditId, scope },
     });
 
     return { findings, ruleSetVersion };
@@ -38,7 +40,7 @@ export async function runAnalysis(
       severity: 'error',
       correlationId,
       source: 'analysis',
-      data: { auditId, errorMessage: error instanceof Error ? error.message : String(error) },
+      data: { auditId, scope, errorMessage: error instanceof Error ? error.message : String(error) },
     });
     throw error;
   }

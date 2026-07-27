@@ -2,6 +2,7 @@ import type { CreateAuditResponse, CrawlResult, EngineResult, InventoryResult } 
 import { AuditSnapshot } from '../../domain/audit/audit-snapshot';
 import { DiscoveryResult } from '../../domain/audit/discovery-result';
 import { generateOptimizationPlan } from '../../application/optimization/generate-optimization-plan';
+import { computeScores } from '../../application/scoring/compute-scores';
 
 export function buildAuditSummary(snapshot: AuditSnapshot): CreateAuditResponse {
   const discovery = (snapshot.engineResults.discovery as EngineResult<DiscoveryResult>).output!;
@@ -21,6 +22,7 @@ export function buildAuditSummary(snapshot: AuditSnapshot): CreateAuditResponse 
       finalUrl: crawl.finalUrl,
       htmlSizeBytes: Buffer.byteLength(crawl.html, 'utf8'),
       success: crawl.success,
+      redirectChain: crawl.redirectChain,
     },
     inventory: {
       title: inventory.title,
@@ -73,6 +75,7 @@ export function buildAuditSummary(snapshot: AuditSnapshot): CreateAuditResponse 
         snapshot.knowledgeGraph,
       ),
     },
+    scores: computeScores(snapshot.findings),
     progress: [...snapshot.progress],
     executionHistory: [...snapshot.history],
   };
