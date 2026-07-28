@@ -43,6 +43,20 @@ export class DuplicateAuditExecutionError extends Error {
   }
 }
 
+export class AuditInProgressError extends Error {
+  constructor(id: string) {
+    super(`Cannot delete Audit ${id} while it is still pending or running. Wait for it to finish first.`);
+    this.name = 'AuditInProgressError';
+  }
+}
+
+export class BaselineDeletionRequiresConfirmationError extends Error {
+  constructor(id: string, projectId: string) {
+    super(`Audit ${id} is the Baseline for Project ${projectId}. Confirm deletion to also clear the Project's Baseline.`);
+    this.name = 'BaselineDeletionRequiresConfirmationError';
+  }
+}
+
 export class PageComparisonUrlMismatchError extends Error {
   constructor(baselineAuditId: string, targetAuditId: string) {
     super(`Cannot compare Audit ${baselineAuditId} and Audit ${targetAuditId}: they audited different URLs.`);

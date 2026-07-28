@@ -7,10 +7,10 @@ export default async function ComparePage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ url?: string }>;
+  searchParams: Promise<{ url?: string; baselineAuditId?: string; targetAuditId?: string }>;
 }) {
   const { id } = await params;
-  const { url } = await searchParams;
+  const { url, baselineAuditId, targetAuditId } = await searchParams;
   const [dashboard, pages] = await Promise.all([getDashboard(id), getProjectPages(id)]);
   const projectName = dashboard?.project.projectName ?? 'Project';
 
@@ -34,7 +34,13 @@ export default async function ComparePage({
           <p className="text-secondary">No Pages yet — run an Audit for this Project first.</p>
         </Card>
       ) : (
-        <CompareAudits projectId={id} pages={pages} initialUrl={url} />
+        <CompareAudits
+          projectId={id}
+          pages={pages}
+          initialUrl={url}
+          initialBaselineAuditId={baselineAuditId}
+          initialTargetAuditId={targetAuditId}
+        />
       )}
     </main>
   );

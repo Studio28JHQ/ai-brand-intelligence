@@ -3,7 +3,9 @@ import {
   Body,
   ConflictException,
   Controller,
+  Delete,
   Get,
+  HttpCode,
   MessageEvent,
   NotFoundException,
   Param,
@@ -17,6 +19,7 @@ import { Observable } from 'rxjs';
 import type {
   AuditAnalysisView,
   AuditComparisonResult,
+  AuditHistoryEntry,
   AuditMetadata,
   AuditProgressEvent,
   CreateAuditResponse,
@@ -25,12 +28,16 @@ import type {
 import { CreateAuditUseCase } from '../../application/audit/create-audit.use-case';
 import { AuditQueryService } from '../../application/audit/audit-query.service';
 import { AuditAnalysisQueryService } from '../../application/audit/audit-analysis-query.service';
+import { AuditHistoryQueryService } from '../../application/audit/audit-history-query.service';
+import { DeleteAuditUseCase } from '../../application/audit/delete-audit.use-case';
 import { AuditComparisonService } from '../../application/comparison/audit-comparison.service';
 import { PageComparisonService } from '../../application/page-audit/page-comparison.service';
 import {
   InvalidAuditUrlError,
+  AuditInProgressError,
   AuditNotFoundError,
   AuditNotCompletedError,
+  BaselineDeletionRequiresConfirmationError,
   DuplicateAuditExecutionError,
   PageComparisonUrlMismatchError,
 } from '../../domain/audit/audit.errors';
@@ -46,6 +53,8 @@ export class AuditController {
     private readonly createAuditUseCase: CreateAuditUseCase,
     private readonly auditQueryService: AuditQueryService,
     private readonly auditAnalysisQueryService: AuditAnalysisQueryService,
+    private readonly auditHistoryQueryService: AuditHistoryQueryService,
+    private readonly deleteAuditUseCase: DeleteAuditUseCase,
     private readonly auditComparisonService: AuditComparisonService,
     private readonly pageComparisonService: PageComparisonService,
     private readonly progressPublisher: AuditProgressPublisher,
@@ -55,6 +64,11 @@ export class AuditController {
   async list(): Promise<AuditMetadata[]> {
     const audits = await this.auditQueryService.list();
     return audits.map(toAuditMetadata);
+  }
+
+  @Get('history')
+  async history(): Promise<AuditHistoryEntry[]> {
+    return this.auditHistoryQueryService.list();
   }
 
   @Get('latest')
@@ -144,7 +158,7 @@ export class AuditController {
       // Returns as soon as the Audit is queued — the Workflow Runtime itself now runs in the
       // background (F10-S04B). Callers that need the finished results poll GET /audits/:id (and
       // GET /audits/:id/analysis once completed), or watch GET /audits/:id/events for live progress.
-      const audit = await this.createAuditUseCase.execute(dto.url, req.correlationId, dto.clientId);
+      const audit = await this.createAuditUseCase.execute(dto.url, req.correlationId, dto.clientId, dto.triggeredBy);
       return { id: audit.id, status: audit.status };
     } catch (error) {
       if (error instanceof InvalidAuditUrlError) {
@@ -154,6 +168,22 @@ export class AuditController {
         throw new NotFoundException(error.message);
       }
       if (error instanceof DuplicateAuditExecutionError) {
+        throw new ConflictException(error.message);
+      }
+      throw error;
+    }
+  }
+
+  @Delete(':id')
+  @HttpCode(204)
+  async remove(@Param('id') id: string, @Query('confirmBaseline') confirmBaseline?: string): Promise<void> {
+    try {
+      await this.deleteAuditUseCase.execute(id, confirmBaseline === 'true');
+    } catch (error) {
+      if (error instanceof AuditNotFoundError) {
+        throw new NotFoundException(error.message);
+      }
+      if (error instanceof AuditInProgressError || error instanceof BaselineDeletionRequiresConfirmationError) {
         throw new ConflictException(error.message);
       }
       throw error;

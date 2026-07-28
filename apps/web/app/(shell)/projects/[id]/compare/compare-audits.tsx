@@ -149,7 +149,19 @@ function ComparisonResultView({ result }: { result: PageComparisonResult }) {
   );
 }
 
-export function CompareAudits({ projectId, pages, initialUrl }: { projectId: string; pages: ProjectPage[]; initialUrl?: string }) {
+export function CompareAudits({
+  projectId,
+  pages,
+  initialUrl,
+  initialBaselineAuditId,
+  initialTargetAuditId,
+}: {
+  projectId: string;
+  pages: ProjectPage[];
+  initialUrl?: string;
+  initialBaselineAuditId?: string;
+  initialTargetAuditId?: string;
+}) {
   const [selectedUrl, setSelectedUrl] = useState<string>(initialUrl ?? pages[0]?.url ?? '');
   const [history, setHistory] = useState<PageAuditHistoryEntry[]>([]);
   const [baselineAuditId, setBaselineAuditId] = useState<string>('');
@@ -168,14 +180,22 @@ export function CompareAudits({ projectId, pages, initialUrl }: { projectId: str
       if (cancelled) return;
       const completed = entries.filter((entry) => entry.status === 'completed');
       setHistory(completed);
-      setBaselineAuditId(completed[1]?.auditId ?? '');
-      setTargetAuditId(completed[0]?.auditId ?? '');
+      // Arriving here from the Audit History screen's "Compare Selected" action (F10-S04C) already
+      // picked two specific Audits — honor that exact choice on this first load rather than
+      // defaulting to the two most recent, but only if both really are in this Page's history.
+      const preselectedBaseline = completed.find((entry) => entry.auditId === initialBaselineAuditId);
+      const preselectedTarget = completed.find((entry) => entry.auditId === initialTargetAuditId);
+      setBaselineAuditId(preselectedBaseline?.auditId ?? completed[1]?.auditId ?? '');
+      setTargetAuditId(preselectedTarget?.auditId ?? completed[0]?.auditId ?? '');
       setResult(null);
       setError(null);
     });
     return () => {
       cancelled = true;
     };
+    // initialBaselineAuditId/initialTargetAuditId are only meant to seed the very first load for
+    // this URL, not re-apply every time selectedUrl changes afterward.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId, selectedUrl]);
 
   const canCompare = useMemo(

@@ -12,7 +12,15 @@ import { runNewAudit } from '../actions';
 // the request resolves the real Workflow has already started and finished; navigating to
 // /audits/:id (the existing Page Detail / Audit Execution view) then shows its real, completed
 // Execution Timeline, not a fabricated "in progress" state.
-export function RunAuditModal({ defaultUrl, triggerLabel = 'Run New Audit' }: { defaultUrl?: string; triggerLabel?: string }) {
+export function RunAuditModal({
+  defaultUrl,
+  triggerLabel = 'Run New Audit',
+  source,
+}: {
+  defaultUrl?: string;
+  triggerLabel?: string;
+  source: string;
+}) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const urlInputId = useId();
   const router = useRouter();
@@ -38,7 +46,7 @@ export function RunAuditModal({ defaultUrl, triggerLabel = 'Run New Audit' }: { 
     }
     setSubmitting(true);
     setError(null);
-    const result = await runNewAudit(url.trim());
+    const result = await runNewAudit(url.trim(), source);
     setSubmitting(false);
 
     if (result.auditId) {

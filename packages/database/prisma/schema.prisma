@@ -183,6 +183,11 @@ model AuditRequest {
   cycleId     String    @map("cycle_id")
   url         String
   status      String    @default("pending")
+  // Which real UI surface started this Audit (e.g. 'dashboard', 'audit-history', 'onboarding') —
+  // not a user identity: apps/api has no session/auth guard on this route today (F10-S04C, see
+  // docs/04_PROJECT/DECISION_LOG.md#cto-105). Null for every Audit created before this column
+  // existed; the UI shows that honestly as "Unknown" rather than guessing.
+  triggeredBy String?   @map("triggered_by")
   createdAt   DateTime  @default(now()) @map("created_at")
   startedAt   DateTime? @map("started_at")
   completedAt DateTime? @map("completed_at")

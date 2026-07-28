@@ -39,7 +39,7 @@ export class CreateAuditUseCase {
   // the background (F10-S04B, see docs/04_PROJECT/DECISION_LOG.md#cto-104) rather than blocking this
   // call, so a client can navigate to the Audit and observe its real, live progress via
   // `GET /audits/:id/events` instead of only ever seeing an already-finished result.
-  async execute(rawUrl: string, correlationId: string, clientId?: string): Promise<Audit> {
+  async execute(rawUrl: string, correlationId: string, clientId?: string, triggeredBy?: string): Promise<Audit> {
     const url = AuditUrl.create(rawUrl);
     const canonicalWebsite = deriveCanonicalWebsite(url.value);
 
@@ -65,7 +65,7 @@ export class CreateAuditUseCase {
     }
 
     const cycle = await this.ensureActiveCycleUseCase.execute(project.id);
-    const audit = await this.auditRepository.create(project.id, url.value, cycle.id);
+    const audit = await this.auditRepository.create(project.id, url.value, cycle.id, triggeredBy ?? null);
     await this.projectRepository.updateLastAudit(project.id, audit.id);
 
     emitTelemetryEvent({

@@ -8,9 +8,11 @@ import { toCapability } from '../../domain/audit/capability';
 import { buildFullAuditCapabilityCatalog } from '../../domain/audit/full-audit-capability-catalog';
 import { FULL_AUDIT_TYPE } from '../../domain/audit/full-audit.type';
 import { CreateAuditUseCase } from '../../application/audit/create-audit.use-case';
+import { DeleteAuditUseCase } from '../../application/audit/delete-audit.use-case';
 import { ExecuteAuditUseCase } from '../../application/audit/execute-audit.use-case';
 import { AuditQueryService } from '../../application/audit/audit-query.service';
 import { AuditAnalysisQueryService } from '../../application/audit/audit-analysis-query.service';
+import { AuditHistoryQueryService } from '../../application/audit/audit-history-query.service';
 import { AuditComparisonService } from '../../application/comparison/audit-comparison.service';
 import { PageComparisonService } from '../../application/page-audit/page-comparison.service';
 import { AiVisibilityStatusRepository } from '../../infrastructure/audit/ai-visibility-status.repository';
@@ -55,9 +57,11 @@ import { AuditController } from './audit.controller';
   controllers: [AuditController],
   providers: [
     CreateAuditUseCase,
+    DeleteAuditUseCase,
     ExecuteAuditUseCase,
     AuditQueryService,
     AuditAnalysisQueryService,
+    AuditHistoryQueryService,
     AuditComparisonService,
     PageComparisonService,
     AiVisibilityStatusRepository,

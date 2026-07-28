@@ -8,6 +8,7 @@ export interface AuditProps {
   cycleId: string;
   url: string;
   status: AuditStatus;
+  triggeredBy: string | null;
   createdAt: Date;
   startedAt: Date | null;
   completedAt: Date | null;
@@ -30,6 +31,7 @@ export class Audit {
     public readonly cycleId: string,
     public readonly url: string,
     public readonly status: AuditStatus,
+    public readonly triggeredBy: string | null,
     public readonly createdAt: Date,
     public readonly startedAt: Date | null,
     public readonly completedAt: Date | null,
@@ -44,6 +46,7 @@ export class Audit {
       props.cycleId,
       props.url,
       props.status,
+      props.triggeredBy,
       props.createdAt,
       props.startedAt,
       props.completedAt,
@@ -66,6 +69,7 @@ export class Audit {
       this.cycleId,
       this.url,
       'running',
+      this.triggeredBy,
       this.createdAt,
       startedAt,
       this.completedAt,
@@ -82,6 +86,7 @@ export class Audit {
       this.cycleId,
       this.url,
       'completed',
+      this.triggeredBy,
       this.createdAt,
       this.startedAt,
       completedAt,
@@ -98,6 +103,7 @@ export class Audit {
       this.cycleId,
       this.url,
       'failed',
+      this.triggeredBy,
       this.createdAt,
       this.startedAt,
       this.completedAt,
@@ -114,6 +120,7 @@ export class Audit {
       this.cycleId,
       this.url,
       'cancelled',
+      this.triggeredBy,
       this.createdAt,
       this.startedAt,
       this.completedAt,

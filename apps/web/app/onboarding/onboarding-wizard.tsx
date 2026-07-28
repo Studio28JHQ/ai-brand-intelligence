@@ -262,6 +262,7 @@ export function OnboardingWizard() {
             workspace and run a complete AI Visibility Audit — this takes a few seconds.
           </p>
           <form action={auditFormAction} className="form-row">
+            <input type="hidden" name="source" value="onboarding" />
             {client && <input type="hidden" name="clientId" value={client.id} />}
             <div className="field" style={{ flex: '1 1 260px' }}>
               <label htmlFor="onboarding-audit-url">Website URL</label>

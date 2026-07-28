@@ -4,6 +4,7 @@ import { loadConfig } from '@ai-visibility/config';
 import type {
   AuditAnalysisView,
   AuditComparisonResult,
+  AuditHistoryEntry,
   AuditMetadata,
   AuditStatus,
   BriefingModel,
@@ -63,6 +64,53 @@ export async function listAudits(): Promise<AuditMetadata[]> {
     return (await response.json()) as AuditMetadata[];
   } catch {
     return [];
+  }
+}
+
+export async function listAuditHistory(): Promise<AuditHistoryEntry[]> {
+  const config = loadConfig();
+
+  try {
+    const response = await fetch(`${config.API_URL}/audits/history`, { cache: 'no-store' });
+
+    if (!response.ok) {
+      return [];
+    }
+
+    return (await response.json()) as AuditHistoryEntry[];
+  } catch {
+    return [];
+  }
+}
+
+export interface DeleteAuditResult {
+  success: boolean;
+  requiresBaselineConfirmation?: boolean;
+  error?: string;
+}
+
+export async function deleteAudit(auditId: string, confirmBaseline = false): Promise<DeleteAuditResult> {
+  const config = loadConfig();
+
+  try {
+    const response = await fetch(
+      `${config.API_URL}/audits/${auditId}${confirmBaseline ? '?confirmBaseline=true' : ''}`,
+      { method: 'DELETE' },
+    );
+
+    if (response.ok) {
+      return { success: true };
+    }
+
+    const body = await response.json().catch(() => null);
+    const message: string | undefined = body?.error?.message;
+    // The API returns the same 409 shape whether this Audit is merely in-progress or is the
+    // Project's Baseline — distinguish by message content so the UI can offer the stronger
+    // confirmation only when it's genuinely the Baseline case, never by guessing.
+    const requiresBaselineConfirmation = response.status === 409 && !confirmBaseline && !!message?.includes('Baseline');
+    return { success: false, requiresBaselineConfirmation, error: message ?? 'Could not delete the Audit.' };
+  } catch {
+    return { success: false, error: 'Could not reach the API.' };
   }
 }
 
@@ -344,6 +392,7 @@ export async function createAudit(
 ): Promise<CreateAuditState> {
   const url = formData.get('url');
   const clientId = formData.get('clientId');
+  const source = formData.get('source');
 
   if (typeof url !== 'string' || url.trim().length === 0) {
     return { error: 'URL is required' };
@@ -359,6 +408,7 @@ export async function createAudit(
       body: JSON.stringify({
         url,
         ...(typeof clientId === 'string' && clientId.trim().length > 0 ? { clientId } : {}),
+        ...(typeof source === 'string' && source.trim().length > 0 ? { triggeredBy: source } : {}),
       }),
     });
 
@@ -412,11 +462,12 @@ export interface RunAuditResult {
   error?: string;
 }
 
-// Real POST /audits under the hood — the same synchronous Workflow Runtime `createAudit` already
-// uses (this platform has no async job queue, so a 201 here means the Audit already ran to
-// completion). Kept separate from `createAudit` because callers of this one need the new Audit's
-// id directly (to navigate to it), not the `useActionState` form-state shape `createAudit` returns.
-export async function runNewAudit(url: string): Promise<RunAuditResult> {
+// Real POST /audits under the hood, returning as soon as the Audit is queued (F10-S04B — the
+// Workflow Runtime itself now runs in the background). Kept separate from `createAudit` because
+// callers of this one need the new Audit's id directly (to navigate to it), not the
+// `useActionState` form-state shape `createAudit` returns. `source` identifies which real UI
+// surface this modal was opened from (see AuditRequest.triggeredBy) — not a user identity.
+export async function runNewAudit(url: string, source: string): Promise<RunAuditResult> {
   if (url.trim().length === 0) {
     return { error: 'URL is required' };
   }
@@ -427,7 +478,7 @@ export async function runNewAudit(url: string): Promise<RunAuditResult> {
     const response = await fetch(`${config.API_URL}/audits`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url }),
+      body: JSON.stringify({ url, triggeredBy: source }),
     });
 
     const body = await response.json();

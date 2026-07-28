@@ -21,7 +21,7 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
         description={dashboard ? `${dashboard.project.clientName} · ${dashboard.project.primaryDomain}` : undefined}
         actions={
           <div className="cluster">
-            <RunAuditModal defaultUrl={dashboard?.project.canonicalWebsite} />
+            <RunAuditModal defaultUrl={dashboard?.project.canonicalWebsite} source="dashboard" />
             <Link href={`/projects/${id}/pages`} className="btn btn-secondary">
               View Pages
             </Link>
@@ -48,7 +48,10 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
         <div className="stack">
           <NextStepBanner step={computeNextStep(dashboard, id)} />
 
-          <Card title="Project Overview" actions={<RunAuditModal defaultUrl={dashboard.project.canonicalWebsite} />}>
+          <Card
+            title="Project Overview"
+            actions={<RunAuditModal defaultUrl={dashboard.project.canonicalWebsite} source="project-overview" />}
+          >
             <dl className="dl">
               <dt>Project</dt>
               <dd>{dashboard.project.projectName}</dd>

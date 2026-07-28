@@ -15,7 +15,40 @@ export class FindingReadRepository {
 
   async findByAuditId(auditId: string): Promise<Finding[]> {
     const records = await this.prisma.finding.findMany({ where: { auditId } });
-    return records.map((record) => ({
+    return records.map((record) => this.toDomain(record));
+  }
+
+  async findByAuditIds(auditIds: string[]): Promise<Map<string, Finding[]>> {
+    if (auditIds.length === 0) {
+      return new Map();
+    }
+
+    const records = await this.prisma.finding.findMany({ where: { auditId: { in: auditIds } } });
+    const byAuditId = new Map<string, Finding[]>();
+    for (const record of records) {
+      const entry = this.toDomain(record);
+      const existing = byAuditId.get(record.auditId);
+      if (existing) {
+        existing.push(entry);
+      } else {
+        byAuditId.set(record.auditId, [entry]);
+      }
+    }
+    return byAuditId;
+  }
+
+  private toDomain(record: {
+    id: string;
+    auditId: string;
+    ruleId: string;
+    ruleVersion: string;
+    category: string;
+    sourceEngine: string;
+    outcome: string;
+    severity: string;
+    evidence: unknown;
+  }): Finding {
+    return {
       id: record.id,
       auditId: record.auditId,
       ruleId: record.ruleId,
@@ -25,7 +58,7 @@ export class FindingReadRepository {
       outcome: record.outcome as Finding['outcome'],
       severity: record.severity as Finding['severity'],
       evidence: record.evidence as Record<string, unknown>,
-    }));
+    };
   }
 
   /**

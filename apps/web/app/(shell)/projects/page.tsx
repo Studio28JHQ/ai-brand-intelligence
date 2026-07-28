@@ -144,6 +144,7 @@ export default function ProjectsPage() {
 
       <Card title="Run a New Audit">
         <form action={formAction} className="form-row">
+          <input type="hidden" name="source" value="projects-page" />
           <div className="field" style={{ flex: '1 1 260px' }}>
             <label htmlFor="audit-url">Website URL</label>
             <input className="input" id="audit-url" type="url" name="url" placeholder="https://example.com" required />

@@ -40,7 +40,7 @@ export class PrismaProjectRepository implements ProjectRepository {
     return records.map((record) => this.toDomain(record));
   }
 
-  async updateLastAudit(id: string, auditId: string): Promise<Project> {
+  async updateLastAudit(id: string, auditId: string | null): Promise<Project> {
     const existing = await this.prisma.project.findUnique({ where: { id } });
     if (!existing) {
       throw new ProjectNotFoundError(id);
@@ -49,6 +49,19 @@ export class PrismaProjectRepository implements ProjectRepository {
     const record = await this.prisma.project.update({
       where: { id },
       data: { lastAuditId: auditId },
+    });
+    return this.toDomain(record);
+  }
+
+  async clearBaseline(id: string): Promise<Project> {
+    const existing = await this.prisma.project.findUnique({ where: { id } });
+    if (!existing) {
+      throw new ProjectNotFoundError(id);
+    }
+
+    const record = await this.prisma.project.update({
+      where: { id },
+      data: { baselineAuditId: null, baselineSetAt: null },
     });
     return this.toDomain(record);
   }

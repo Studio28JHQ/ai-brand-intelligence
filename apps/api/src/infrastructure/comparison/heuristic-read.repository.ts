@@ -15,4 +15,23 @@ export class HeuristicReadRepository {
     const records = await this.prisma.heuristicResult.findMany({ where: { auditId } });
     return records.flatMap((record) => record.heuristics as unknown as Heuristic[]);
   }
+
+  async findByAuditIds(auditIds: string[]): Promise<Map<string, Heuristic[]>> {
+    if (auditIds.length === 0) {
+      return new Map();
+    }
+
+    const records = await this.prisma.heuristicResult.findMany({ where: { auditId: { in: auditIds } } });
+    const byAuditId = new Map<string, Heuristic[]>();
+    for (const record of records) {
+      const entries = record.heuristics as unknown as Heuristic[];
+      const existing = byAuditId.get(record.auditId);
+      if (existing) {
+        existing.push(...entries);
+      } else {
+        byAuditId.set(record.auditId, [...entries]);
+      }
+    }
+    return byAuditId;
+  }
 }

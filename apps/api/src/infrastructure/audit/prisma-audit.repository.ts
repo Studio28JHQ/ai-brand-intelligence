@@ -19,6 +19,7 @@ interface AuditRecord {
   cycleId: string;
   url: string;
   status: string;
+  triggeredBy: string | null;
   createdAt: Date;
   startedAt: Date | null;
   completedAt: Date | null;
@@ -30,9 +31,9 @@ interface AuditRecord {
 export class PrismaAuditRepository implements AuditRepository {
   constructor(@Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient) {}
 
-  async create(projectId: string, url: string, cycleId: string): Promise<Audit> {
+  async create(projectId: string, url: string, cycleId: string, triggeredBy: string | null = null): Promise<Audit> {
     try {
-      const record = await this.prisma.auditRequest.create({ data: { projectId, url, cycleId } });
+      const record = await this.prisma.auditRequest.create({ data: { projectId, url, cycleId, triggeredBy } });
       return this.toDomain(record);
     } catch (error) {
       if (isUniqueConstraintViolation(error)) {
@@ -44,6 +45,27 @@ export class PrismaAuditRepository implements AuditRepository {
       }
       throw error;
     }
+  }
+
+  // Deletes every child row scoped to this Audit before the Audit row itself, in FK-safe order
+  // (GraphRelationship before GraphNode; everything else has no inter-dependency) — every one of
+  // these tables' auditId FK is ON DELETE RESTRICT, so this transaction is the only way to remove
+  // an Audit today (F10-S04C, see docs/04_PROJECT/DECISION_LOG.md#cto-105).
+  async delete(id: string): Promise<void> {
+    await this.prisma.$transaction([
+      this.prisma.graphRelationship.deleteMany({ where: { auditId: id } }),
+      this.prisma.graphNode.deleteMany({ where: { auditId: id } }),
+      this.prisma.signal.deleteMany({ where: { auditId: id } }),
+      this.prisma.heuristicResult.deleteMany({ where: { auditId: id } }),
+      this.prisma.finding.deleteMany({ where: { auditId: id } }),
+      this.prisma.entity.deleteMany({ where: { auditId: id } }),
+      this.prisma.discoveryResult.deleteMany({ where: { auditId: id } }),
+      this.prisma.crawlResult.deleteMany({ where: { auditId: id } }),
+      this.prisma.inventoryResult.deleteMany({ where: { auditId: id } }),
+      this.prisma.aiVisibilityAssessment.deleteMany({ where: { auditId: id } }),
+      this.prisma.workflowExecutionRecord.deleteMany({ where: { auditId: id } }),
+      this.prisma.auditRequest.delete({ where: { id } }),
+    ]);
   }
 
   async markRunning(id: string, startedAt: Date): Promise<Audit> {
@@ -114,6 +136,7 @@ export class PrismaAuditRepository implements AuditRepository {
       cycleId: record.cycleId,
       url: record.url,
       status: record.status as AuditStatus,
+      triggeredBy: record.triggeredBy,
       createdAt: record.createdAt,
       startedAt: record.startedAt,
       completedAt: record.completedAt,
