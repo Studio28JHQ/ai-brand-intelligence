@@ -1,0 +1,9 @@
+{
+  "generic": "Algo salió mal. Inténtalo de nuevo.",
+  "notFound": "No se pudo encontrar la página que buscas.",
+  "networkError": "Ocurrió un error de red. Verifica tu conexión e inténtalo de nuevo.",
+  "validationRequired": "Este campo es obligatorio.",
+  "unauthorized": "No tienes autorización para ver esta página.",
+  "forbidden": "No tienes permiso para realizar esta acción.",
+  "serverError": "Ocurrió un error en el servidor. Inténtalo de nuevo más tarde."
+}

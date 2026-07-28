@@ -1,0 +1,13 @@
+{
+  "title": "Findings",
+  "rule": "Rule",
+  "category": "Category",
+  "sourceEngine": "Source Engine",
+  "outcome": "Outcome",
+  "severity": "Severity",
+  "evidence": "Evidence",
+  "noFindings": "No Findings recorded",
+  "pass": "Pass",
+  "fail": "Fail",
+  "skip": "Skip"
+}

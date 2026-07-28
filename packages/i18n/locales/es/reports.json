@@ -1,0 +1,10 @@
+{
+  "title": "Informes",
+  "description": "Descripción",
+  "generate": "Generar Informe",
+  "executiveClientReport": "Informe Ejecutivo para el Cliente",
+  "generatedAt": "Generado el",
+  "download": "Descargar",
+  "noReports": "Aún no hay Informes",
+  "generating": "Generando informe..."
+}

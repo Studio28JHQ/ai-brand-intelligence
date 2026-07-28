@@ -1,0 +1,17 @@
+{
+  "title": "Pages",
+  "url": "URL",
+  "score": "Score",
+  "priority": "Priority",
+  "findings": "Findings",
+  "lastAudit": "Last Audit",
+  "siteExplorer": "Site Explorer",
+  "treeView": "Tree View",
+  "listView": "List View",
+  "missingTitle": "Missing Title",
+  "missingH1": "Missing H1",
+  "thinContent": "Thin Content",
+  "missingStructuredData": "Missing Structured Data",
+  "canonicalIssues": "Canonical Issues",
+  "brokenLinks": "Broken Links"
+}

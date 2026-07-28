@@ -1,0 +1,10 @@
+{
+  "title": "Projects",
+  "description": "Every Project across your agency's Clients.",
+  "project": "Project",
+  "client": "Client",
+  "website": "Website",
+  "openDashboard": "Open Dashboard",
+  "noProjects": "No Projects yet",
+  "autoCreateClient": "Auto-create client from URL"
+}

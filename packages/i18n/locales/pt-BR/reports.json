@@ -1,0 +1,10 @@
+{
+  "title": "Relatórios",
+  "description": "Descrição",
+  "generate": "Gerar Relatório",
+  "executiveClientReport": "Relatório Executivo para o Cliente",
+  "generatedAt": "Gerado em",
+  "download": "Baixar",
+  "noReports": "Ainda não há Relatórios",
+  "generating": "Gerando relatório..."
+}

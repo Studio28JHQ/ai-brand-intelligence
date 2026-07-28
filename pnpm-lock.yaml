@@ -125,6 +125,9 @@ importers:
       '@ai-visibility/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@ai-visibility/i18n':
+        specifier: workspace:*
+        version: link:../../packages/i18n
       next:
         specifier: ^16.2.10
         version: 16.2.10(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -217,6 +220,15 @@ importers:
       prisma:
         specifier: ^7.9.0
         version: 7.9.0(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+
+  packages/i18n:
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.5
+        version: 22.20.1
       typescript:
         specifier: ^5.7.3
         version: 5.9.3

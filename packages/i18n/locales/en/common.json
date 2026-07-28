@@ -1,0 +1,24 @@
+{
+  "save": "Save",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "confirm": "Confirm",
+  "close": "Close",
+  "open": "Open",
+  "edit": "Edit",
+  "search": "Search",
+  "loading": "Loading…",
+  "retry": "Retry",
+  "back": "Back",
+  "next": "Next",
+  "submit": "Submit",
+  "yes": "Yes",
+  "no": "No",
+  "actions": "Actions",
+  "status": "Status",
+  "unknown": "Unknown",
+  "itemCount": {
+    "one": "{count} item",
+    "other": "{count} items"
+  }
+}

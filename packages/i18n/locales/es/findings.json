@@ -1,0 +1,13 @@
+{
+  "title": "Hallazgos",
+  "rule": "Regla",
+  "category": "Categoría",
+  "sourceEngine": "Motor de Origen",
+  "outcome": "Resultado",
+  "severity": "Gravedad",
+  "evidence": "Evidencia",
+  "noFindings": "No se registraron Hallazgos",
+  "pass": "Aprobado",
+  "fail": "Fallido",
+  "skip": "Omitido"
+}

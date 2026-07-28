@@ -1,0 +1,20 @@
+{
+  "title": "Executive Dashboard",
+  "projectOverview": "Project Overview",
+  "runNewAudit": "Run New Audit",
+  "runFromBaseline": "Run From Baseline",
+  "reauditChangedPagesOnly": "Reaudit Changed Pages Only",
+  "baseline": "Baseline",
+  "baselineSetAt": "Baseline Set At",
+  "latestAudit": "Latest Audit",
+  "notSet": "Not set",
+  "set": "Set",
+  "visibilityOverview": "Visibility Overview",
+  "recentActivity": "Recent Activity",
+  "overallScore": "Overall Score",
+  "aiVisibilityScore": "AI Visibility Score",
+  "scoreTrend": "Score Trend",
+  "totalFindings": "Total Findings",
+  "criticalFindings": "Critical Findings",
+  "opportunities": "Opportunities"
+}

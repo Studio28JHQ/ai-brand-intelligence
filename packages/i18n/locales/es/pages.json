@@ -1,0 +1,17 @@
+{
+  "title": "Páginas",
+  "url": "URL",
+  "score": "Puntuación",
+  "priority": "Prioridad",
+  "findings": "Hallazgos",
+  "lastAudit": "Última Auditoría",
+  "siteExplorer": "Explorador del Sitio",
+  "treeView": "Vista de Árbol",
+  "listView": "Vista de Lista",
+  "missingTitle": "Falta el Título",
+  "missingH1": "Falta el H1",
+  "thinContent": "Contenido Escaso",
+  "missingStructuredData": "Faltan Datos Estructurados",
+  "canonicalIssues": "Problemas de Canonicalización",
+  "brokenLinks": "Enlaces Rotos"
+}

@@ -1,0 +1,11 @@
+{
+  "dashboard": "Panel",
+  "activity": "Actividad",
+  "clients": "Clientes",
+  "projects": "Proyectos",
+  "audits": "Auditorías",
+  "optimization": "Optimización",
+  "reports": "Informes",
+  "settings": "Configuración",
+  "agencyLabel": "Agencia"
+}

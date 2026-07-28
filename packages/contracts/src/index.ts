@@ -39,3 +39,4 @@ export * from './audit-progress-event';
 export * from './audit-history';
 export * from './reaudit-changed-pages';
 export * from './activity';
+export * from './locale-preference';

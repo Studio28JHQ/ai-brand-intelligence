@@ -1,0 +1,10 @@
+{
+  "title": "Reports",
+  "description": "Description",
+  "generate": "Generate Report",
+  "executiveClientReport": "Executive Client Report",
+  "generatedAt": "Generated At",
+  "download": "Download",
+  "noReports": "No Reports yet",
+  "generating": "Generating report..."
+}

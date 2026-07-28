@@ -1,0 +1,13 @@
+{
+  "title": "Descobertas",
+  "rule": "Regra",
+  "category": "Categoria",
+  "sourceEngine": "Motor de Origem",
+  "outcome": "Resultado",
+  "severity": "Severidade",
+  "evidence": "Evidência",
+  "noFindings": "Nenhuma Descoberta registrada",
+  "pass": "Aprovado",
+  "fail": "Reprovado",
+  "skip": "Ignorado"
+}

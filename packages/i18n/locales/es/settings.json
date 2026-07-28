@@ -1,0 +1,10 @@
+{
+  "title": "Configuración",
+  "description": "Descripción",
+  "language": "Idioma",
+  "languageDescription": "Elige el idioma utilizado en toda la aplicación",
+  "profile": "Perfil",
+  "account": "Cuenta",
+  "save": "Guardar Cambios",
+  "saved": "Cambios guardados"
+}

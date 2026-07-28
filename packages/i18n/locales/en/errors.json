@@ -1,0 +1,9 @@
+{
+  "generic": "Something went wrong. Please try again.",
+  "notFound": "The page you're looking for could not be found.",
+  "networkError": "A network error occurred. Check your connection and try again.",
+  "validationRequired": "This field is required.",
+  "unauthorized": "You are not authorized to view this page.",
+  "forbidden": "You don't have permission to perform this action.",
+  "serverError": "A server error occurred. Please try again later."
+}

@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from '../../../lib/i18n/client';
 import {
   ActivityIcon,
   AuditsIcon,
@@ -12,17 +13,6 @@ import {
   ReportsIcon,
   SettingsIcon,
 } from '../ui/icons';
-
-const NAV_ITEMS = [
-  { label: 'Dashboard', href: '/workspace', icon: DashboardIcon },
-  { label: 'Activity', href: '/activity', icon: ActivityIcon },
-  { label: 'Clients', href: '/clients', icon: ClientsIcon },
-  { label: 'Projects', href: '/projects', icon: ProjectsIcon },
-  { label: 'Audits', href: '/audits', icon: AuditsIcon },
-  { label: 'Optimization', href: '/optimization', icon: OptimizationIcon },
-  { label: 'Reports', href: '/reports', icon: ReportsIcon },
-  { label: 'Settings', href: '/settings', icon: SettingsIcon },
-];
 
 function isActive(pathname: string, href: string): boolean {
   return href === '/workspace' ? pathname === '/workspace' : pathname.startsWith(href);
@@ -36,6 +26,18 @@ function isActive(pathname: string, href: string): boolean {
  */
 export function Sidebar({ open, onNavigate }: { open: boolean; onNavigate?: () => void }) {
   const pathname = usePathname();
+  const t = useTranslations('navigation');
+
+  const NAV_ITEMS = [
+    { label: t('dashboard'), href: '/workspace', icon: DashboardIcon },
+    { label: t('activity'), href: '/activity', icon: ActivityIcon },
+    { label: t('clients'), href: '/clients', icon: ClientsIcon },
+    { label: t('projects'), href: '/projects', icon: ProjectsIcon },
+    { label: t('audits'), href: '/audits', icon: AuditsIcon },
+    { label: t('optimization'), href: '/optimization', icon: OptimizationIcon },
+    { label: t('reports'), href: '/reports', icon: ReportsIcon },
+    { label: t('settings'), href: '/settings', icon: SettingsIcon },
+  ];
 
   return (
     <aside className={`sidebar${open ? ' sidebar--open' : ''}`}>
@@ -45,7 +47,7 @@ export function Sidebar({ open, onNavigate }: { open: boolean; onNavigate?: () =
         </span>
         <div className="sidebar__agency-text">
           <span className="sidebar__agency-name">AI Visibility Auditor</span>
-          <span className="sidebar__agency-label">Agency</span>
+          <span className="sidebar__agency-label">{t('agencyLabel')}</span>
         </div>
       </div>
 

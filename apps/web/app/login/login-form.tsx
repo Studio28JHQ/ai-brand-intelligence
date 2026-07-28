@@ -10,7 +10,7 @@ import { Banner } from '../components/ui';
 
 const UNVERIFIED_MESSAGE = 'Please verify your email before signing in.';
 
-export function LoginForm() {
+export function LoginForm({ title, description }: { title: string; description: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -50,7 +50,7 @@ export function LoginForm() {
   };
 
   return (
-    <AuthCard title="Sign In" description="Sign in to your AI Visibility Auditor workspace.">
+    <AuthCard title={title} description={description}>
       <form onSubmit={handleSubmit} className="stack">
         {justVerified && <Banner variant="success">Your email is verified. You can sign in now.</Banner>}
         {justReset && <Banner variant="success">Your password has been reset. Sign in with your new password.</Banner>}

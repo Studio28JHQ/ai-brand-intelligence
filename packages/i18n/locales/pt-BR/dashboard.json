@@ -1,0 +1,20 @@
+{
+  "title": "Painel Executivo",
+  "projectOverview": "Visão Geral do Projeto",
+  "runNewAudit": "Executar Nova Auditoria",
+  "runFromBaseline": "Executar a Partir da Linha de Base",
+  "reauditChangedPagesOnly": "Reauditar Apenas Páginas Alteradas",
+  "baseline": "Linha de Base",
+  "baselineSetAt": "Linha de Base Definida Em",
+  "latestAudit": "Última Auditoria",
+  "notSet": "Não definida",
+  "set": "Definida",
+  "visibilityOverview": "Visão Geral de Visibilidade",
+  "recentActivity": "Atividade Recente",
+  "overallScore": "Pontuação Geral",
+  "aiVisibilityScore": "Pontuação de Visibilidade em IA",
+  "scoreTrend": "Tendência da Pontuação",
+  "totalFindings": "Total de Descobertas",
+  "criticalFindings": "Descobertas Críticas",
+  "opportunities": "Oportunidades"
+}

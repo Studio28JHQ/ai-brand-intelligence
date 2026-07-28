@@ -1,0 +1,11 @@
+{
+  "dashboard": "Dashboard",
+  "activity": "Activity",
+  "clients": "Clients",
+  "projects": "Projects",
+  "audits": "Audits",
+  "optimization": "Optimization",
+  "reports": "Reports",
+  "settings": "Settings",
+  "agencyLabel": "Agency"
+}

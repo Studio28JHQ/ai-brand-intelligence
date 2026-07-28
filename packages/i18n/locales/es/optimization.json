@@ -1,0 +1,17 @@
+{
+  "title": "Plan de Optimización",
+  "priorityActions": "Acciones Prioritarias",
+  "expectedImpact": "Impacto Esperado",
+  "estimatedEffort": "Esfuerzo Estimado",
+  "supportingFindings": "Hallazgos de Respaldo",
+  "optimizationRule": "Regla de Optimización",
+  "reasoning": "Justificación",
+  "campaign": "Campaña de Optimización",
+  "manageCampaign": "Gestionar Campaña",
+  "createCampaign": "Crear Campaña",
+  "noCampaign": "Aún no hay Campaña",
+  "impact": "Impacto de la Campaña",
+  "high": "Alto",
+  "medium": "Medio",
+  "low": "Bajo"
+}

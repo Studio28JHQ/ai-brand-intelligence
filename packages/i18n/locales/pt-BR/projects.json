@@ -1,0 +1,10 @@
+{
+  "title": "Projetos",
+  "description": "Todos os Projetos dos Clientes da sua agência.",
+  "project": "Projeto",
+  "client": "Cliente",
+  "website": "Site",
+  "openDashboard": "Abrir Painel",
+  "noProjects": "Ainda não há Projetos",
+  "autoCreateClient": "Criar cliente automaticamente a partir da URL"
+}

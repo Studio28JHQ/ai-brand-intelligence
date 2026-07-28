@@ -10,6 +10,7 @@
   "dependencies": {
     "@ai-visibility/config": "workspace:*",
     "@ai-visibility/contracts": "workspace:*",
+    "@ai-visibility/i18n": "workspace:*",
     "next": "^16.2.10",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"

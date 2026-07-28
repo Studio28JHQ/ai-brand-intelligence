@@ -1,0 +1,24 @@
+{
+  "save": "Salvar",
+  "cancel": "Cancelar",
+  "delete": "Excluir",
+  "confirm": "Confirmar",
+  "close": "Fechar",
+  "open": "Abrir",
+  "edit": "Editar",
+  "search": "Buscar",
+  "loading": "Carregando…",
+  "retry": "Tentar novamente",
+  "back": "Voltar",
+  "next": "Próximo",
+  "submit": "Enviar",
+  "yes": "Sim",
+  "no": "Não",
+  "actions": "Ações",
+  "status": "Status",
+  "unknown": "Desconhecido",
+  "itemCount": {
+    "one": "{count} item",
+    "other": "{count} itens"
+  }
+}
