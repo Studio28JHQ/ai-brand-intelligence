@@ -7,6 +7,7 @@ import { RecommendationExplainability } from '../../../../components/recommendat
 import { RunAuditModal } from '../../../../components/run-audit-modal';
 import { findRuleExplanationForItem } from '../../../../lib/recommendation-explainability';
 import { computeNextStep } from '../../../../lib/next-step';
+import { ReauditChangedPagesButton } from './reaudit-changed-pages-button';
 
 export default async function ExecutiveDashboardPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -22,6 +23,13 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
         actions={
           <div className="cluster">
             <RunAuditModal defaultUrl={dashboard?.project.canonicalWebsite} source="dashboard" />
+            {dashboard?.project.baselineAuditUrl && (
+              <RunAuditModal
+                defaultUrl={dashboard.project.baselineAuditUrl}
+                source="run-from-baseline"
+                triggerLabel="Run From Baseline"
+              />
+            )}
             <Link href={`/projects/${id}/pages`} className="btn btn-secondary">
               View Pages
             </Link>
@@ -50,7 +58,12 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
 
           <Card
             title="Project Overview"
-            actions={<RunAuditModal defaultUrl={dashboard.project.canonicalWebsite} source="project-overview" />}
+            actions={
+              <div className="cluster">
+                <RunAuditModal defaultUrl={dashboard.project.canonicalWebsite} source="project-overview" />
+                <ReauditChangedPagesButton projectId={id} />
+              </div>
+            }
           >
             <dl className="dl">
               <dt>Project</dt>

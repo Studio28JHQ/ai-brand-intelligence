@@ -38,7 +38,6 @@ import {
   AuditNotFoundError,
   AuditNotCompletedError,
   BaselineDeletionRequiresConfirmationError,
-  DuplicateAuditExecutionError,
   PageComparisonUrlMismatchError,
 } from '../../domain/audit/audit.errors';
 import { ClientNotFoundError } from '../../domain/client/client.errors';
@@ -155,9 +154,12 @@ export class AuditController {
     }
 
     try {
-      // Returns as soon as the Audit is queued — the Workflow Runtime itself now runs in the
-      // background (F10-S04B). Callers that need the finished results poll GET /audits/:id (and
-      // GET /audits/:id/analysis once completed), or watch GET /audits/:id/events for live progress.
+      // Returns immediately — the Workflow Runtime itself now runs in the background (F10-S04B).
+      // If another Audit is already in flight for this Project, the new one is created with a real
+      // 'queued' status rather than rejected (F10-S04D, see docs/04_PROJECT/DECISION_LOG.md#cto-106)
+      // and starts automatically, FIFO, once the in-flight one finishes. Callers that need the
+      // finished results poll GET /audits/:id (and GET /audits/:id/analysis once completed), or
+      // watch GET /audits/:id/events for live progress.
       const audit = await this.createAuditUseCase.execute(dto.url, req.correlationId, dto.clientId, dto.triggeredBy);
       return { id: audit.id, status: audit.status };
     } catch (error) {
@@ -166,9 +168,6 @@ export class AuditController {
       }
       if (error instanceof ClientNotFoundError) {
         throw new NotFoundException(error.message);
-      }
-      if (error instanceof DuplicateAuditExecutionError) {
-        throw new ConflictException(error.message);
       }
       throw error;
     }

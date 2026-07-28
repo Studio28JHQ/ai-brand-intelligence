@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { PrismaClient } from '@ai-visibility/database';
 import { Audit, AuditStatus } from '../../domain/audit/audit.entity';
-import { AuditNotFoundError, DuplicateAuditExecutionError } from '../../domain/audit/audit.errors';
+import { AuditNotFoundError } from '../../domain/audit/audit.errors';
 import { AuditRepository } from '../../domain/audit/audit.repository';
 import { PRISMA_CLIENT } from '../database/database.module';
 
@@ -31,17 +31,31 @@ interface AuditRecord {
 export class PrismaAuditRepository implements AuditRepository {
   constructor(@Inject(PRISMA_CLIENT) private readonly prisma: PrismaClient) {}
 
-  async create(projectId: string, url: string, cycleId: string, triggeredBy: string | null = null): Promise<Audit> {
+  async create(
+    projectId: string,
+    url: string,
+    cycleId: string,
+    triggeredBy: string | null = null,
+    initialStatus: Extract<AuditStatus, 'pending' | 'queued'> = 'pending',
+  ): Promise<Audit> {
     try {
-      const record = await this.prisma.auditRequest.create({ data: { projectId, url, cycleId, triggeredBy } });
+      const record = await this.prisma.auditRequest.create({
+        data: { projectId, url, cycleId, triggeredBy, status: initialStatus },
+      });
       return this.toDomain(record);
     } catch (error) {
       if (isUniqueConstraintViolation(error)) {
-        // The application-level check in CreateAuditUseCase already tries to catch this earlier
-        // and with a friendlier error (naming the actual in-flight Audit); this is the
+        // CreateAuditUseCase's in-memory check already tries to catch this earlier; this is the
         // database-enforced backstop for the narrow window where two requests both pass that
-        // check before either has persisted its own row — same real Error type either way.
-        throw new DuplicateAuditExecutionError(projectId, null);
+        // check before either has persisted its own row. The partial unique index only guards
+        // ('pending' | 'running') rows (migration 20260727225907), so a 'queued' insert can never
+        // collide with it — falling back to 'queued' here always succeeds (F10-S04D, see
+        // docs/04_PROJECT/DECISION_LOG.md#cto-106): the loser of the race gracefully joins the
+        // queue behind whoever won, instead of failing outright.
+        const record = await this.prisma.auditRequest.create({
+          data: { projectId, url, cycleId, triggeredBy, status: 'queued' },
+        });
+        return this.toDomain(record);
       }
       throw error;
     }

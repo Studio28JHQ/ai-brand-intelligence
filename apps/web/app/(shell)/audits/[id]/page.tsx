@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getAudit, getAuditAnalysis } from '../../../actions';
 import { Badge, Breadcrumbs, Card, EmptyState, PageHeader } from '../../../components/ui';
+import { RunAuditModal } from '../../../components/run-audit-modal';
 import { ScoresPanel } from '../../../components/scores-panel';
 import { RecommendationExplainability } from '../../../components/recommendation-explainability';
 import { findRuleExplanationForItem } from '../../../lib/recommendation-explainability';
@@ -28,9 +29,12 @@ export default async function AuditDetailPage({ params }: { params: Promise<{ id
         description={audit?.url}
         actions={
           audit && (
-            <Link href={`/projects/${audit.projectId}/dashboard`} className="btn btn-primary">
-              View Project Dashboard
-            </Link>
+            <div className="cluster">
+              <RunAuditModal defaultUrl={audit.url} source="run-again" triggerLabel="Run Again" />
+              <Link href={`/projects/${audit.projectId}/dashboard`} className="btn btn-primary">
+                View Project Dashboard
+              </Link>
+            </div>
           )
         }
       />

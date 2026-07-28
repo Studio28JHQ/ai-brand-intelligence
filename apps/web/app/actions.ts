@@ -24,6 +24,7 @@ import type {
   PageComparisonResult,
   ProjectMetadata,
   ProjectPage,
+  ReauditChangedPagesResult,
   VisibilityStatus,
   WorkflowExecutionRecord,
 } from '@ai-visibility/contracts';
@@ -231,6 +232,23 @@ export async function createCampaign(projectId: string): Promise<{ error?: strin
     }
 
     return {};
+  } catch {
+    return { error: 'Failed to reach the backend' };
+  }
+}
+
+export async function reauditChangedPages(projectId: string): Promise<ReauditChangedPagesResult | { error: string }> {
+  const config = loadConfig();
+
+  try {
+    const response = await fetch(`${config.API_URL}/projects/${projectId}/reaudit-changed-pages`, { method: 'POST' });
+
+    if (!response.ok) {
+      const body = await response.json();
+      return { error: body?.error?.message ?? 'Failed to check Pages for changes' };
+    }
+
+    return (await response.json()) as ReauditChangedPagesResult;
   } catch {
     return { error: 'Failed to reach the backend' };
   }

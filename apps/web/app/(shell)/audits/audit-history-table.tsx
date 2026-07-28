@@ -33,6 +33,13 @@ function formatScore(score: number | null): string {
   return score === null ? '—' : `${score}/100`;
 }
 
+function formatEstimatedStart(iso: string | null): string {
+  if (!iso) return 'Calculating…';
+  const deltaMs = new Date(iso).getTime() - Date.now();
+  if (deltaMs <= 0) return 'any moment now';
+  return deltaMs < 1000 ? `~${deltaMs}ms` : `~${(deltaMs / 1000).toFixed(1)}s`;
+}
+
 function triggeredByLabel(value: string | null): string {
   if (!value) return 'Unknown';
   return TRIGGERED_BY_LABELS[value] ?? value;
@@ -299,9 +306,17 @@ export function AuditHistoryTable({ initialEntries }: { initialEntries: AuditHis
                       </>
                     )}
                   </td>
-                  <td>{entry.startedAt ?? '—'}</td>
+                  <td>
+                    {entry.status === 'queued' ? (
+                      <span>
+                        <Badge variant="warning">Already Running</Badge> — position {entry.queuePosition ?? '—'}
+                      </span>
+                    ) : (
+                      (entry.startedAt ?? '—')
+                    )}
+                  </td>
                   <td>{entry.finishedAt ?? '—'}</td>
-                  <td>{formatDuration(entry.durationMs)}</td>
+                  <td>{entry.status === 'queued' ? formatEstimatedStart(entry.estimatedStartAt) : formatDuration(entry.durationMs)}</td>
                   <td>{formatScore(entry.overallScore)}</td>
                   <td>
                     <Badge>{entry.status}</Badge>

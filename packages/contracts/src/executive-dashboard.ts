@@ -14,6 +14,9 @@ export interface DashboardProjectOverview {
   primaryDomain: string;
   canonicalWebsite: string;
   baselineAuditId: string | null;
+  // The Baseline Audit's own real url — lets "Run From Baseline" (F10-S04D, see
+  // docs/04_PROJECT/DECISION_LOG.md#cto-106) pre-fill the correct URL without a second fetch.
+  baselineAuditUrl: string | null;
   baselineSetAt: string | null;
   latestAuditId: string | null;
 }

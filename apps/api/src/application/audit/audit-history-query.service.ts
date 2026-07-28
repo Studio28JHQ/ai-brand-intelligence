@@ -6,6 +6,7 @@ import { FindingReadRepository } from '../../infrastructure/comparison/finding-r
 import { HeuristicReadRepository } from '../../infrastructure/comparison/heuristic-read.repository';
 import { SignalReadRepository } from '../../infrastructure/comparison/signal-read.repository';
 import { computeScores } from '../scoring/compute-scores';
+import { computeQueueInfo } from './audit-queue-info';
 
 const FULL_AUDIT_TYPE_LABEL = 'Full Audit';
 
@@ -59,6 +60,7 @@ export class AuditHistoryQueryService {
         triggeredBy: audit.triggeredBy,
         auditType: FULL_AUDIT_TYPE_LABEL,
         isBaseline: project?.baselineAuditId === audit.id,
+        ...computeQueueInfo(audit, audits),
       };
     });
   }

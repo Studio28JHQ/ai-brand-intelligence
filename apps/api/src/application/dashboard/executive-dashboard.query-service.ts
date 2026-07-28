@@ -71,6 +71,9 @@ export class ExecutiveDashboardQueryService {
 
     const latestCompleted = latestByTimestamp(completedAudits, (audit) => audit.completedAt);
     const lastExecution = latestByTimestamp(projectAudits, (audit) => audit.createdAt);
+    const baselineAudit = project.baselineAuditId
+      ? (allAudits.find((audit) => audit.id === project.baselineAuditId) ?? null)
+      : null;
 
     const [findings, currentAssessment, baselineAssessment, lastBaselineChange, knowledgeGraph, signals, heuristics] =
       await Promise.all([
@@ -131,6 +134,7 @@ export class ExecutiveDashboardQueryService {
         primaryDomain: client.primaryDomain,
         canonicalWebsite: project.canonicalWebsite,
         baselineAuditId: project.baselineAuditId,
+        baselineAuditUrl: baselineAudit?.url ?? null,
         baselineSetAt: project.baselineSetAt ? project.baselineSetAt.toISOString() : null,
         latestAuditId: project.lastAuditId,
       },

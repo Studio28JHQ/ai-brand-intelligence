@@ -4,7 +4,12 @@ import { saveCrawlResult } from './crawl-repository';
 
 const MAX_REDIRECT_HOPS = 10;
 
-async function performCrawl(url: string): Promise<CrawlResult> {
+// Exported for standalone use outside the full Workflow Step pipeline — e.g. "Reaudit Changed
+// Pages Only" (F10-S04D, see docs/04_PROJECT/DECISION_LOG.md#cto-106) needs to cheaply fetch a
+// URL's current HTML to compare against a prior CrawlResult without creating a real Audit first.
+// This function has no Audit/WorkflowContext dependency of its own; only `runCrawl` below adds
+// that (telemetry tagging + persistence).
+export async function performCrawl(url: string): Promise<CrawlResult> {
   const redirectChain: string[] = [];
   let currentUrl = url;
 

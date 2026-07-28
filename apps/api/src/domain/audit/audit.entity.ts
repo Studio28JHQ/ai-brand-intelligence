@@ -1,6 +1,13 @@
 import { InvalidAuditStateTransitionError } from './audit.errors';
 
-export type AuditStatus = 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
+// 'queued' is a genuinely distinct pre-'pending' state (F10-S04D, see
+// docs/04_PROJECT/DECISION_LOG.md#cto-106): a Project may have only one Audit truly in flight
+// ('pending'/'running') at a time (CTO-103's partial unique index, unchanged), so a request that
+// arrives while another is already in flight is persisted immediately as 'queued' — a real row,
+// visible in Audit History — rather than rejected. It transitions straight to 'running' once
+// dequeued; 'pending' still means exactly what it always has (the brief pre-'running' window for
+// an Audit that was never queued at all).
+export type AuditStatus = 'queued' | 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
 
 export interface AuditProps {
   id: string;
@@ -17,6 +24,7 @@ export interface AuditProps {
 }
 
 const VALID_TRANSITIONS: Record<AuditStatus, ReadonlyArray<AuditStatus>> = {
+  queued: ['running', 'cancelled'],
   pending: ['running', 'cancelled'],
   running: ['completed', 'failed', 'cancelled'],
   completed: [],

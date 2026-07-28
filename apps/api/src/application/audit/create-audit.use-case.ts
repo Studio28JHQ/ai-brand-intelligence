@@ -11,7 +11,6 @@ import type {
 import { AuditUrl } from '../../domain/audit/audit-url.vo';
 import { AUDIT_REPOSITORY, AuditRepository } from '../../domain/audit/audit.repository';
 import { Audit } from '../../domain/audit/audit.entity';
-import { DuplicateAuditExecutionError } from '../../domain/audit/audit.errors';
 import { PROJECT_REPOSITORY, ProjectRepository } from '../../domain/project/project.repository';
 import { deriveCanonicalWebsite, deriveProjectName } from '../../domain/project/canonical-website';
 import { CLIENT_REPOSITORY, ClientRepository } from '../../domain/client/client.repository';
@@ -35,8 +34,8 @@ export class CreateAuditUseCase {
     private readonly progressPublisher: AuditProgressPublisher,
   ) {}
 
-  // Creates the Audit and returns as soon as it's queued — the Workflow Runtime itself now runs in
-  // the background (F10-S04B, see docs/04_PROJECT/DECISION_LOG.md#cto-104) rather than blocking this
+  // Creates the Audit and returns immediately — the Workflow Runtime itself now runs in the
+  // background (F10-S04B, see docs/04_PROJECT/DECISION_LOG.md#cto-104) rather than blocking this
   // call, so a client can navigate to the Audit and observe its real, live progress via
   // `GET /audits/:id/events` instead of only ever seeing an already-finished result.
   async execute(rawUrl: string, correlationId: string, clientId?: string, triggeredBy?: string): Promise<Audit> {
@@ -52,24 +51,25 @@ export class CreateAuditUseCase {
       project = await this.projectRepository.create(client.id, deriveProjectName(canonicalWebsite), canonicalWebsite);
     }
 
-    // One Audit at a time per Project. With the pipeline now running in the background, this
-    // in-flight window is no longer just a few milliseconds — it spans the Audit's real, full
-    // duration, so this guard (plus its database-level backstop, see CreateAuditUseCase's sibling
-    // migration from F10-S04A) is now meaningfully exercised rather than a formality.
+    // One Audit at a time actually executing per Project — but a request arriving while another
+    // is already in flight is no longer rejected (F10-S04D, see
+    // docs/04_PROJECT/DECISION_LOG.md#cto-106): it's persisted immediately as a real 'queued' Audit
+    // and automatically started, FIFO, the moment the in-flight one finishes (see
+    // `startNextQueuedAudit`). The database-level backstop (CTO-103's partial unique index, which
+    // only guards 'pending'/'running' rows) still exists for the narrow race window where two
+    // requests both pass this in-memory check before either has persisted its own row.
     const projectAudits = await this.auditRepository.findAll();
     const inFlightAudit = projectAudits.find(
       (existing) => existing.projectId === project!.id && (existing.status === 'pending' || existing.status === 'running'),
     );
-    if (inFlightAudit) {
-      throw new DuplicateAuditExecutionError(project.id, inFlightAudit.id);
-    }
+    const initialStatus = inFlightAudit ? 'queued' : 'pending';
 
     const cycle = await this.ensureActiveCycleUseCase.execute(project.id);
-    const audit = await this.auditRepository.create(project.id, url.value, cycle.id, triggeredBy ?? null);
+    const audit = await this.auditRepository.create(project.id, url.value, cycle.id, triggeredBy ?? null, initialStatus);
     await this.projectRepository.updateLastAudit(project.id, audit.id);
 
     emitTelemetryEvent({
-      name: 'audit.created',
+      name: initialStatus === 'queued' ? 'audit.queued' : 'audit.created',
       category: 'audit',
       severity: 'info',
       correlationId,
@@ -78,14 +78,38 @@ export class CreateAuditUseCase {
     });
     this.progressPublisher.publish(audit.id, { type: 'audit', status: audit.status, timestamp: new Date().toISOString() });
 
-    this.runPipeline(audit.id, project.id, cycle.id, url.value, correlationId).catch((error) => {
+    if (initialStatus === 'pending') {
+      this.runPipeline(audit.id, project.id, cycle.id, url.value, correlationId).catch((error) => {
+        logger.error('Unhandled error in background Audit pipeline', {
+          auditId: audit.id,
+          error: error instanceof Error ? error.stack : String(error),
+        });
+      });
+    }
+    // else: genuinely queued — startNextQueuedAudit picks it up once the in-flight Audit finishes.
+
+    return audit;
+  }
+
+  // FIFO: the oldest 'queued' Audit for this Project (if any) is dequeued and started the moment
+  // the previously in-flight one reaches a terminal state — called from both the success and
+  // failure exit paths of `runPipeline` below.
+  private async startNextQueuedAudit(projectId: string, correlationId: string): Promise<void> {
+    const audits = await this.auditRepository.findAll();
+    const nextQueued = audits
+      .filter((candidate) => candidate.projectId === projectId && candidate.status === 'queued')
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())[0];
+
+    if (!nextQueued) {
+      return;
+    }
+
+    this.runPipeline(nextQueued.id, projectId, nextQueued.cycleId, nextQueued.url, correlationId).catch((error) => {
       logger.error('Unhandled error in background Audit pipeline', {
-        auditId: audit.id,
+        auditId: nextQueued.id,
         error: error instanceof Error ? error.stack : String(error),
       });
     });
-
-    return audit;
   }
 
   private async runPipeline(
@@ -174,6 +198,8 @@ export class CreateAuditUseCase {
         source: 'audit-lifecycle',
         data: { auditId },
       });
+
+      await this.startNextQueuedAudit(projectId, correlationId);
     } catch (error) {
       await this.workflowExecutionHistoryRepository.saveAll(auditId, history);
       const failedAudit = await this.auditRepository.markFailed(auditId, new Date());
@@ -191,6 +217,8 @@ export class CreateAuditUseCase {
         source: 'audit-lifecycle',
         data: { auditId, errorMessage: error instanceof Error ? error.message : String(error) },
       });
+
+      await this.startNextQueuedAudit(projectId, correlationId);
     }
   }
 

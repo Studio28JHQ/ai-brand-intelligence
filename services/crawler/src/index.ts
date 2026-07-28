@@ -1,1 +1,1 @@
-export { runCrawl } from './crawler-engine';
+export { runCrawl, performCrawl } from './crawler-engine';

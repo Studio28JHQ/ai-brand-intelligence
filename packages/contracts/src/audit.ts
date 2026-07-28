@@ -9,7 +9,10 @@ import type { WorkflowProgress } from './workflow-progress';
 import type { WorkflowExecutionRecord } from './workflow-execution-history';
 import type { Scores } from './scores';
 
-export type AuditStatus = 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
+// 'queued' means another Audit was already in flight for the Project when this one was requested
+// (F10-S04D, see docs/04_PROJECT/DECISION_LOG.md#cto-106) — it will start automatically, FIFO,
+// once that one finishes; it is not yet running and has no execution history of its own.
+export type AuditStatus = 'queued' | 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
 
 export interface CreateAuditRequest {
   url: string;

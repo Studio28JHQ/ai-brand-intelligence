@@ -37,3 +37,4 @@ export * from './page-audit';
 export * from './page-comparison';
 export * from './audit-progress-event';
 export * from './audit-history';
+export * from './reaudit-changed-pages';

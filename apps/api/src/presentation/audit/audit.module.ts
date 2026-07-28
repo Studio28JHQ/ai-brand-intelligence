@@ -9,6 +9,7 @@ import { buildFullAuditCapabilityCatalog } from '../../domain/audit/full-audit-c
 import { FULL_AUDIT_TYPE } from '../../domain/audit/full-audit.type';
 import { CreateAuditUseCase } from '../../application/audit/create-audit.use-case';
 import { DeleteAuditUseCase } from '../../application/audit/delete-audit.use-case';
+import { ReauditChangedPagesUseCase } from '../../application/audit/reaudit-changed-pages.use-case';
 import { ExecuteAuditUseCase } from '../../application/audit/execute-audit.use-case';
 import { AuditQueryService } from '../../application/audit/audit-query.service';
 import { AuditAnalysisQueryService } from '../../application/audit/audit-analysis-query.service';
@@ -24,6 +25,7 @@ import { AiVisibilityReadRepository } from '../../infrastructure/comparison/ai-v
 import { KnowledgeGraphReadRepository } from '../../infrastructure/comparison/knowledge-graph-read.repository';
 import { SignalReadRepository } from '../../infrastructure/comparison/signal-read.repository';
 import { HeuristicReadRepository } from '../../infrastructure/comparison/heuristic-read.repository';
+import { CrawlResultReadRepository } from '../../infrastructure/comparison/crawl-result-read.repository';
 import { DiscoveryStep } from '../../infrastructure/audit/discovery.step';
 import { CrawlerStep } from '../../infrastructure/audit/crawler.step';
 import { InventoryStep } from '../../infrastructure/audit/inventory.step';
@@ -44,6 +46,7 @@ import { ProjectModule } from '../project/project.module';
 import { OptimizationPatternModule } from '../optimization-pattern/optimization-pattern.module';
 import { EnsureActiveCycleUseCase } from '../../application/optimization-cycle/ensure-active-cycle.use-case';
 import { AuditController } from './audit.controller';
+import { ReauditChangedPagesController } from './reaudit-changed-pages.controller';
 
 @Module({
   imports: [
@@ -54,10 +57,11 @@ import { AuditController } from './audit.controller';
     ProjectModule,
     OptimizationPatternModule,
   ],
-  controllers: [AuditController],
+  controllers: [AuditController, ReauditChangedPagesController],
   providers: [
     CreateAuditUseCase,
     DeleteAuditUseCase,
+    ReauditChangedPagesUseCase,
     ExecuteAuditUseCase,
     AuditQueryService,
     AuditAnalysisQueryService,
@@ -74,6 +78,7 @@ import { AuditController } from './audit.controller';
     KnowledgeGraphReadRepository,
     SignalReadRepository,
     HeuristicReadRepository,
+    CrawlResultReadRepository,
     { provide: WORKFLOW_PORT, useClass: WorkflowAdapter },
     DiscoveryStep,
     CrawlerStep,

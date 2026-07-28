@@ -66,6 +66,15 @@ import { ProjectController } from './project.controller';
     SignalReadRepository,
     HeuristicReadRepository,
   ],
-  exports: [ProjectRepositoryModule, ClientRepositoryModule, AiContextBuilderService, ExecutiveClientReportBuilderService],
+  exports: [
+    ProjectRepositoryModule,
+    ClientRepositoryModule,
+    AiContextBuilderService,
+    ExecutiveClientReportBuilderService,
+    // Needed by AuditModule's ReauditChangedPagesUseCase (F10-S04D) — AuditModule already imports
+    // ProjectModule, so this avoids a circular ProjectModule -> AuditModule import just to reach
+    // CreateAuditUseCase.
+    ProjectPagesQueryService,
+  ],
 })
 export class ProjectModule {}

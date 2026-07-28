@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import type { AuditMetadata, AuditProgressEvent, AuditStageStatus, AuditStatus, AuditStepProgressEvent } from '@ai-visibility/contracts';
 import { Badge, Card } from '../../../components/ui';
+import { getAudit } from '../../../actions';
 
 interface Stage {
   key: string;
@@ -27,6 +29,8 @@ const STAGES: Stage[] = [
   { key: 'aiVisibility', label: 'AI Visibility', stepIds: ['aiVisibility', 'aiVisibilityHeuristics', 'aiVisibilityAnalysis'] },
   { key: 'optimization', label: 'Optimization', stepIds: ['optimization'] },
 ];
+
+const QUEUE_POLL_INTERVAL_MS = 5000;
 
 function isTerminal(status: AuditStatus): boolean {
   return status === 'completed' || status === 'failed' || status === 'cancelled';
@@ -58,6 +62,12 @@ function formatDuration(ms: number): string {
   return ms < 1000 ? `${ms}ms` : `${(ms / 1000).toFixed(1)}s`;
 }
 
+function formatEstimatedStart(iso: string): string {
+  const deltaMs = new Date(iso).getTime() - Date.now();
+  if (deltaMs <= 0) return 'any moment now';
+  return `~${formatDuration(deltaMs)} from now`;
+}
+
 function initialStepsFromHistory(audit: AuditMetadata): Map<string, AuditStepProgressEvent> {
   const steps = new Map<string, AuditStepProgressEvent>();
   for (const record of audit.executionHistory) {
@@ -79,6 +89,7 @@ export function ExecutionTimeline({ audit }: { audit: AuditMetadata }) {
   const [auditStatus, setAuditStatus] = useState<AuditStatus>(audit.status);
   const [steps, setSteps] = useState<Map<string, AuditStepProgressEvent>>(() => initialStepsFromHistory(audit));
   const [now, setNow] = useState(() => Date.now());
+  const [queueInfo, setQueueInfo] = useState({ queuePosition: audit.queuePosition, estimatedStartAt: audit.estimatedStartAt });
 
   useEffect(() => {
     if (isTerminal(audit.status)) {
@@ -117,6 +128,23 @@ export function ExecutionTimeline({ audit }: { audit: AuditMetadata }) {
     return () => clearInterval(interval);
   }, [auditStatus]);
 
+  // Queue Position/Estimated Start (F10-S04D, see docs/04_PROJECT/DECISION_LOG.md#cto-106) aren't
+  // part of the SSE event payload — they can shift as other Audits ahead in this Project's queue
+  // finish, so this polls the real current value rather than freezing it at page load. Stops the
+  // moment this Audit itself is dequeued (SSE already handles that transition).
+  useEffect(() => {
+    if (auditStatus !== 'queued') {
+      return;
+    }
+    const interval = setInterval(async () => {
+      const fresh = await getAudit(audit.id);
+      if (fresh) {
+        setQueueInfo({ queuePosition: fresh.queuePosition, estimatedStartAt: fresh.estimatedStartAt });
+      }
+    }, QUEUE_POLL_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, [audit.id, auditStatus]);
+
   const stageStatuses = useMemo(
     () =>
       STAGES.map((stage) => {
@@ -134,7 +162,9 @@ export function ExecutionTimeline({ audit }: { audit: AuditMetadata }) {
     [steps, auditStatus],
   );
 
-  const queuedStatus: AuditStageStatus = auditStatus === 'pending' ? 'running' : 'completed';
+  // 'queued' reads the same as 'pending' here — neither has started the real pipeline yet, so the
+  // "Queued" bookend stage is still genuinely in progress, not complete.
+  const queuedStatus: AuditStageStatus = auditStatus === 'pending' || auditStatus === 'queued' ? 'running' : 'completed';
   const completedStageStatus: AuditStageStatus =
     auditStatus === 'completed' ? 'completed' : auditStatus === 'failed' || auditStatus === 'cancelled' ? 'failed' : 'waiting';
 
@@ -146,13 +176,15 @@ export function ExecutionTimeline({ audit }: { audit: AuditMetadata }) {
     ? `${failedStage.stage.label} (failed)`
     : runningStage
       ? runningStage.stage.label
-      : auditStatus === 'pending'
-        ? 'Queued'
-        : auditStatus === 'failed'
-          ? 'Audit failed'
-          : auditStatus === 'cancelled'
-            ? 'Audit cancelled'
-            : 'Completed';
+      : auditStatus === 'queued'
+        ? 'Queued — waiting for another Audit to finish'
+        : auditStatus === 'pending'
+          ? 'Queued'
+          : auditStatus === 'failed'
+            ? 'Audit failed'
+            : auditStatus === 'cancelled'
+              ? 'Audit cancelled'
+              : 'Completed';
 
   const elapsedMs = audit.startedAt ? Math.max(0, now - new Date(audit.startedAt).getTime()) : 0;
 
@@ -167,6 +199,19 @@ export function ExecutionTimeline({ audit }: { audit: AuditMetadata }) {
 
   return (
     <Card title="Live Audit Execution">
+      {auditStatus === 'queued' && (
+        <dl className="dl">
+          <dt>Status</dt>
+          <dd>
+            <Badge variant="warning">Already Running</Badge> — another Audit for this Project is in progress
+          </dd>
+          <dt>Queue Position</dt>
+          <dd>{queueInfo.queuePosition !== null ? `${queueInfo.queuePosition} in line` : '—'}</dd>
+          <dt>Estimated Start</dt>
+          <dd>{queueInfo.estimatedStartAt ? formatEstimatedStart(queueInfo.estimatedStartAt) : 'Calculating…'}</dd>
+        </dl>
+      )}
+
       <dl className="dl">
         <dt>Current Step</dt>
         <dd>{currentStepLabel}</dd>
@@ -180,6 +225,17 @@ export function ExecutionTimeline({ audit }: { audit: AuditMetadata }) {
         <dt>Est. Remaining Time</dt>
         <dd>{isTerminal(auditStatus) ? '—' : estimatedRemainingMs !== null ? `~${formatDuration(estimatedRemainingMs)}` : 'Calculating…'}</dd>
       </dl>
+
+      {auditStatus === 'completed' && audit.previousAuditId && (
+        <p>
+          <Link
+            className="btn btn-secondary btn-sm"
+            href={`/projects/${audit.projectId}/compare?url=${encodeURIComponent(audit.url)}&baselineAuditId=${audit.previousAuditId}&targetAuditId=${audit.id}`}
+          >
+            Compare With Previous
+          </Link>
+        </p>
+      )}
 
       <div className="table-wrapper">
         <table className="table">

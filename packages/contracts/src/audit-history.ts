@@ -28,4 +28,8 @@ export interface AuditHistoryEntry {
   // Always 'Full Audit' today — only FULL_AUDIT_TYPE exists (see CTO-103's "Quick Audit" gap).
   auditType: string;
   isBaseline: boolean;
+  // Real-data-derived (F10-S04D, see docs/04_PROJECT/DECISION_LOG.md#cto-106); both null unless
+  // `status === 'queued'`.
+  queuePosition: number | null;
+  estimatedStartAt: string | null;
 }
