@@ -1,0 +1,88 @@
+{
+  "catalog": {
+    "discovery-execution": {
+      "title": "Resolver problema de ejecución de descubrimiento",
+      "rationale": "El Descubrimiento establece la URL normalizada y la detección de recursos de las que dependen todas las etapas posteriores del pipeline; si falla, no se puede producir ninguna otra señal de Visibilidad en IA para este Proyecto.",
+      "resolutionStrategy": "Verifica que la URL de destino sea accesible y resuelva correctamente, luego vuelve a ejecutar la auditoría."
+    },
+    "crawl-execution": {
+      "title": "Resolver problema de ejecución de rastreo",
+      "rationale": "El rastreo obtiene el contenido de la página del que se construyen el inventario, la extracción de entidades y toda señal de Visibilidad en IA posterior.",
+      "resolutionStrategy": "Confirma que la página devuelva una respuesta HTTP exitosa y que no esté bloqueada por robots.txt o autenticación, luego vuelve a ejecutar la auditoría."
+    },
+    "inventory-execution": {
+      "title": "Resolver problema de ejecución de inventario",
+      "rationale": "El Inventario extrae las señales estructurales en página utilizadas para la construcción de entidades y del grafo de conocimiento.",
+      "resolutionStrategy": "Verifica que el HTML rastreado esté bien formado y contenga elementos estructurales extraíbles, luego vuelve a ejecutar la auditoría."
+    },
+    "seo-metadata-quality": {
+      "title": "Corregir título y meta descripción faltantes o de tamaño incorrecto",
+      "rationale": "El título y la meta descripción son el texto principal que los motores de búsqueda y los sistemas de IA usan para resumir y representar esta página. Un título/descripción faltante o de tamaño incorrecto debilita tanto el clic en la búsqueda como la precisión con la que los sistemas de IA pueden describir la página.",
+      "resolutionStrategy": "Escribe un título único de entre 30 y 60 caracteres y una meta descripción de entre 70 y 160 caracteres que resuman con precisión el contenido de la página."
+    },
+    "seo-heading-structure": {
+      "title": "Corregir la estructura de encabezados",
+      "rationale": "Una página necesita exactamente un H1 y una jerarquía de encabezados que nunca salte un nivel para que los lectores de pantalla y los sistemas de IA analicen correctamente su esquema. Los encabezados faltantes, duplicados o vacíos hacen ambigua la estructura de la página para ambas audiencias.",
+      "resolutionStrategy": "Usa exactamente un H1 por página, evita saltar niveles de encabezado (por ejemplo, de H2 directo a H4), y elimina o completa cualquier etiqueta de encabezado vacía."
+    },
+    "seo-content-depth": {
+      "title": "Ampliar el contenido escaso de la página",
+      "rationale": "Las páginas con muy poco texto en el cuerpo dan a los motores de búsqueda y a los sistemas de IA muy poca señal para entender de qué trata la página, reduciendo tanto el potencial de posicionamiento como la probabilidad de ser citada con precisión.",
+      "resolutionStrategy": "Amplía el contenido de la página a al menos 300 palabras de texto genuinamente útil y relacionado con el tema."
+    },
+    "seo-image-accessibility": {
+      "title": "Agregar el texto alternativo faltante en las imágenes",
+      "rationale": "Las imágenes sin texto alternativo son invisibles para los lectores de pantalla y para los sistemas de búsqueda/IA que dependen del texto alternativo para entender el contenido de la imagen, perjudicando tanto el cumplimiento de accesibilidad como el descubrimiento relacionado con imágenes.",
+      "resolutionStrategy": "Agrega texto alternativo descriptivo a cada imagen de contenido; usa alt=\"\" solo para imágenes genuinamente decorativas."
+    },
+    "seo-structured-data": {
+      "title": "Agregar datos estructurados y etiquetas de vista previa social",
+      "rationale": "JSON-LD, OpenGraph y las etiquetas Twitter Card son la forma en que los motores de búsqueda y los sistemas de IA identifican de forma confiable las entidades, el tipo de página y el contenido de vista previa social en esta página. Sin ellos, la página depende por completo de la inferencia de texto no estructurado.",
+      "resolutionStrategy": "Agrega datos estructurados JSON-LD válidos para el tipo de página, además de etiquetas meta OpenGraph y Twitter Card."
+    },
+    "seo-indexability": {
+      "title": "Eliminar los bloqueos de indexabilidad",
+      "rationale": "Una página bloqueada para la indexación (por estado HTTP, meta robots, X-Robots-Tag, o un canonical que apunta a otro lugar) no puede aparecer en los resultados de búsqueda ni ser recomendada por sistemas de IA en absoluto, sin importar qué tan bueno sea su contenido.",
+      "resolutionStrategy": "Asegúrate de que la página devuelva un estado 2xx, no lleve una directiva noindex, y que su etiqueta canonical sea autorreferencial (o apunte intencionalmente a la página canónica correcta)."
+    },
+    "seo-security-posture": {
+      "title": "Servir la página de forma segura por HTTPS sin contenido mixto",
+      "rationale": "Los navegadores advierten activamente a los usuarios sobre páginas inseguras y recursos de contenido mixto, y los motores de búsqueda consideran HTTPS en el posicionamiento. Una página insegura daña tanto la confianza como la visibilidad.",
+      "resolutionStrategy": "Sirve la página por HTTPS y actualiza cualquier referencia de recurso http:// restante a https://."
+    },
+    "seo-technical-foundation": {
+      "title": "Agregar robots.txt/sitemap.xml y acortar URLs largas",
+      "rationale": "robots.txt y sitemap.xml son la forma en que los motores de búsqueda descubren y rastrean un sitio de manera eficiente, y las URLs demasiado largas son más difíciles de compartir, indexar y razonar. La falta de cualquiera de los dos debilita la rastreabilidad general.",
+      "resolutionStrategy": "Publica un robots.txt y un sitemap.xml en la raíz del sitio, y mantén las URLs razonablemente cortas y descriptivas."
+    },
+    "seo-performance-estimate": {
+      "title": "Mejorar el rendimiento estimado de la página",
+      "rationale": "Un HTML pesado, DOMs grandes y scripts que bloquean el renderizado ralentizan la carga de la página, lo que perjudica tanto la experiencia del usuario como las señales de posicionamiento vinculadas a los Core Web Vitals.",
+      "resolutionStrategy": "Reduce el tamaño del HTML/DOM cuando sea posible, y marca los scripts no críticos como async/defer para reducir el JavaScript que bloquea el renderizado."
+    },
+    "seo-internal-linking": {
+      "title": "Agregar enlaces internos a esta página",
+      "rationale": "Una página sin enlaces internos que apunten a ella es más difícil de descubrir y posicionar para los motores de búsqueda, y señala una arquitectura de sitio débil alrededor de este contenido.",
+      "resolutionStrategy": "Enlaza a esta página desde al menos algunas otras páginas relevantes del sitio."
+    },
+    "ai-visibility-readiness": {
+      "title": "Mejorar la preparación de Visibilidad en IA",
+      "rationale": "Los sistemas de IA razonan sobre una marca a través de las entidades y relaciones que pueden extraer de una página. Una cobertura incompleta de entidades o relaciones significa que los sistemas de IA tienen muy poca señal estructurada para representar esta página con precisión.",
+      "resolutionStrategy": "Refuerza las señales de entidad de la página (nombre de la organización, dominio, relaciones claras entre ellos) para que el Grafo de Conocimiento construido a partir de esta página esté completo."
+    }
+  },
+  "assumptions": {
+    "BINARY_RULE_OUTCOME": "El Motor de Reglas devuelve solo un resultado definitivo de aprobado o fallido para este Hallazgo, nunca uno parcial o incierto.",
+    "UNIFORM_RULE_APPLICABILITY": "La guía de la Regla de Optimización aplica de la misma manera sin importar el contexto específico de este Proyecto.",
+    "FIXED_PIPELINE_ORDER": "El Motor de Flujo de Trabajo ejecuta los Motores de Negocio en el mismo orden fijo para cada Auditoría."
+  },
+  "templates": {
+    "findingResolved": "Se resolvió el problema '{ruleId}' ({category}) del motor {sourceEngine}.",
+    "findingIntroduced": "Nuevo problema '{ruleId}' ({category}) introducido por el motor {sourceEngine}.",
+    "findingUnresolved": "Sin resolver: '{ruleId}' ({category}) sigue fallando en el motor {sourceEngine}.",
+    "aiVisibilityStatusChanged": "El estado de Visibilidad en IA cambió de '{baselineStatus}' a '{verificationStatus}'.",
+    "entityCoverageChanged": "La cobertura de entidades cambió de '{baselineCoverage}' a '{verificationCoverage}'.",
+    "campaignActionsVerified": "{verifiedCount} de {totalCount} acciones de campaña confirmadas como resueltas por esta auditoría.",
+    "findingRequiresAttention": "El hallazgo '{ruleId}' requiere atención."
+  }
+}

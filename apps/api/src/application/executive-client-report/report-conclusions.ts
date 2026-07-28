@@ -40,12 +40,7 @@ function matchItemForAction(
   action: OptimizationAction,
   plan: ReadonlyArray<OptimizationItem>,
 ): OptimizationItem | undefined {
-  return plan.find(
-    (item) =>
-      item.title === action.title &&
-      item.supportingFindingIds.length === action.supportingFindingIds.length &&
-      item.supportingFindingIds.every((id, index) => id === action.supportingFindingIds[index]),
-  );
+  return plan.find((item) => item.optimizationRuleId === action.optimizationRuleId);
 }
 
 export function buildKeyFindings(findings: ReadonlyArray<Finding>): ReportConclusion[] {
@@ -55,12 +50,13 @@ export function buildKeyFindings(findings: ReadonlyArray<Finding>): ReportConclu
       const ruleReference = toRuleReference(finding.ruleId);
       const rule = resolveOptimizationRule(finding.ruleId);
       return {
-        statement: rule ? rule.businessRationale : `Finding '${finding.ruleId}' requires attention.`,
+        messageKey: rule ? `catalog.${finding.ruleId}.rationale` : 'templates.findingRequiresAttention',
+        parameters: rule ? {} : ({ ruleId: finding.ruleId } as Record<string, string | number>),
         evidence: toEvidenceFromRecord(finding.evidence),
         relatedFindings: [toFindingReference(finding)],
         relatedOptimizationRules: ruleReference ? [ruleReference] : [],
         reasoning: null,
-        confidence: 'high',
+        confidence: 'high' as const,
       };
     });
 }
@@ -77,15 +73,16 @@ export function buildActionsCompleted(
       const relatedFindings = sourceFindings
         .filter((finding) => action.supportingFindingIds.includes(finding.id))
         .map(toFindingReference);
-      const ruleReference = item ? toRuleReference(item.optimizationRuleId) : null;
+      const ruleReference = toRuleReference(action.optimizationRuleId);
 
       return {
-        statement: action.title,
+        messageKey: `catalog.${action.optimizationRuleId}.title`,
+        parameters: {},
         evidence: item ? item.reasoning.evidence.map((entry) => ({ label: entry.field, value: entry.value })) : [],
         relatedFindings,
         relatedOptimizationRules: ruleReference ? [ruleReference] : [],
         reasoning: item ? item.reasoning : null,
-        confidence: item ? item.reasoning.confidence : 'medium',
+        confidence: item ? item.reasoning.confidence : ('medium' as const),
       };
     });
 }
@@ -99,12 +96,13 @@ export function buildImprovementsAchieved(
     const ruleReference = toRuleReference(entry.ruleId);
 
     return {
-      statement: `Resolved '${entry.ruleId}' (${entry.category}) issue from the ${entry.sourceEngine} engine.`,
-      evidence: [{ label: 'Outcome', value: entry.outcome }],
+      messageKey: 'templates.findingResolved',
+      parameters: { ruleId: entry.ruleId, category: entry.category, sourceEngine: entry.sourceEngine },
+      evidence: [{ label: 'outcome', value: entry.outcome }],
       relatedFindings: finding ? [toFindingReference(finding)] : [],
       relatedOptimizationRules: ruleReference ? [ruleReference] : [],
       reasoning: null,
-      confidence: 'high',
+      confidence: 'high' as const,
     };
   });
 }
@@ -120,12 +118,13 @@ export function buildRisks(
     const ruleReference = toRuleReference(entry.ruleId);
 
     return {
-      statement: `Unresolved: '${entry.ruleId}' (${entry.category}) is still failing in the ${entry.sourceEngine} engine.`,
-      evidence: [{ label: 'Outcome', value: entry.outcome }],
+      messageKey: 'templates.findingUnresolved',
+      parameters: { ruleId: entry.ruleId, category: entry.category, sourceEngine: entry.sourceEngine },
+      evidence: [{ label: 'outcome', value: entry.outcome }],
       relatedFindings: finding ? [toFindingReference(finding)] : [],
       relatedOptimizationRules: ruleReference ? [ruleReference] : [],
       reasoning: item ? item.reasoning : null,
-      confidence: item ? item.reasoning.confidence : 'medium',
+      confidence: item ? item.reasoning.confidence : ('medium' as const),
     };
   });
 }
@@ -143,7 +142,8 @@ export function buildRecommendedNextCycleGoals(
         .map(toFindingReference);
 
       return {
-        statement: item.title,
+        messageKey: `catalog.${item.optimizationRuleId}.title`,
+        parameters: {},
         evidence: item.reasoning.evidence.map((entry) => ({ label: entry.field, value: entry.value })),
         relatedFindings,
         relatedOptimizationRules: ruleReference ? [ruleReference] : [],

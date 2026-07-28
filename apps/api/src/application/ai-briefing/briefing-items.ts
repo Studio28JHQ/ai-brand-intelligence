@@ -1,5 +1,6 @@
 import type { BriefingItem, BriefingItemCategory } from '@ai-visibility/contracts';
 import type { AiContext } from '../ai-context/ai-context';
+import { resolveEnglishMessage, resolveRuleText } from '../optimization-knowledge-base/optimization-rule-text';
 
 function makeItem(
   context: AiContext,
@@ -71,7 +72,7 @@ function buildAiVisibilityRegressionItems(context: AiContext): BriefingItem[] {
   return impact.regressions.map((regression, index) =>
     makeItem(context, 'ai-visibility-regression', `${index}`, {
       title: `AI Visibility regression: ${regression.category}`,
-      reason: regression.description,
+      reason: resolveEnglishMessage(regression.messageKey, regression.parameters),
       businessImpact: `${context.project.name}'s AI Visibility has regressed since the Baseline in the '${regression.category}' category.`,
       evidence: [
         { label: 'Trend', value: impact.aiVisibilityChange.trend },
@@ -87,16 +88,17 @@ function buildAiVisibilityRegressionItems(context: AiContext): BriefingItem[] {
 function buildHighImpactOpportunityItems(context: AiContext): BriefingItem[] {
   return context.optimizationPlan
     .filter((item) => item.priority === 'high')
-    .map((item) =>
-      makeItem(context, 'high-impact-opportunity', item.optimizationRuleId, {
-        title: item.title,
-        reason: item.rationale,
+    .map((item) => {
+      const text = resolveRuleText(item.optimizationRuleId);
+      return makeItem(context, 'high-impact-opportunity', item.optimizationRuleId, {
+        title: text.title,
+        reason: text.rationale,
         businessImpact: `Expected ${item.expectedImpact} impact for ${item.estimatedEffort} estimated effort.`,
         evidence: item.reasoning.evidence.map((entry) => ({ label: entry.field, value: entry.value })),
-        recommendedNextAction: item.description,
+        recommendedNextAction: text.resolutionStrategy,
         confidence: item.reasoning.confidence,
-      }),
-    );
+      });
+    });
 }
 
 function buildRecentImprovementItems(context: AiContext): BriefingItem[] {
@@ -108,7 +110,7 @@ function buildRecentImprovementItems(context: AiContext): BriefingItem[] {
   return impact.improvements.map((improvement, index) =>
     makeItem(context, 'recent-improvement', `${index}`, {
       title: `Improvement: ${improvement.category}`,
-      reason: improvement.description,
+      reason: resolveEnglishMessage(improvement.messageKey, improvement.parameters),
       businessImpact: `${context.project.name}'s AI Visibility has improved in the '${improvement.category}' category since the Baseline.`,
       evidence: [{ label: 'Verification Date', value: impact.verificationDate }],
       recommendedNextAction: 'No action needed — improvement confirmed.',

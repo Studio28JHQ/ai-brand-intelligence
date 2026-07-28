@@ -6,6 +6,7 @@ import { Badge, Card, EmptyState, statusToVariant } from '../../../../components
 import { comparePages, getPageAuditHistory } from '../../../../actions';
 import { useTranslations } from '../../../../../lib/i18n/client';
 import type { Translator } from '@ai-visibility/i18n';
+import { ruleResolutionStrategy, ruleTitle } from '../../../../lib/rule-text';
 
 function trendVariant(trend: ScoreTrend): 'success' | 'danger' | 'neutral' {
   if (trend === 'improved') return 'success';
@@ -59,7 +60,17 @@ function ScoreRow({ row, t, tFindings }: { row: CategoryScoreComparison; t: Tran
   );
 }
 
-function IssueList({ title, issues, emptyLabel }: { title: string; issues: PageComparisonResult['newIssues']; emptyLabel: string }) {
+function IssueList({
+  title,
+  issues,
+  emptyLabel,
+  tRules,
+}: {
+  title: string;
+  issues: PageComparisonResult['newIssues'];
+  emptyLabel: string;
+  tRules: Translator;
+}) {
   return (
     <div>
       <p className="text-secondary">
@@ -71,7 +82,7 @@ function IssueList({ title, issues, emptyLabel }: { title: string; issues: PageC
         <ul>
           {issues.map((issue) => (
             <li key={issue.ruleId}>
-              {issue.title} <span className="text-tertiary">({issue.ruleId})</span>
+              {ruleTitle(tRules, issue.ruleId)} <span className="text-tertiary">({issue.ruleId})</span>
             </li>
           ))}
         </ul>
@@ -86,12 +97,14 @@ function ComparisonResultView({
   tFindings,
   tOptimization,
   tCommon,
+  tRules,
 }: {
   result: PageComparisonResult;
   t: Translator;
   tFindings: Translator;
   tOptimization: Translator;
   tCommon: Translator;
+  tRules: Translator;
 }) {
   const overall = result.scores.find((row) => row.category === 'overall');
   const categoryRows = result.scores.filter((row) => row.category !== 'overall');
@@ -146,9 +159,14 @@ function ComparisonResultView({
 
       <Card title={t('issuesTitle')}>
         <div className="stack">
-          <IssueList title={t('newIssues')} issues={result.newIssues} emptyLabel={t('noNewIssues')} />
-          <IssueList title={t('resolvedIssues')} issues={result.resolvedIssues} emptyLabel={t('noResolvedIssues')} />
-          <IssueList title={t('persistentIssues')} issues={result.persistentIssues} emptyLabel={t('noPersistentIssues')} />
+          <IssueList title={t('newIssues')} issues={result.newIssues} emptyLabel={t('noNewIssues')} tRules={tRules} />
+          <IssueList title={t('resolvedIssues')} issues={result.resolvedIssues} emptyLabel={t('noResolvedIssues')} tRules={tRules} />
+          <IssueList
+            title={t('persistentIssues')}
+            issues={result.persistentIssues}
+            emptyLabel={t('noPersistentIssues')}
+            tRules={tRules}
+          />
         </div>
       </Card>
 
@@ -158,12 +176,12 @@ function ComparisonResultView({
         ) : (
           <div className="stack">
             {result.recommendations.map((item, index) => (
-              <Card key={`${item.title}-${index}`} muted>
+              <Card key={`${item.optimizationRuleId}-${index}`} muted>
                 <div className="card__header">
-                  <h4>{item.title}</h4>
+                  <h4>{ruleTitle(tRules, item.optimizationRuleId)}</h4>
                   <Badge variant={statusToVariant(item.priority)}>{tCommon(`statusValues.${item.priority}`)}</Badge>
                 </div>
-                <p>{item.description}</p>
+                <p>{ruleResolutionStrategy(tRules, item.optimizationRuleId)}</p>
               </Card>
             ))}
           </div>
@@ -190,6 +208,7 @@ export function CompareAudits({
   const tFindings = useTranslations('findings');
   const tOptimization = useTranslations('optimization');
   const tCommon = useTranslations('common');
+  const tRules = useTranslations('rules');
 
   const [selectedUrl, setSelectedUrl] = useState<string>(initialUrl ?? pages[0]?.url ?? '');
   const [history, setHistory] = useState<PageAuditHistoryEntry[]>([]);
@@ -306,7 +325,16 @@ export function CompareAudits({
         {error && <p className="text-secondary">{error}</p>}
       </Card>
 
-      {result && <ComparisonResultView result={result} t={t} tFindings={tFindings} tOptimization={tOptimization} tCommon={tCommon} />}
+      {result && (
+        <ComparisonResultView
+          result={result}
+          t={t}
+          tFindings={tFindings}
+          tOptimization={tOptimization}
+          tCommon={tCommon}
+          tRules={tRules}
+        />
+      )}
     </div>
   );
 }

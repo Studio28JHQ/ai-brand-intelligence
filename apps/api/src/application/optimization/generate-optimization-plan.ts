@@ -37,9 +37,6 @@ function buildOptimizationItem(
   const dependencyWeight = deriveDependencyWeight(countBlockedItems(finding.sourceEngine, allSourceEngines));
 
   return {
-    title: rule.title,
-    description: rule.resolutionStrategy,
-    rationale: rule.businessRationale,
     expectedImpact: rule.expectedImpact,
     estimatedEffort,
     priority: computePriority(rule.expectedImpact, estimatedEffort, confidence, dependencyWeight),

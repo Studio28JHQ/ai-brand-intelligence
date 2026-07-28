@@ -47,10 +47,6 @@ const RULE_TO_HEURISTIC_KEY: Record<string, string> = {
   'ai-visibility-readiness': 'ai-visibility-readiness',
 };
 
-function describeFinding(finding: Finding): string {
-  return resolveOptimizationRule(finding.ruleId)?.title ?? finding.ruleId;
-}
-
 function statusFor(evaluatedRules: number): CategoryScoreStatus {
   if (evaluatedRules === 0) {
     return 'insufficient-data';
@@ -95,12 +91,11 @@ function scoreCategory(
 ): CategoryScore {
   const rules = categoryFindings.map((finding) => explainRule(finding, heuristics, signals));
 
-  const passedChecks = rules.filter((rule) => rule.classification === 'passed').map((rule) => describeFinding(rule.finding));
-  const issues = rules.filter((rule) => rule.classification === 'issue').map((rule) => describeFinding(rule.finding));
-  const warnings = rules.filter((rule) => rule.classification === 'warning').map((rule) => describeFinding(rule.finding));
+  const passedRules = rules.filter((rule) => rule.classification === 'passed').length;
+  const issueCount = rules.filter((rule) => rule.classification === 'issue').length;
+  const warningCount = rules.filter((rule) => rule.classification === 'warning').length;
   const skippedRules = rules.filter((rule) => rule.classification === 'skipped').length;
-  const passedRules = passedChecks.length;
-  const failedRules = issues.length + warnings.length;
+  const failedRules = issueCount + warningCount;
 
   const evaluatedRules = passedRules + failedRules;
   // Never fabricated: a category with zero evaluated Rules gets `score: null`, never a numeric
@@ -115,9 +110,6 @@ function scoreCategory(
     passedRules,
     failedRules,
     skippedRules,
-    issues,
-    warnings,
-    passedChecks,
     rules,
   };
 }

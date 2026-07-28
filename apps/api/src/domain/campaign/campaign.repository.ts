@@ -3,7 +3,8 @@ import { Campaign } from './campaign.entity';
 export const CAMPAIGN_REPOSITORY = Symbol('CAMPAIGN_REPOSITORY');
 
 export interface NewActionSeed {
-  title: string;
+  optimizationRuleId: string;
+  optimizationRuleVersion: string;
   supportingFindingIds: string[];
 }
 

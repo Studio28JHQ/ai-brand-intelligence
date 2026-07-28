@@ -6,7 +6,8 @@ export interface OptimizationActionProps {
   campaignId: string;
   projectId: string;
   auditId: string;
-  title: string;
+  optimizationRuleId: string;
+  optimizationRuleVersion: string;
   supportingFindingIds: string[];
   status: OptimizationActionStatus;
   createdAt: Date;
@@ -28,7 +29,8 @@ export class OptimizationAction {
     public readonly campaignId: string,
     public readonly projectId: string,
     public readonly auditId: string,
-    public readonly title: string,
+    public readonly optimizationRuleId: string,
+    public readonly optimizationRuleVersion: string,
     public readonly supportingFindingIds: ReadonlyArray<string>,
     public readonly status: OptimizationActionStatus,
     public readonly createdAt: Date,
@@ -43,7 +45,8 @@ export class OptimizationAction {
       props.campaignId,
       props.projectId,
       props.auditId,
-      props.title,
+      props.optimizationRuleId,
+      props.optimizationRuleVersion,
       props.supportingFindingIds,
       props.status,
       props.createdAt,
@@ -66,7 +69,8 @@ export class OptimizationAction {
       this.campaignId,
       this.projectId,
       this.auditId,
-      this.title,
+      this.optimizationRuleId,
+      this.optimizationRuleVersion,
       this.supportingFindingIds,
       'in-progress',
       this.createdAt,
@@ -83,7 +87,8 @@ export class OptimizationAction {
       this.campaignId,
       this.projectId,
       this.auditId,
-      this.title,
+      this.optimizationRuleId,
+      this.optimizationRuleVersion,
       this.supportingFindingIds,
       'completed',
       this.createdAt,
@@ -100,7 +105,8 @@ export class OptimizationAction {
       this.campaignId,
       this.projectId,
       this.auditId,
-      this.title,
+      this.optimizationRuleId,
+      this.optimizationRuleVersion,
       this.supportingFindingIds,
       'verified',
       this.createdAt,

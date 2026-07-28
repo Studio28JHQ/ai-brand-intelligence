@@ -9,6 +9,7 @@ import { DetailSectionCard } from './detail-section-card';
 import { ExecutionTimeline } from './execution-timeline';
 import { buildDetailSections, externalLinksSignal, findRuleByRuleId, findSignalByKey } from './page-detail';
 import { getTranslations } from '../../../../lib/i18n/server';
+import { ruleResolutionStrategy, ruleTitle } from '../../../lib/rule-text';
 
 export default async function AuditDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -19,6 +20,7 @@ export default async function AuditDetailPage({ params }: { params: Promise<{ id
   const tFindings = await getTranslations('findings');
   const tOptimization = await getTranslations('optimization');
   const tCommon = await getTranslations('common');
+  const tRules = await getTranslations('rules');
 
   const indexabilityRule = analysis ? findRuleByRuleId(analysis, 'seo-indexability') : undefined;
   const indexabilitySignal = findSignalByKey(indexabilityRule, 'indexability');
@@ -141,17 +143,17 @@ export default async function AuditDetailPage({ params }: { params: Promise<{ id
                 {(!analysis || analysis.optimizationPlan.length === 0) && <EmptyState title={tOptimization('noOptimizationItems')} />}
                 <div className="stack">
                   {analysis?.optimizationPlan.map((item, index) => (
-                    <Card key={`${item.title}-${index}`} muted>
+                    <Card key={`${item.optimizationRuleId}-${index}`} muted>
                       <div className="card__header">
-                        <h4>{item.title}</h4>
+                        <h4>{ruleTitle(tRules, item.optimizationRuleId)}</h4>
                         <Badge variant={statusToVariant(item.priority)}>{tCommon(`statusValues.${item.priority}`)}</Badge>
                       </div>
-                      <p>{item.description}</p>
+                      <p>{ruleResolutionStrategy(tRules, item.optimizationRuleId)}</p>
                       <dl className="dl">
                         <dt>{tOptimization('expectedImpact')}</dt>
-                        <dd>{item.expectedImpact}</dd>
+                        <dd>{tCommon(`statusValues.${item.expectedImpact}`)}</dd>
                         <dt>{tOptimization('estimatedEffort')}</dt>
-                        <dd>{item.estimatedEffort}</dd>
+                        <dd>{tCommon(`statusValues.${item.estimatedEffort}`)}</dd>
                         <dt>{tOptimization('optimizationRule')}</dt>
                         <dd>
                           {item.optimizationRuleId} (v{item.optimizationRuleVersion})

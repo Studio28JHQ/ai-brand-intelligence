@@ -43,5 +43,10 @@
   "goToWorkspace": "Ir al Espacio de Trabajo",
   "relatedFindings": "Hallazgos Relacionados",
   "relatedOptimizationRules": "Reglas de Optimización Relacionadas",
-  "reasoningConfidence": "Confianza del Razonamiento"
+  "reasoningConfidence": "Confianza del Razonamiento",
+  "auditsInCycle": "Auditorías en el Ciclo",
+  "outcome": "Resultado",
+  "executiveSummaryWithImpact": "El ciclo de optimización '{cycleGoal}' de {projectName} está actualmente '{cycleStatus}'. Se resolvieron {resolvedCount} problema(s) y se completaron {actionsCount} acción(es) de optimización, moviendo la Visibilidad en IA de '{baselineStatus}' a '{verificationStatus}' ({trend}).",
+  "executiveSummaryNoImpact": "El ciclo de optimización '{cycleGoal}' de {projectName} está actualmente '{cycleStatus}'. Se identificaron {actionableCount} hallazgo(s) accionable(s) al inicio de este ciclo; el impacto aún no ha sido evaluado.",
+  "initialSituationSummary": "Al inicio de este ciclo, {projectName} tenía {actionableCount} hallazgo(s) accionable(s) y un estado de Visibilidad en IA de '{aiVisibilityStatus}'."
 }

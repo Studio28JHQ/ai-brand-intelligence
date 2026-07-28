@@ -1,8 +1,9 @@
 import type { AuditAnalysisView, OptimizationItem, RuleExplanation } from '@ai-visibility/contracts';
 
+// No `title` here: `key` is the stable identifier the presentation layer resolves into a localized
+// section title via the `audits` i18n domain (`sections.<key>`).
 export interface PageDetailSection {
   key: string;
-  title: string;
   rules: RuleExplanation[];
   recommendations: OptimizationItem[];
 }
@@ -12,15 +13,15 @@ export interface PageDetailSection {
 // screen's topic-organized sections onto the ruleIds that already exist. No new Rule is
 // introduced for any of these; a topic with no backing Rule (External Links) is deliberately
 // left out of this list rather than assigned a fabricated one.
-const SECTION_DEFINITIONS: ReadonlyArray<{ key: string; title: string; ruleIds: string[] }> = [
-  { key: 'metadata', title: 'Metadata', ruleIds: ['seo-metadata-quality'] },
-  { key: 'headings', title: 'Headings', ruleIds: ['seo-heading-structure'] },
-  { key: 'content', title: 'Content', ruleIds: ['seo-content-depth'] },
-  { key: 'images', title: 'Images', ruleIds: ['seo-image-accessibility'] },
-  { key: 'structured-data', title: 'Structured Data', ruleIds: ['seo-structured-data'] },
-  { key: 'technical', title: 'Technical', ruleIds: ['seo-security-posture', 'seo-technical-foundation'] },
-  { key: 'performance', title: 'Performance', ruleIds: ['seo-performance-estimate'] },
-  { key: 'internal-links', title: 'Internal Links', ruleIds: ['seo-internal-linking'] },
+const SECTION_DEFINITIONS: ReadonlyArray<{ key: string; ruleIds: string[] }> = [
+  { key: 'metadata', ruleIds: ['seo-metadata-quality'] },
+  { key: 'headings', ruleIds: ['seo-heading-structure'] },
+  { key: 'content', ruleIds: ['seo-content-depth'] },
+  { key: 'images', ruleIds: ['seo-image-accessibility'] },
+  { key: 'structured-data', ruleIds: ['seo-structured-data'] },
+  { key: 'technical', ruleIds: ['seo-security-posture', 'seo-technical-foundation'] },
+  { key: 'performance', ruleIds: ['seo-performance-estimate'] },
+  { key: 'internal-links', ruleIds: ['seo-internal-linking'] },
 ];
 
 function allRules(analysis: AuditAnalysisView): RuleExplanation[] {
@@ -41,7 +42,7 @@ export function recommendationsFor(analysis: AuditAnalysisView, findingIds: Read
 }
 
 export function buildDetailSections(analysis: AuditAnalysisView): PageDetailSection[] {
-  return SECTION_DEFINITIONS.map(({ key, title, ruleIds }) => {
+  return SECTION_DEFINITIONS.map(({ key, ruleIds }) => {
     const rules = ruleIds
       .map((ruleId) => findRuleByRuleId(analysis, ruleId))
       .filter((rule): rule is RuleExplanation => rule !== undefined);
@@ -49,7 +50,7 @@ export function buildDetailSections(analysis: AuditAnalysisView): PageDetailSect
       analysis,
       rules.map((rule) => rule.finding.id),
     );
-    return { key, title, rules, recommendations };
+    return { key, rules, recommendations };
   });
 }
 

@@ -23,8 +23,12 @@ export interface ReportOptimizationRuleReference {
   category: string;
 }
 
+// No `statement` here: `messageKey` (a `rules` i18n domain key, e.g. `catalog.<ruleId>.rationale`
+// or `templates.<name>`) plus `parameters` is what the presentation layer resolves into a localized
+// sentence — see `docs/04_PROJECT/DECISION_LOG.md#cto-111`.
 export interface ReportConclusion {
-  statement: string;
+  messageKey: string;
+  parameters: Record<string, string | number>;
   evidence: ReportEvidenceFact[];
   relatedFindings: ReportFindingReference[];
   relatedOptimizationRules: ReportOptimizationRuleReference[];
@@ -32,12 +36,15 @@ export interface ReportConclusion {
   confidence: OptimizationLevel;
 }
 
+// No `summary` here: `actionableFindingsCount` plus the fields already present (`aiVisibilityStatus`,
+// the report's own `projectName`) is what the presentation layer composes into a localized sentence
+// — see `docs/04_PROJECT/DECISION_LOG.md#cto-111`.
 export interface ReportInitialSituation {
   auditId: string;
   url: string;
   aiVisibilityStatus: VisibilityStatus | null;
   assessedAt: string | null;
-  summary: string;
+  actionableFindingsCount: number;
 }
 
 export interface ReportAiVisibilityProgress {
@@ -60,13 +67,15 @@ export interface ExecutiveClientReport {
   projectName: string;
   clientId: string;
   clientName: string;
-  executiveSummary: string;
   initialSituation: ReportInitialSituation | null;
   keyFindings: ReportConclusion[];
   actionsCompleted: ReportConclusion[];
   improvementsAchieved: ReportConclusion[];
   impactAssessmentSummary: ImpactAssessment | null;
   aiVisibilityProgress: ReportAiVisibilityProgress | null;
+  // `label` here is one of a fixed, closed set of stable keys (never English prose) — see
+  // `EVIDENCE_LABEL_KEYS` in `apps/web/app/(shell)/projects/[id]/cycles/[cycleId]/report/page.tsx`,
+  // resolved via `reports.evidenceLabels.<key>`.
   evidence: ReportEvidenceFact[];
   risks: ReportConclusion[];
   recommendedNextCycleGoals: ReportConclusion[];

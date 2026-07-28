@@ -5,16 +5,24 @@ import { Badge, Breadcrumbs, Card, CONFIDENCE_VARIANT, EmptyState, PageHeader, s
 import { getTranslations } from '../../../../../../../lib/i18n/server';
 import type { Translator } from '@ai-visibility/i18n';
 
+const KNOWN_EVIDENCE_LABEL_KEYS = new Set(['outcome']);
+
+function evidenceLabel(label: string, t: Translator): string {
+  return KNOWN_EVIDENCE_LABEL_KEYS.has(label) ? t(label) : label;
+}
+
 function ConclusionList({
   title,
   conclusions,
   t,
   tCommon,
+  tRules,
 }: {
   title: string;
   conclusions: ReportConclusion[];
   t: Translator;
   tCommon: Translator;
+  tRules: Translator;
 }) {
   return (
     <Card title={title}>
@@ -23,7 +31,7 @@ function ConclusionList({
         {conclusions.map((conclusion, index) => (
           <Card key={index} muted>
             <div className="card__header">
-              <p>{conclusion.statement}</p>
+              <p>{tRules(conclusion.messageKey, conclusion.parameters)}</p>
               <Badge variant={CONFIDENCE_VARIANT}>{tCommon(`statusValues.${conclusion.confidence}`)}</Badge>
             </div>
             <details>
@@ -32,7 +40,7 @@ function ConclusionList({
                 <ul className="stack-sm">
                   {conclusion.evidence.map((fact, factIndex) => (
                     <li key={factIndex} className="text-secondary">
-                      {fact.label}: {fact.value}
+                      {evidenceLabel(fact.label, t)}: {fact.value}
                     </li>
                   ))}
                 </ul>
@@ -69,7 +77,39 @@ export default async function ExecutiveClientReportPage({
   const tOptimization = await getTranslations('optimization');
   const tAudits = await getTranslations('audits');
   const tCommon = await getTranslations('common');
+  const tRules = await getTranslations('rules');
   const notApplicable = tAudits('notApplicable');
+
+  const executiveSummary = report
+    ? report.impactAssessmentSummary
+      ? t('executiveSummaryWithImpact', {
+          projectName: report.projectName,
+          cycleGoal: report.cycleGoal,
+          cycleStatus: tCommon(`statusValues.${report.cycleStatus}`),
+          resolvedCount: report.improvementsAchieved.length,
+          actionsCount: report.actionsCompleted.length,
+          baselineStatus: tCommon(`statusValues.${report.impactAssessmentSummary.aiVisibilityChange.baselineStatus}`),
+          verificationStatus: tCommon(`statusValues.${report.impactAssessmentSummary.aiVisibilityChange.verificationStatus}`),
+          trend: tCommon(`statusValues.${report.impactAssessmentSummary.aiVisibilityChange.trend}`),
+        })
+      : t('executiveSummaryNoImpact', {
+          projectName: report.projectName,
+          cycleGoal: report.cycleGoal,
+          cycleStatus: tCommon(`statusValues.${report.cycleStatus}`),
+          actionableCount: report.initialSituation?.actionableFindingsCount ?? 0,
+        })
+    : '';
+
+  const initialSituationSummary =
+    report && report.initialSituation
+      ? t('initialSituationSummary', {
+          projectName: report.projectName,
+          actionableCount: report.initialSituation.actionableFindingsCount,
+          aiVisibilityStatus: report.initialSituation.aiVisibilityStatus
+            ? tCommon(`statusValues.${report.initialSituation.aiVisibilityStatus}`)
+            : tCommon('unknown'),
+        })
+      : '';
 
   return (
     <main className="page">
@@ -120,7 +160,7 @@ export default async function ExecutiveClientReportPage({
           </Card>
 
           <Card title={t('executiveSummary')}>
-            <p>{report.executiveSummary}</p>
+            <p>{executiveSummary}</p>
           </Card>
 
           <Card title={t('initialSituation')}>
@@ -142,14 +182,26 @@ export default async function ExecutiveClientReportPage({
                   )}
                 </dd>
                 <dt>{t('summaryLabel')}</dt>
-                <dd>{report.initialSituation.summary}</dd>
+                <dd>{initialSituationSummary}</dd>
               </dl>
             )}
           </Card>
 
-          <ConclusionList title={t('keyFindings')} conclusions={report.keyFindings} t={t} tCommon={tCommon} />
-          <ConclusionList title={t('actionsCompleted')} conclusions={report.actionsCompleted} t={t} tCommon={tCommon} />
-          <ConclusionList title={t('improvementsAchieved')} conclusions={report.improvementsAchieved} t={t} tCommon={tCommon} />
+          <ConclusionList title={t('keyFindings')} conclusions={report.keyFindings} t={t} tCommon={tCommon} tRules={tRules} />
+          <ConclusionList
+            title={t('actionsCompleted')}
+            conclusions={report.actionsCompleted}
+            t={t}
+            tCommon={tCommon}
+            tRules={tRules}
+          />
+          <ConclusionList
+            title={t('improvementsAchieved')}
+            conclusions={report.improvementsAchieved}
+            t={t}
+            tCommon={tCommon}
+            tRules={tRules}
+          />
 
           <div className="grid-2">
             <Card title={t('impactAssessmentSummary')}>
@@ -186,8 +238,8 @@ export default async function ExecutiveClientReportPage({
                   </dd>
                   <dt>{t('entityCoverage')}</dt>
                   <dd>
-                    {report.aiVisibilityProgress.entityCoverageChange.baseline} →{' '}
-                    {report.aiVisibilityProgress.entityCoverageChange.verification}
+                    {tCommon(`statusValues.${report.aiVisibilityProgress.entityCoverageChange.baseline}`)} →{' '}
+                    {tCommon(`statusValues.${report.aiVisibilityProgress.entityCoverageChange.verification}`)}
                   </dd>
                 </dl>
               )}
@@ -198,14 +250,20 @@ export default async function ExecutiveClientReportPage({
             <ul className="stack-sm">
               {report.evidence.map((fact, index) => (
                 <li key={index} className="text-secondary">
-                  {fact.label}: {fact.value}
+                  {t(fact.label)}: {fact.value}
                 </li>
               ))}
             </ul>
           </Card>
 
-          <ConclusionList title={t('risks')} conclusions={report.risks} t={t} tCommon={tCommon} />
-          <ConclusionList title={t('recommendedNextCycleGoals')} conclusions={report.recommendedNextCycleGoals} t={t} tCommon={tCommon} />
+          <ConclusionList title={t('risks')} conclusions={report.risks} t={t} tCommon={tCommon} tRules={tRules} />
+          <ConclusionList
+            title={t('recommendedNextCycleGoals')}
+            conclusions={report.recommendedNextCycleGoals}
+            t={t}
+            tCommon={tCommon}
+            tRules={tRules}
+          />
 
           <div className="next-step">
             <div className="next-step__body">

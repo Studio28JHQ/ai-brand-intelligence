@@ -64,6 +64,8 @@
     "none": "None",
     "warning": "Warning",
     "success": "Success",
-    "failure": "Failure"
+    "failure": "Failure",
+    "partial": "Partial",
+    "covered": "Covered"
   }
 }

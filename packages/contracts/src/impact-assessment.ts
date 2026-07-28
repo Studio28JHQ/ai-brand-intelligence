@@ -3,9 +3,13 @@ import type { FindingComparisonEntry } from './audit-comparison';
 
 export type ImpactSummaryCategory = 'ai-visibility' | 'findings' | 'entity-coverage' | 'campaign-actions';
 
+// No `description` here: `messageKey` (a `rules` i18n domain `templates.*` key) plus `parameters`
+// is what the presentation layer resolves into a localized sentence — see
+// `docs/04_PROJECT/DECISION_LOG.md#cto-111`.
 export interface ImpactSummaryEntry {
   category: ImpactSummaryCategory;
-  description: string;
+  messageKey: string;
+  parameters: Record<string, string | number>;
 }
 
 export interface CampaignActionsVerified {

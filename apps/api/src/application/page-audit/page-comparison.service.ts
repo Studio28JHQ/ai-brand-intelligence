@@ -18,7 +18,6 @@ import { AiVisibilityReadRepository } from '../../infrastructure/comparison/ai-v
 import { KnowledgeGraphReadRepository } from '../../infrastructure/comparison/knowledge-graph-read.repository';
 import { computeScores } from '../scoring/compute-scores';
 import { generateOptimizationPlan } from '../optimization/generate-optimization-plan';
-import { resolveOptimizationRule } from '../optimization-knowledge-base/optimization-knowledge-base';
 
 const SCORE_KEYS = ['seo', 'aiVisibility', 'technical', 'content', 'accessibility', 'performance'] as const;
 
@@ -39,7 +38,6 @@ function toIssue(entry: FindingComparisonEntry): PageComparisonIssue {
     ruleId: entry.ruleId,
     ruleVersion: entry.ruleVersion,
     category: entry.category,
-    title: resolveOptimizationRule(entry.ruleId)?.title ?? entry.ruleId,
   };
 }
 

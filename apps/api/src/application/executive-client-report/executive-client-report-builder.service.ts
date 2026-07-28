@@ -152,20 +152,16 @@ export class ExecutiveClientReportBuilderService {
     const recommendedNextCycleGoals = buildRecommendedNextCycleGoals(latestPlan, latestFindings);
 
     const evidence = [
-      { label: 'Cycle Goal', value: cycle.goal },
-      { label: 'Cycle Status', value: cycle.status },
-      { label: 'Audits In Cycle', value: String(cycleAudits.length) },
-      { label: 'Key Findings', value: String(keyFindings.length) },
-      { label: 'Actions Completed', value: String(actionsCompleted.length) },
-      { label: 'Improvements Achieved', value: String(improvementsAchieved.length) },
-      { label: 'Remaining Risks', value: String(risks.length) },
+      { label: 'cycleGoal', value: cycle.goal },
+      { label: 'cycleStatus', value: cycle.status },
+      { label: 'auditsInCycle', value: String(cycleAudits.length) },
+      { label: 'keyFindings', value: String(keyFindings.length) },
+      { label: 'actionsCompleted', value: String(actionsCompleted.length) },
+      { label: 'improvementsAchieved', value: String(improvementsAchieved.length) },
+      { label: 'risks', value: String(risks.length) },
     ];
 
     const initialActionableCount = initialFindings.filter((finding) => finding.severity !== 'none').length;
-
-    const executiveSummary = impactAssessment
-      ? `${project.name}'s '${cycle.goal}' optimization cycle is currently '${cycle.status}'. ${improvementsAchieved.length} issue(s) were resolved and ${actionsCompleted.length} optimization action(s) completed, moving AI Visibility from '${impactAssessment.aiVisibilityChange.baselineStatus}' to '${impactAssessment.aiVisibilityChange.verificationStatus}' (${impactAssessment.aiVisibilityChange.trend}).`
-      : `${project.name}'s '${cycle.goal}' optimization cycle is currently '${cycle.status}'. ${initialActionableCount} actionable finding(s) were identified at the start of this cycle; impact has not yet been assessed.`;
 
     return {
       reportVersion: EXECUTIVE_CLIENT_REPORT_VERSION,
@@ -177,14 +173,13 @@ export class ExecutiveClientReportBuilderService {
       projectName: project.name,
       clientId: client.id,
       clientName: client.name,
-      executiveSummary,
       initialSituation: initialAudit
         ? {
             auditId: initialAudit.id,
             url: initialAudit.url,
             aiVisibilityStatus: initialAssessment?.status ?? null,
             assessedAt: initialAssessment?.assessedAt ?? null,
-            summary: `At the start of this cycle, ${project.name} had ${initialActionableCount} actionable finding(s) and an AI Visibility status of '${initialAssessment?.status ?? 'unknown'}'.`,
+            actionableFindingsCount: initialActionableCount,
           }
         : null,
       keyFindings,

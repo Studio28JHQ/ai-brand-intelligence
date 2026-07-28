@@ -11,7 +11,8 @@ interface OptimizationActionRecord {
   campaignId: string;
   projectId: string;
   auditId: string;
-  title: string;
+  optimizationRuleId: string;
+  optimizationRuleVersion: string;
   supportingFindingIds: unknown;
   status: string;
   createdAt: Date;
@@ -79,7 +80,8 @@ export class PrismaOptimizationActionRepository implements OptimizationActionRep
       campaignId: record.campaignId,
       projectId: record.projectId,
       auditId: record.auditId,
-      title: record.title,
+      optimizationRuleId: record.optimizationRuleId,
+      optimizationRuleVersion: record.optimizationRuleVersion,
       supportingFindingIds: record.supportingFindingIds as string[],
       status: record.status as OptimizationActionStatus,
       createdAt: record.createdAt,

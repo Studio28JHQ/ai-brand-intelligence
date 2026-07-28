@@ -21,6 +21,7 @@
     "@ai-visibility/entity-engine": "workspace:*",
     "@ai-visibility/extraction-engine": "workspace:*",
     "@ai-visibility/heuristics-engine": "workspace:*",
+    "@ai-visibility/i18n": "workspace:*",
     "@ai-visibility/inventory-engine": "workspace:*",
     "@ai-visibility/knowledge-graph-engine": "workspace:*",
     "@ai-visibility/rules": "workspace:*",

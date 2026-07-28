@@ -29,6 +29,7 @@ export const MESSAGE_DOMAINS = [
   'clients',
   'activity',
   'onboarding',
+  'rules',
 ] as const;
 
 export type MessageDomain = (typeof MESSAGE_DOMAINS)[number];

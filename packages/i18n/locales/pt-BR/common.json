@@ -64,6 +64,8 @@
     "none": "Nenhum",
     "warning": "Aviso",
     "success": "Sucesso",
-    "failure": "Falha"
+    "failure": "Falha",
+    "partial": "Parcial",
+    "covered": "Coberto"
   }
 }

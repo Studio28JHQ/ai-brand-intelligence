@@ -108,5 +108,15 @@
   "fullAuditDescription": "Auditoria Completa — o pipeline determinístico completo (SEO, Técnico, Conteúdo, Acessibilidade, Desempenho, Visibilidade em IA).",
   "quickAuditNotYetAvailable": "Ainda não disponível — executará um subconjunto menor e mais rápido de verificações.",
   "startingAudit": "Iniciando Auditoria…",
-  "confirmAndRunAudit": "Confirmar e Executar Auditoria"
+  "confirmAndRunAudit": "Confirmar e Executar Auditoria",
+  "sections": {
+    "metadata": "Metadados",
+    "headings": "Cabeçalhos",
+    "content": "Conteúdo",
+    "images": "Imagens",
+    "structured-data": "Dados Estruturados",
+    "technical": "Técnico",
+    "performance": "Desempenho",
+    "internal-links": "Links Internos"
+  }
 }

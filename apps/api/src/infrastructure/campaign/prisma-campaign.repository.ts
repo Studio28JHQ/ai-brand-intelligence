@@ -32,7 +32,8 @@ export class PrismaCampaignRepository implements CampaignRepository {
           create: actionSeeds.map((seed) => ({
             projectId,
             auditId: sourceAuditId,
-            title: seed.title,
+            optimizationRuleId: seed.optimizationRuleId,
+            optimizationRuleVersion: seed.optimizationRuleVersion,
             supportingFindingIds: seed.supportingFindingIds,
           })),
         },

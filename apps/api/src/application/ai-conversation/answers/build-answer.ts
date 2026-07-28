@@ -1,6 +1,7 @@
 import type { Finding, OptimizationItem, OptimizationLevel } from '@ai-visibility/contracts';
 import type { AiContext } from '../../ai-context/ai-context';
 import { sortByPriority } from '../../optimization/optimization-prioritization';
+import { resolveEnglishMessage, resolveRuleText } from '../../optimization-knowledge-base/optimization-rule-text';
 import type { ConversationIntentType } from '../conversation-session';
 import type {
   AiResponseFact,
@@ -31,7 +32,7 @@ function toOptimizationItemReference(item: OptimizationItem): AiResponseOptimiza
   return {
     optimizationRuleId: item.optimizationRuleId,
     optimizationRuleVersion: item.optimizationRuleVersion,
-    title: item.title,
+    title: resolveRuleText(item.optimizationRuleId).title,
     priority: item.priority,
   };
 }
@@ -53,10 +54,11 @@ function buildWhyAnswer(context: AiContext): AnswerContent {
     };
   }
 
+  const topItemText = resolveRuleText(topItem.optimizationRuleId);
   return {
-    interpretation: topItem.rationale,
+    interpretation: topItemText.rationale,
     facts: topItem.reasoning.evidence.map((entry) => ({ label: entry.field, value: entry.value })),
-    suggestedActions: [topItem.description],
+    suggestedActions: [topItemText.resolutionStrategy],
     confidence: topItem.reasoning.confidence,
     relatedFindings: findSupportingFindings(topItem, context.findings).map(toFindingReference),
     relatedOptimizationItems: [toOptimizationItemReference(topItem)],
@@ -77,13 +79,13 @@ function buildWhatShouldIDoFirstAnswer(context: AiContext): AnswerContent {
   }
 
   return {
-    interpretation: `Start with: ${topItem.title}.`,
+    interpretation: `Start with: ${resolveRuleText(topItem.optimizationRuleId).title}.`,
     facts: [
       { label: 'Priority', value: topItem.priority },
       { label: 'Expected Impact', value: topItem.expectedImpact },
       { label: 'Estimated Effort', value: topItem.estimatedEffort },
     ],
-    suggestedActions: [topItem.description],
+    suggestedActions: [resolveRuleText(topItem.optimizationRuleId).resolutionStrategy],
     confidence: topItem.reasoning.confidence,
     relatedFindings: findSupportingFindings(topItem, context.findings).map(toFindingReference),
     relatedOptimizationItems: [toOptimizationItemReference(topItem)],
@@ -113,7 +115,7 @@ function buildWhatChangedAnswer(context: AiContext): AnswerContent {
     interpretation: `AI Visibility trend: ${impact.aiVisibilityChange.trend}. ${impact.findingsResolvedCount} finding(s) resolved, ${impact.findingsIntroducedCount} introduced since the Baseline.`,
     facts: [...impact.improvements, ...impact.regressions].map((entry) => ({
       label: entry.category,
-      value: entry.description,
+      value: resolveEnglishMessage(entry.messageKey, entry.parameters),
     })),
     suggestedActions: impact.remainingOpportunities.map((entry) => `Address remaining issue: ${entry.ruleId}`),
     confidence: 'high',
@@ -138,7 +140,7 @@ function buildWhatIsBlockingVisibilityAnswer(context: AiContext): AnswerContent 
   return {
     interpretation: `${actionableFindings.length} issue(s) are currently blocking full AI Visibility.`,
     facts: actionableFindings.map((finding) => ({ label: finding.sourceEngine, value: `${finding.ruleId}: ${finding.outcome}` })),
-    suggestedActions: context.optimizationPlan.map((item) => item.description),
+    suggestedActions: context.optimizationPlan.map((item) => resolveRuleText(item.optimizationRuleId).resolutionStrategy),
     confidence: 'high',
     relatedFindings: actionableFindings.map(toFindingReference),
     relatedOptimizationItems: context.optimizationPlan.map(toOptimizationItemReference),

@@ -9,6 +9,7 @@ import { findRuleExplanationForItem } from '../../../../lib/recommendation-expla
 import { computeNextStep } from '../../../../lib/next-step';
 import { ReauditChangedPagesButton } from './reaudit-changed-pages-button';
 import { getTranslations } from '../../../../../lib/i18n/server';
+import { assumptionDescription, ruleRationale, ruleResolutionStrategy, ruleTitle } from '../../../../lib/rule-text';
 
 export default async function ExecutiveDashboardPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -20,6 +21,7 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
   const tAudits = await getTranslations('audits');
   const tCommon = await getTranslations('common');
   const tFindings = await getTranslations('findings');
+  const tRules = await getTranslations('rules');
   const notApplicable = tAudits('notApplicable');
 
   return (
@@ -176,18 +178,18 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
             )}
             <div className="stack">
               {dashboard.priorityActions.map((action, index) => (
-                <Card key={`${action.title}-${index}`} muted>
+                <Card key={`${action.optimizationRuleId}-${index}`} muted>
                   <div className="card__header">
-                    <h4>{action.title}</h4>
+                    <h4>{ruleTitle(tRules, action.optimizationRuleId)}</h4>
                     <Badge variant={statusToVariant(action.priority)}>{tCommon(`statusValues.${action.priority}`)}</Badge>
                   </div>
-                  <p>{action.description}</p>
-                  <p className="text-secondary">{action.rationale}</p>
+                  <p>{ruleResolutionStrategy(tRules, action.optimizationRuleId)}</p>
+                  <p className="text-secondary">{ruleRationale(tRules, action.optimizationRuleId)}</p>
                   <dl className="dl">
                     <dt>{tOptimization('expectedImpact')}</dt>
-                    <dd>{action.expectedImpact}</dd>
+                    <dd>{tCommon(`statusValues.${action.expectedImpact}`)}</dd>
                     <dt>{tOptimization('estimatedEffort')}</dt>
-                    <dd>{action.estimatedEffort}</dd>
+                    <dd>{tCommon(`statusValues.${action.estimatedEffort}`)}</dd>
                     <dt>{tOptimization('supportingFindings')}</dt>
                     <dd>{action.supportingFindingIds.join(', ') || t('none')}</dd>
                     <dt>{tOptimization('optimizationRule')}</dt>
@@ -219,7 +221,7 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
                               ruleId: rule.ruleId,
                               version: rule.ruleVersion,
                               category: rule.category,
-                              severity: rule.severity,
+                              severity: tCommon(`statusValues.${rule.severity}`),
                             })}
                           </li>
                         ))}
@@ -252,16 +254,18 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
                       </p>
                       <p className="text-secondary">
                         {t('impactLevelOn', {
-                          level: action.reasoning.expectedOutcome.impactLevel,
+                          level: tCommon(`statusValues.${action.reasoning.expectedOutcome.impactLevel}`),
                           dimension: action.reasoning.expectedOutcome.targetDimension,
                         })}
                       </p>
-                      <p className="text-secondary">{t('confidenceColon', { confidence: action.reasoning.confidence })}</p>
+                      <p className="text-secondary">
+                        {t('confidenceColon', { confidence: tCommon(`statusValues.${action.reasoning.confidence}`) })}
+                      </p>
                       <p>{t('assumptions')}</p>
                       <ul className="stack-sm">
                         {action.reasoning.assumptions.map((assumption) => (
                           <li key={assumption.code} className="text-secondary">
-                            [{assumption.code}] {assumption.description}
+                            [{assumption.code}] {assumptionDescription(tRules, assumption.code)}
                           </li>
                         ))}
                       </ul>
@@ -345,7 +349,8 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
                   <ul className="stack-sm">
                     {dashboard.campaignImpact.improvements.map((entry, index) => (
                       <li key={`${entry.category}-${index}`} className="text-secondary">
-                        <Badge variant="neutral">{tCommon(`statusValues.${entry.category}`)}</Badge> {entry.description}
+                        <Badge variant="neutral">{tCommon(`statusValues.${entry.category}`)}</Badge>{' '}
+                        {tRules(entry.messageKey, entry.parameters)}
                       </li>
                     ))}
                   </ul>

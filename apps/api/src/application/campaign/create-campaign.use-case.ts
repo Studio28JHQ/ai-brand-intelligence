@@ -63,7 +63,11 @@ export class CreateCampaignUseCase {
       projectId,
       latestCompleted.id,
       latestCompleted.cycleId,
-      items.map((item) => ({ title: item.title, supportingFindingIds: item.supportingFindingIds })),
+      items.map((item) => ({
+        optimizationRuleId: item.optimizationRuleId,
+        optimizationRuleVersion: item.optimizationRuleVersion,
+        supportingFindingIds: item.supportingFindingIds,
+      })),
     );
   }
 }

@@ -8,6 +8,7 @@ import { createAudit, AuditCompletionResult, CreateAuditState, listClients, list
 import { Badge, Banner, Breadcrumbs, Card, EmptyState, PageHeader, SkeletonBlock, statusToVariant } from '../../components/ui';
 import { useTranslations } from '../../../lib/i18n/client';
 import type { Translator } from '@ai-visibility/i18n';
+import { ruleRationale, ruleResolutionStrategy, ruleTitle } from '../../lib/rule-text';
 
 const initialState: CreateAuditState = {};
 
@@ -18,6 +19,7 @@ function AuditResultInspector({
   tFindings,
   tOptimization,
   tCommon,
+  tRules,
 }: {
   result: AuditCompletionResult;
   t: Translator;
@@ -25,6 +27,7 @@ function AuditResultInspector({
   tFindings: Translator;
   tOptimization: Translator;
   tCommon: Translator;
+  tRules: Translator;
 }) {
   return (
     <Card title={t('auditCreated')}>
@@ -107,18 +110,18 @@ function AuditResultInspector({
         <h3>{tOptimization('title')}</h3>
         {result.optimizationPlan.length === 0 && <EmptyState title={t('noOptimizationItems')} />}
         {result.optimizationPlan.map((item) => (
-          <Card key={item.title + item.supportingFindingIds.join(',')} muted>
+          <Card key={item.optimizationRuleId + item.supportingFindingIds.join(',')} muted>
             <div className="card__header">
-              <h4>{item.title}</h4>
+              <h4>{ruleTitle(tRules, item.optimizationRuleId)}</h4>
               <Badge variant={statusToVariant(item.priority)}>{tCommon(`statusValues.${item.priority}`)}</Badge>
             </div>
-            <p>{item.description}</p>
-            <p className="text-secondary">{item.rationale}</p>
+            <p>{ruleResolutionStrategy(tRules, item.optimizationRuleId)}</p>
+            <p className="text-secondary">{ruleRationale(tRules, item.optimizationRuleId)}</p>
             <dl className="dl">
               <dt>{tOptimization('expectedImpact')}</dt>
-              <dd>{item.expectedImpact}</dd>
+              <dd>{tCommon(`statusValues.${item.expectedImpact}`)}</dd>
               <dt>{tOptimization('estimatedEffort')}</dt>
-              <dd>{item.estimatedEffort}</dd>
+              <dd>{tCommon(`statusValues.${item.estimatedEffort}`)}</dd>
             </dl>
           </Card>
         ))}
@@ -135,6 +138,7 @@ export default function ProjectsPage() {
   const tFindings = useTranslations('findings');
   const tOptimization = useTranslations('optimization');
   const tCommon = useTranslations('common');
+  const tRules = useTranslations('rules');
   const searchParams = useSearchParams();
   const clientIdFilter = searchParams.get('clientId');
 
@@ -245,6 +249,7 @@ export default function ProjectsPage() {
           tFindings={tFindings}
           tOptimization={tOptimization}
           tCommon={tCommon}
+          tRules={tRules}
         />
       )}
     </main>

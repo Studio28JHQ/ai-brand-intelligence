@@ -2,6 +2,7 @@ import type { AnalysisSignal, CategoryScore, Finding, RuleExplanation, Scores } 
 import { Badge, Card, statusToVariant } from './ui';
 import { getTranslations } from '../../lib/i18n/server';
 import type { Translator } from '@ai-visibility/i18n';
+import { ruleTitle } from '../lib/rule-text';
 
 const CATEGORY_LABEL_KEYS: Record<Exclude<keyof Scores, 'overall'>, string> = {
   seo: 'categorySeo',
@@ -113,6 +114,7 @@ function CategoryExplainability({ category, t, tCommon }: { category: CategorySc
 export async function ScoresPanel({ scores }: { scores: Scores }) {
   const t = await getTranslations('findings');
   const tCommon = await getTranslations('common');
+  const tRules = await getTranslations('rules');
 
   return (
     <Card
@@ -127,30 +129,33 @@ export async function ScoresPanel({ scores }: { scores: Scores }) {
       <div className="grid-3">
         {CATEGORY_KEYS.map((key) => {
           const category = scores[key];
+          const issueRules = category.rules.filter((rule) => rule.classification === 'issue');
+          const warningRules = category.rules.filter((rule) => rule.classification === 'warning');
+          const passedCount = category.rules.filter((rule) => rule.classification === 'passed').length;
           return (
             <Card key={key} muted title={t(CATEGORY_LABEL_KEYS[key])} actions={<ScoreBadge score={category.score} t={t} />}>
               <CoverageLine category={category} t={t} tCommon={tCommon} />
               {category.status === 'incomplete' && <p className="text-secondary">{t('categoryIncomplete')}</p>}
               {category.status === 'insufficient-data' && <p className="text-secondary">{t('categoryInsufficientData')}</p>}
-              {category.issues.length === 0 && category.warnings.length === 0 && category.evaluatedRules > 0 && (
-                <p className="text-secondary">{t('noIssuesFound', { count: category.passedChecks.length })}</p>
+              {issueRules.length === 0 && warningRules.length === 0 && category.evaluatedRules > 0 && (
+                <p className="text-secondary">{t('noIssuesFound', { count: passedCount })}</p>
               )}
-              {category.issues.length > 0 && (
+              {issueRules.length > 0 && (
                 <div>
                   <p className="text-secondary">{t('issues')}</p>
                   <ul>
-                    {category.issues.map((issue) => (
-                      <li key={issue}>{issue}</li>
+                    {issueRules.map((rule) => (
+                      <li key={rule.finding.id}>{ruleTitle(tRules, rule.finding.ruleId)}</li>
                     ))}
                   </ul>
                 </div>
               )}
-              {category.warnings.length > 0 && (
+              {warningRules.length > 0 && (
                 <div>
                   <p className="text-secondary">{t('warnings')}</p>
                   <ul>
-                    {category.warnings.map((warning) => (
-                      <li key={warning}>{warning}</li>
+                    {warningRules.map((rule) => (
+                      <li key={rule.finding.id}>{ruleTitle(tRules, rule.finding.ruleId)}</li>
                     ))}
                   </ul>
                 </div>

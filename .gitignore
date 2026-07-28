@@ -17,6 +17,7 @@ build/
 out/
 .next/
 *.log
+*.tsbuildinfo
 
 # Generated Prisma Client
 **/src/generated/

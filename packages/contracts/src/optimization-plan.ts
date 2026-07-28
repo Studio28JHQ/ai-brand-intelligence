@@ -6,10 +6,11 @@ export type OptimizationPriority = OptimizationLevel;
 
 export type OptimizationItemStatus = 'open';
 
+// No title/description/rationale here: `optimizationRuleId` is the stable semantic identifier the
+// presentation layer resolves into localized title/resolutionStrategy/rationale via the `rules`
+// i18n domain (`catalog.<optimizationRuleId>.*`) — see `docs/04_PROJECT/DECISION_LOG.md#cto-111`.
+// This is a pure per-request projection, never persisted with resolved text.
 export interface OptimizationItem {
-  title: string;
-  description: string;
-  rationale: string;
   expectedImpact: OptimizationLevel;
   estimatedEffort: OptimizationLevel;
   priority: OptimizationPriority;

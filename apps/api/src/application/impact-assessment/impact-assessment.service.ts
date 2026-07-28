@@ -80,33 +80,47 @@ export class ImpactAssessmentService {
     for (const entry of comparison.findings.resolvedFindings) {
       improvements.push({
         category: 'findings',
-        description: `Resolved '${entry.ruleId}' (${entry.category}) issue from the ${entry.sourceEngine} engine.`,
+        messageKey: 'templates.findingResolved',
+        parameters: { ruleId: entry.ruleId, category: entry.category, sourceEngine: entry.sourceEngine },
       });
     }
     for (const entry of comparison.findings.newFindings) {
       regressions.push({
         category: 'findings',
-        description: `New '${entry.ruleId}' (${entry.category}) issue introduced by the ${entry.sourceEngine} engine.`,
+        messageKey: 'templates.findingIntroduced',
+        parameters: { ruleId: entry.ruleId, category: entry.category, sourceEngine: entry.sourceEngine },
       });
     }
 
     if (comparison.aiVisibility.statusChanged) {
-      const description = `AI Visibility status changed from '${comparison.aiVisibility.baselineStatus}' to '${comparison.aiVisibility.targetStatus}'.`;
-      (trend === 'improved' ? improvements : regressions).push({ category: 'ai-visibility', description });
+      const entry: ImpactSummaryEntry = {
+        category: 'ai-visibility',
+        messageKey: 'templates.aiVisibilityStatusChanged',
+        parameters: {
+          baselineStatus: comparison.aiVisibility.baselineStatus,
+          verificationStatus: comparison.aiVisibility.targetStatus,
+        },
+      };
+      (trend === 'improved' ? improvements : regressions).push(entry);
     }
 
     if (verificationCoverageRank !== baselineCoverageRank) {
-      const description = `Entity coverage changed from '${comparison.aiVisibility.baselineEntityCoverage}' to '${comparison.aiVisibility.targetEntityCoverage}'.`;
-      (verificationCoverageRank > baselineCoverageRank ? improvements : regressions).push({
+      const entry: ImpactSummaryEntry = {
         category: 'entity-coverage',
-        description,
-      });
+        messageKey: 'templates.entityCoverageChanged',
+        parameters: {
+          baselineCoverage: comparison.aiVisibility.baselineEntityCoverage,
+          verificationCoverage: comparison.aiVisibility.targetEntityCoverage,
+        },
+      };
+      (verificationCoverageRank > baselineCoverageRank ? improvements : regressions).push(entry);
     }
 
     if (verifiedActionCount > 0) {
       improvements.push({
         category: 'campaign-actions',
-        description: `${verifiedActionCount} of ${actions.length} campaign actions confirmed resolved by this audit.`,
+        messageKey: 'templates.campaignActionsVerified',
+        parameters: { verifiedCount: verifiedActionCount, totalCount: actions.length },
       });
     }
 

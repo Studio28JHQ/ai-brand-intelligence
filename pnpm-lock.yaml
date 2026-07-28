@@ -43,6 +43,9 @@ importers:
       '@ai-visibility/heuristics-engine':
         specifier: workspace:*
         version: link:../../services/heuristics
+      '@ai-visibility/i18n':
+        specifier: workspace:*
+        version: link:../../packages/i18n
       '@ai-visibility/inventory-engine':
         specifier: workspace:*
         version: link:../../services/inventory

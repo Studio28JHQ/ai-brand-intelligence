@@ -108,5 +108,15 @@
   "fullAuditDescription": "Full Audit — the complete deterministic pipeline (SEO, Technical, Content, Accessibility, Performance, AI Visibility).",
   "quickAuditNotYetAvailable": "Not yet available — will run a smaller, faster subset of checks.",
   "startingAudit": "Starting Audit…",
-  "confirmAndRunAudit": "Confirm & Run Audit"
+  "confirmAndRunAudit": "Confirm & Run Audit",
+  "sections": {
+    "metadata": "Metadata",
+    "headings": "Headings",
+    "content": "Content",
+    "images": "Images",
+    "structured-data": "Structured Data",
+    "technical": "Technical",
+    "performance": "Performance",
+    "internal-links": "Internal Links"
+  }
 }

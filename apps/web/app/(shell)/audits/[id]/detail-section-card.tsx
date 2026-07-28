@@ -4,6 +4,7 @@ import { RecommendationExplainability } from '../../../components/recommendation
 import type { PageDetailSection } from './page-detail';
 import { getTranslations } from '../../../../lib/i18n/server';
 import type { Translator } from '@ai-visibility/i18n';
+import { ruleResolutionStrategy, ruleTitle } from '../../../lib/rule-text';
 
 function findRuleForItem(rules: RuleExplanation[], item: OptimizationItem): RuleExplanation | undefined {
   return rules.find((rule) => item.supportingFindingIds.includes(rule.finding.id));
@@ -58,11 +59,13 @@ function RecommendationsBlock({
   rules,
   t,
   tCommon,
+  tRules,
 }: {
   recommendations: OptimizationItem[];
   rules: RuleExplanation[];
   t: Translator;
   tCommon: Translator;
+  tRules: Translator;
 }) {
   if (recommendations.length === 0) {
     return (
@@ -77,12 +80,12 @@ function RecommendationsBlock({
       <p className="text-secondary">{t('recommendations')}</p>
       <div className="stack-sm">
         {recommendations.map((item, index) => (
-          <Card key={`${item.title}-${index}`} muted>
+          <Card key={`${item.optimizationRuleId}-${index}`} muted>
             <div className="card__header">
-              <h4>{item.title}</h4>
+              <h4>{ruleTitle(tRules, item.optimizationRuleId)}</h4>
               <Badge variant={statusToVariant(item.priority)}>{tCommon(`statusValues.${item.priority}`)}</Badge>
             </div>
-            <p>{item.description}</p>
+            <p>{ruleResolutionStrategy(tRules, item.optimizationRuleId)}</p>
             <RecommendationExplainability item={item} rule={findRuleForItem(rules, item)} />
           </Card>
         ))}
@@ -99,10 +102,12 @@ export async function DetailSectionCard({ section }: { section: PageDetailSectio
   const t = await getTranslations('audits');
   const tFindings = await getTranslations('findings');
   const tCommon = await getTranslations('common');
+  const tRules = await getTranslations('rules');
+  const sectionTitle = t(`sections.${section.key}`);
 
   if (section.rules.length === 0) {
     return (
-      <Card title={section.title}>
+      <Card title={sectionTitle}>
         <EmptyState title={t('noDataTitle')} description={t('noRuleEvaluatedSection')} />
       </Card>
     );
@@ -114,14 +119,20 @@ export async function DetailSectionCard({ section }: { section: PageDetailSectio
   const skipped = section.rules.filter((rule) => rule.classification === 'skipped');
 
   return (
-    <Card title={section.title}>
+    <Card title={sectionTitle}>
       <div className="stack">
         <RuleGroup label={t('issuesLabel')} rules={issues} />
         <RuleGroup label={t('warningsLabel')} rules={warnings} />
         <RuleGroup label={t('passedChecksLabel')} rules={passed} />
         <RuleGroup label={t('skippedLabel')} rules={skipped} />
         <EvidenceBlock rules={section.rules} label={tFindings('evidence')} />
-        <RecommendationsBlock recommendations={section.recommendations} rules={section.rules} t={t} tCommon={tCommon} />
+        <RecommendationsBlock
+          recommendations={section.recommendations}
+          rules={section.rules}
+          t={t}
+          tCommon={tCommon}
+          tRules={tRules}
+        />
       </div>
     </Card>
   );

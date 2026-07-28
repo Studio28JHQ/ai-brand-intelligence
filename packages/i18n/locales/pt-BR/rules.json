@@ -1,0 +1,88 @@
+{
+  "catalog": {
+    "discovery-execution": {
+      "title": "Resolver problema de execução de descoberta",
+      "rationale": "A Descoberta estabelece a URL normalizada e a detecção de recursos das quais todas as etapas posteriores do pipeline dependem; se falhar, nenhum outro sinal de Visibilidade em IA pode ser produzido para este Projeto.",
+      "resolutionStrategy": "Verifique se a URL de destino está acessível e resolve corretamente, depois execute a auditoria novamente."
+    },
+    "crawl-execution": {
+      "title": "Resolver problema de execução de rastreamento",
+      "rationale": "O rastreamento obtém o conteúdo da página a partir do qual o inventário, a extração de entidades e todo sinal de Visibilidade em IA posterior são construídos.",
+      "resolutionStrategy": "Confirme se a página retorna uma resposta HTTP bem-sucedida e não está bloqueada por robots.txt ou autenticação, depois execute a auditoria novamente."
+    },
+    "inventory-execution": {
+      "title": "Resolver problema de execução de inventário",
+      "rationale": "O Inventário extrai os sinais estruturais na página usados para a construção de entidades e do grafo de conhecimento.",
+      "resolutionStrategy": "Verifique se o HTML rastreado está bem formado e contém elementos estruturais extraíveis, depois execute a auditoria novamente."
+    },
+    "seo-metadata-quality": {
+      "title": "Corrigir título e meta descrição ausentes ou de tamanho incorreto",
+      "rationale": "O título e a meta descrição são o texto principal que os mecanismos de busca e os sistemas de IA usam para resumir e representar esta página. Um título/descrição ausente ou de tamanho incorreto enfraquece tanto o clique na busca quanto a precisão com que os sistemas de IA podem descrever a página.",
+      "resolutionStrategy": "Escreva um título único entre 30 e 60 caracteres e uma meta descrição entre 70 e 160 caracteres que resumam com precisão o conteúdo da página."
+    },
+    "seo-heading-structure": {
+      "title": "Corrigir a estrutura de cabeçalhos",
+      "rationale": "Uma página precisa de exatamente um H1 e uma hierarquia de cabeçalhos que nunca pule um nível para que leitores de tela e sistemas de IA interpretem corretamente seu esquema. Cabeçalhos ausentes, duplicados ou vazios tornam a estrutura da página ambígua para ambos os públicos.",
+      "resolutionStrategy": "Use exatamente um H1 por página, evite pular níveis de cabeçalho (por exemplo, de H2 direto para H4), e remova ou preencha qualquer tag de cabeçalho vazia."
+    },
+    "seo-content-depth": {
+      "title": "Expandir o conteúdo escasso da página",
+      "rationale": "Páginas com muito pouco texto no corpo dão aos mecanismos de busca e aos sistemas de IA pouquíssimo sinal para entender do que a página trata, reduzindo tanto o potencial de classificação quanto a chance de ser citada com precisão.",
+      "resolutionStrategy": "Expanda o conteúdo da página para pelo menos 300 palavras de texto genuinamente útil e relacionado ao tema."
+    },
+    "seo-image-accessibility": {
+      "title": "Adicionar texto alternativo ausente nas imagens",
+      "rationale": "Imagens sem texto alternativo são invisíveis para leitores de tela e para sistemas de busca/IA que dependem do texto alternativo para entender o conteúdo da imagem, prejudicando tanto a conformidade de acessibilidade quanto a descoberta relacionada a imagens.",
+      "resolutionStrategy": "Adicione texto alternativo descritivo a cada imagem de conteúdo; use alt=\"\" apenas para imagens genuinamente decorativas."
+    },
+    "seo-structured-data": {
+      "title": "Adicionar dados estruturados e tags de pré-visualização social",
+      "rationale": "JSON-LD, OpenGraph e as tags Twitter Card são a forma como mecanismos de busca e sistemas de IA identificam de forma confiável entidades, tipo de página e conteúdo de pré-visualização social nesta página. Sem eles, a página depende inteiramente de inferência de texto não estruturado.",
+      "resolutionStrategy": "Adicione dados estruturados JSON-LD válidos para o tipo de página, além de tags meta OpenGraph e Twitter Card."
+    },
+    "seo-indexability": {
+      "title": "Remover os bloqueios de indexabilidade",
+      "rationale": "Uma página bloqueada para indexação (por status HTTP, meta robots, X-Robots-Tag, ou um canonical apontando para outro lugar) não pode aparecer em resultados de busca nem ser recomendada por sistemas de IA, não importa quão bom seja seu conteúdo.",
+      "resolutionStrategy": "Garanta que a página retorne um status 2xx, não carregue uma diretiva noindex, e que sua tag canonical seja autorreferente (ou aponte intencionalmente para a página canônica correta)."
+    },
+    "seo-security-posture": {
+      "title": "Servir a página de forma segura via HTTPS sem conteúdo misto",
+      "rationale": "Os navegadores alertam ativamente os usuários sobre páginas inseguras e recursos de conteúdo misto, e os mecanismos de busca consideram HTTPS no ranqueamento. Uma página insegura prejudica tanto a confiança quanto a visibilidade.",
+      "resolutionStrategy": "Sirva a página via HTTPS e atualize quaisquer referências de recursos http:// restantes para https://."
+    },
+    "seo-technical-foundation": {
+      "title": "Adicionar robots.txt/sitemap.xml e encurtar URLs longas",
+      "rationale": "robots.txt e sitemap.xml são a forma como os mecanismos de busca descobrem e rastreiam um site de maneira eficiente, e URLs excessivamente longas são mais difíceis de compartilhar, indexar e interpretar. A ausência de qualquer um enfraquece a rastreabilidade geral.",
+      "resolutionStrategy": "Publique um robots.txt e um sitemap.xml na raiz do site, e mantenha as URLs razoavelmente curtas e descritivas."
+    },
+    "seo-performance-estimate": {
+      "title": "Melhorar o desempenho estimado da página",
+      "rationale": "HTML pesado, DOMs grandes e scripts que bloqueiam a renderização deixam o carregamento da página mais lento, prejudicando tanto a experiência do usuário quanto os sinais de ranqueamento ligados aos Core Web Vitals.",
+      "resolutionStrategy": "Reduza o tamanho do HTML/DOM quando possível, e marque scripts não críticos como async/defer para reduzir o JavaScript que bloqueia a renderização."
+    },
+    "seo-internal-linking": {
+      "title": "Adicionar links internos para esta página",
+      "rationale": "Uma página sem links internos apontando para ela é mais difícil de ser descoberta e ranqueada pelos mecanismos de busca, e sinaliza uma arquitetura de site fraca ao redor desse conteúdo.",
+      "resolutionStrategy": "Vincule esta página a partir de pelo menos algumas outras páginas relevantes do site."
+    },
+    "ai-visibility-readiness": {
+      "title": "Melhorar a prontidão de Visibilidade em IA",
+      "rationale": "Sistemas de IA raciocinam sobre uma marca por meio das entidades e relacionamentos que conseguem extrair de uma página. Cobertura incompleta de entidades ou relacionamentos significa que os sistemas de IA têm sinal estruturado insuficiente para representar esta página com precisão.",
+      "resolutionStrategy": "Reforce os sinais de entidade da página (nome da organização, domínio, relacionamentos claros entre eles) para que o Grafo de Conhecimento construído a partir desta página fique completo."
+    }
+  },
+  "assumptions": {
+    "BINARY_RULE_OUTCOME": "O Motor de Regras retorna apenas um resultado definitivo de aprovado ou reprovado para esta Descoberta, nunca um parcial ou incerto.",
+    "UNIFORM_RULE_APPLICABILITY": "A orientação da Regra de Otimização se aplica da mesma forma independentemente do contexto específico deste Projeto.",
+    "FIXED_PIPELINE_ORDER": "O Motor de Fluxo de Trabalho executa os Motores de Negócio na mesma ordem fixa para cada Auditoria."
+  },
+  "templates": {
+    "findingResolved": "Problema '{ruleId}' ({category}) resolvido no motor {sourceEngine}.",
+    "findingIntroduced": "Novo problema '{ruleId}' ({category}) introduzido pelo motor {sourceEngine}.",
+    "findingUnresolved": "Não resolvido: '{ruleId}' ({category}) ainda está falhando no motor {sourceEngine}.",
+    "aiVisibilityStatusChanged": "O status de Visibilidade em IA mudou de '{baselineStatus}' para '{verificationStatus}'.",
+    "entityCoverageChanged": "A cobertura de entidades mudou de '{baselineCoverage}' para '{verificationCoverage}'.",
+    "campaignActionsVerified": "{verifiedCount} de {totalCount} ações de campanha confirmadas como resolvidas por esta auditoria.",
+    "findingRequiresAttention": "A descoberta '{ruleId}' requer atenção."
+  }
+}

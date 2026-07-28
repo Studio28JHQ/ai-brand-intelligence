@@ -27,11 +27,13 @@ export interface CategoryScoreComparison {
 
 // A Finding's real ruleId/category, with its human title resolved from the same Optimization
 // Knowledge Base every other Score/Recommendation surface already uses — never a fabricated label.
+// No `title` here: `ruleId` is the stable semantic identifier the presentation layer resolves into
+// a localized title via the `rules` i18n domain (`catalog.<ruleId>.title`) — see
+// `docs/04_PROJECT/DECISION_LOG.md#cto-111`.
 export interface PageComparisonIssue {
   ruleId: string;
   ruleVersion: string;
   category: string;
-  title: string;
 }
 
 export interface PageComparisonResult {

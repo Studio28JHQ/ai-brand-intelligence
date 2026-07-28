@@ -5,6 +5,7 @@ import type { CampaignMetadata } from '@ai-visibility/contracts';
 import { createCampaign, getLatestCampaign, setActionStatus, setCampaignStatus } from '../../../../actions';
 import { Badge, Banner, Card, ConfirmButton, EmptyState, SkeletonBlock, StageProgress, statusToVariant } from '../../../../components/ui';
 import { useTranslations } from '../../../../../lib/i18n/client';
+import { ruleTitle } from '../../../../lib/rule-text';
 
 const CAMPAIGN_STAGES = ['draft', 'active', 'completed', 'archived'];
 
@@ -25,6 +26,7 @@ const NEXT_ACTION_STATUS: Record<string, 'in-progress' | 'completed' | 'verified
 export function CampaignManager({ projectId }: { projectId: string }) {
   const t = useTranslations('optimization');
   const tCommon = useTranslations('common');
+  const tRules = useTranslations('rules');
   const [campaign, setCampaign] = useState<CampaignMetadata | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | undefined>(undefined);
@@ -153,7 +155,7 @@ export function CampaignManager({ projectId }: { projectId: string }) {
                   <tbody>
                     {campaign.actions.map((action) => (
                       <tr key={action.id}>
-                        <td>{action.title}</td>
+                        <td>{ruleTitle(tRules, action.optimizationRuleId)}</td>
                         <td>
                           <Badge variant={statusToVariant(action.status)}>{tCommon(`statusValues.${action.status}`)}</Badge>
                         </td>

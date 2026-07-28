@@ -43,12 +43,13 @@ export interface RuleExplanation {
   classification: RuleClassification;
 }
 
+// No issues/warnings/passedChecks string arrays here: they were redundant, English-text
+// projections of `rules` (each already carries `finding.ruleId` + `classification`) — the
+// presentation layer derives the same groupings by filtering `rules` and resolves each ruleId's
+// localized title via the `rules` i18n domain, per `docs/04_PROJECT/DECISION_LOG.md#cto-111`.
 export interface CategoryScore extends CategoryScoreCoverage {
   score: number | null;
   status: CategoryScoreStatus;
-  issues: string[];
-  warnings: string[];
-  passedChecks: string[];
   rules: RuleExplanation[];
 }
 

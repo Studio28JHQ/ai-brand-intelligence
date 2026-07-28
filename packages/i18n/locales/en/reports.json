@@ -43,5 +43,10 @@
   "goToWorkspace": "Go to Workspace",
   "relatedFindings": "Related Findings",
   "relatedOptimizationRules": "Related Optimization Rules",
-  "reasoningConfidence": "Reasoning Confidence"
+  "reasoningConfidence": "Reasoning Confidence",
+  "auditsInCycle": "Audits In Cycle",
+  "outcome": "Outcome",
+  "executiveSummaryWithImpact": "{projectName}'s '{cycleGoal}' optimization cycle is currently '{cycleStatus}'. {resolvedCount} issue(s) were resolved and {actionsCount} optimization action(s) completed, moving AI Visibility from '{baselineStatus}' to '{verificationStatus}' ({trend}).",
+  "executiveSummaryNoImpact": "{projectName}'s '{cycleGoal}' optimization cycle is currently '{cycleStatus}'. {actionableCount} actionable finding(s) were identified at the start of this cycle; impact has not yet been assessed.",
+  "initialSituationSummary": "At the start of this cycle, {projectName} had {actionableCount} actionable finding(s) and an AI Visibility status of '{aiVisibilityStatus}'."
 }

@@ -145,12 +145,13 @@ model OptimizationCampaign {
 }
 
 model OptimizationAction {
-  id                   String    @id @default(uuid())
-  campaignId           String    @map("campaign_id")
-  projectId            String    @map("project_id")
-  auditId              String    @map("audit_id")
-  title                String
-  supportingFindingIds Json      @map("supporting_finding_ids")
+  id                     String    @id @default(uuid())
+  campaignId             String    @map("campaign_id")
+  projectId              String    @map("project_id")
+  auditId                String    @map("audit_id")
+  optimizationRuleId     String    @map("optimization_rule_id")
+  optimizationRuleVersion String   @map("optimization_rule_version")
+  supportingFindingIds   Json      @map("supporting_finding_ids")
   status               String    @default("pending")
   createdAt            DateTime  @default(now()) @map("created_at")
   startedAt            DateTime? @map("started_at")

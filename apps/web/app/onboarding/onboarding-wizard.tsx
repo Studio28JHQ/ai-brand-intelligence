@@ -15,6 +15,7 @@ import {
 } from '../actions';
 import { Badge, Banner, Card, EmptyState, StageProgress, statusToVariant } from '../components/ui';
 import { useTranslations } from '../../lib/i18n/client';
+import { ruleTitle } from '../lib/rule-text';
 import {
   loadAgencyProfile,
   markOnboardingCompleted,
@@ -31,7 +32,7 @@ interface ReportSummary {
   findingsCount: number;
   topFindings: { ruleId: string; severity: string }[];
   planItemsCount: number;
-  topPlanItems: { title: string; priority: string }[];
+  topPlanItems: { optimizationRuleId: string; priority: string }[];
 }
 
 const initialAuditState: CreateAuditState = {};
@@ -39,6 +40,7 @@ const initialAuditState: CreateAuditState = {};
 export function OnboardingWizard() {
   const t = useTranslations('onboarding');
   const tCommon = useTranslations('common');
+  const tRules = useTranslations('rules');
   const STEP_LABEL: Record<Step, string> = {
     welcome: t('steps.welcome'),
     agency: t('steps.agency'),
@@ -324,7 +326,7 @@ export function OnboardingWizard() {
               <ul className="stack-sm">
                 {report.topPlanItems.map((item, index) => (
                   <li key={index}>
-                    {item.title} —{' '}
+                    {ruleTitle(tRules, item.optimizationRuleId)} —{' '}
                     <Badge variant={statusToVariant(item.priority)}>{tCommon(`statusValues.${item.priority}`)}</Badge>
                   </li>
                 ))}
@@ -376,13 +378,13 @@ export function OnboardingWizard() {
 function summarizeFromAnalysis(
   aiVisibilityStatus: string | null,
   findings: { ruleId: string; severity: string }[],
-  planItems: { title: string; priority: string }[],
+  planItems: { optimizationRuleId: string; priority: string }[],
 ): ReportSummary {
   return {
     aiVisibilityStatus,
     findingsCount: findings.length,
     topFindings: findings.slice(0, 3).map((finding) => ({ ruleId: finding.ruleId, severity: finding.severity })),
     planItemsCount: planItems.length,
-    topPlanItems: planItems.slice(0, 3).map((item) => ({ title: item.title, priority: item.priority })),
+    topPlanItems: planItems.slice(0, 3).map((item) => ({ optimizationRuleId: item.optimizationRuleId, priority: item.priority })),
   };
 }

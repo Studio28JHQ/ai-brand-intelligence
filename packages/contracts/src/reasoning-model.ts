@@ -36,9 +36,11 @@ export interface EntityRelationshipFact {
 
 export type AssumptionCode = 'BINARY_RULE_OUTCOME' | 'UNIFORM_RULE_APPLICABILITY' | 'FIXED_PIPELINE_ORDER';
 
+// No `description` here: `code` is the stable identifier the presentation layer resolves into a
+// localized sentence via the `rules` i18n domain (`assumptions.<code>`), per
+// `docs/04_PROJECT/DECISION_LOG.md#cto-111`.
 export interface AssumptionFact {
   code: AssumptionCode;
-  description: string;
 }
 
 export interface ExpectedOutcomeFact {
