@@ -2,6 +2,7 @@
 
 import { loadConfig } from '@ai-visibility/config';
 import type {
+  ActiveOperationEntry,
   AuditAnalysisView,
   AuditComparisonResult,
   AuditHistoryEntry,
@@ -110,6 +111,44 @@ export async function deleteAudit(auditId: string, confirmBaseline = false): Pro
     // confirmation only when it's genuinely the Baseline case, never by guessing.
     const requiresBaselineConfirmation = response.status === 409 && !confirmBaseline && !!message?.includes('Baseline');
     return { success: false, requiresBaselineConfirmation, error: message ?? 'Could not delete the Audit.' };
+  } catch {
+    return { success: false, error: 'Could not reach the API.' };
+  }
+}
+
+export async function listActiveOperations(): Promise<ActiveOperationEntry[]> {
+  const config = loadConfig();
+
+  try {
+    const response = await fetch(`${config.API_URL}/audits/activity`, { cache: 'no-store' });
+
+    if (!response.ok) {
+      return [];
+    }
+
+    return (await response.json()) as ActiveOperationEntry[];
+  } catch {
+    return [];
+  }
+}
+
+export interface CancelAuditResult {
+  success: boolean;
+  error?: string;
+}
+
+export async function cancelAudit(auditId: string): Promise<CancelAuditResult> {
+  const config = loadConfig();
+
+  try {
+    const response = await fetch(`${config.API_URL}/audits/${auditId}/cancel`, { method: 'POST' });
+
+    if (response.ok) {
+      return { success: true };
+    }
+
+    const body = await response.json().catch(() => null);
+    return { success: false, error: body?.error?.message ?? 'Could not cancel the Audit.' };
   } catch {
     return { success: false, error: 'Could not reach the API.' };
   }

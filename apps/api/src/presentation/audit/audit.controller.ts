@@ -17,6 +17,7 @@ import {
 import type { Request } from 'express';
 import { Observable } from 'rxjs';
 import type {
+  ActiveOperationEntry,
   AuditAnalysisView,
   AuditComparisonResult,
   AuditHistoryEntry,
@@ -29,12 +30,15 @@ import { CreateAuditUseCase } from '../../application/audit/create-audit.use-cas
 import { AuditQueryService } from '../../application/audit/audit-query.service';
 import { AuditAnalysisQueryService } from '../../application/audit/audit-analysis-query.service';
 import { AuditHistoryQueryService } from '../../application/audit/audit-history-query.service';
+import { AuditActivityQueryService } from '../../application/audit/audit-activity-query.service';
 import { DeleteAuditUseCase } from '../../application/audit/delete-audit.use-case';
+import { CancelAuditUseCase } from '../../application/audit/cancel-audit.use-case';
 import { AuditComparisonService } from '../../application/comparison/audit-comparison.service';
 import { PageComparisonService } from '../../application/page-audit/page-comparison.service';
 import {
   InvalidAuditUrlError,
   AuditInProgressError,
+  AuditNotCancellableError,
   AuditNotFoundError,
   AuditNotCompletedError,
   BaselineDeletionRequiresConfirmationError,
@@ -53,7 +57,9 @@ export class AuditController {
     private readonly auditQueryService: AuditQueryService,
     private readonly auditAnalysisQueryService: AuditAnalysisQueryService,
     private readonly auditHistoryQueryService: AuditHistoryQueryService,
+    private readonly auditActivityQueryService: AuditActivityQueryService,
     private readonly deleteAuditUseCase: DeleteAuditUseCase,
+    private readonly cancelAuditUseCase: CancelAuditUseCase,
     private readonly auditComparisonService: AuditComparisonService,
     private readonly pageComparisonService: PageComparisonService,
     private readonly progressPublisher: AuditProgressPublisher,
@@ -68,6 +74,14 @@ export class AuditController {
   @Get('history')
   async history(): Promise<AuditHistoryEntry[]> {
     return this.auditHistoryQueryService.list();
+  }
+
+  // Global Activity Center (F10-S04E, see docs/04_PROJECT/DECISION_LOG.md#cto-107): every
+  // non-terminal Audit across every Project, plus anything that finished in the last 2 minutes so
+  // a real running -> completed transition stays observable for a moment.
+  @Get('activity')
+  async activity(): Promise<ActiveOperationEntry[]> {
+    return this.auditActivityQueryService.list();
   }
 
   @Get('latest')
@@ -183,6 +197,26 @@ export class AuditController {
         throw new NotFoundException(error.message);
       }
       if (error instanceof AuditInProgressError || error instanceof BaselineDeletionRequiresConfirmationError) {
+        throw new ConflictException(error.message);
+      }
+      throw error;
+    }
+  }
+
+  // Only a real 'queued'/'pending' Audit can be honestly cancelled (F10-S04E) — this platform has
+  // no way to interrupt an in-flight pipeline, so a 'running' Audit is rejected rather than lied
+  // about.
+  @Post(':id/cancel')
+  async cancel(@Param('id') id: string): Promise<AuditMetadata> {
+    try {
+      await this.cancelAuditUseCase.execute(id);
+      const result = await this.auditQueryService.getById(id);
+      return toAuditMetadata(result!);
+    } catch (error) {
+      if (error instanceof AuditNotFoundError) {
+        throw new NotFoundException(error.message);
+      }
+      if (error instanceof AuditNotCancellableError) {
         throw new ConflictException(error.message);
       }
       throw error;

@@ -42,6 +42,17 @@ export class BaselineDeletionRequiresConfirmationError extends Error {
   }
 }
 
+// This platform has no mechanism to interrupt an in-flight Workflow pipeline once it's actually
+// running (F10-S04E, see docs/04_PROJECT/DECISION_LOG.md#cto-107) — a real 'running' Audit cannot
+// be honestly cancelled, only a not-yet-started 'queued'/'pending' one (a pure status flip, no
+// process to kill).
+export class AuditNotCancellableError extends Error {
+  constructor(id: string, status: string) {
+    super(`Cannot cancel Audit ${id}: it is '${status}'. Only a queued or pending Audit can be cancelled.`);
+    this.name = 'AuditNotCancellableError';
+  }
+}
+
 export class PageComparisonUrlMismatchError extends Error {
   constructor(baselineAuditId: string, targetAuditId: string) {
     super(`Cannot compare Audit ${baselineAuditId} and Audit ${targetAuditId}: they audited different URLs.`);

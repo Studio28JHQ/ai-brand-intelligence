@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
+  ActivityIcon,
   AuditsIcon,
   ClientsIcon,
   DashboardIcon,
@@ -14,6 +15,7 @@ import {
 
 const NAV_ITEMS = [
   { label: 'Dashboard', href: '/workspace', icon: DashboardIcon },
+  { label: 'Activity', href: '/activity', icon: ActivityIcon },
   { label: 'Clients', href: '/clients', icon: ClientsIcon },
   { label: 'Projects', href: '/projects', icon: ProjectsIcon },
   { label: 'Audits', href: '/audits', icon: AuditsIcon },
