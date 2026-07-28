@@ -30,6 +30,7 @@ model User {
   status       String    @default("pending-verification")
   createdAt    DateTime  @default(now()) @map("created_at")
   verifiedAt   DateTime? @map("verified_at")
+  locale       String?
 
   otpCodes OtpCode[]
 

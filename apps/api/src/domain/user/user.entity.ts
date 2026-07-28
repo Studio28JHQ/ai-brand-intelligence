@@ -2,6 +2,11 @@ import { InvalidUserStateTransitionError } from './user.errors';
 
 export type UserStatus = 'pending-verification' | 'verified';
 
+// Decoupled from `@ai-visibility/i18n`'s `SupportedLocale` the same way `UserStatus` is its own
+// domain-owned type rather than an import from a contract — this module has no dependency on
+// either `@ai-visibility/i18n` or `@ai-visibility/contracts`.
+export type UserLocale = 'en' | 'es' | 'pt-BR';
+
 export interface UserProps {
   id: string;
   firstName: string;
@@ -11,6 +16,7 @@ export interface UserProps {
   status: UserStatus;
   createdAt: Date;
   verifiedAt: Date | null;
+  locale: UserLocale | null;
 }
 
 const VALID_TRANSITIONS: Record<UserStatus, ReadonlyArray<UserStatus>> = {
@@ -28,6 +34,7 @@ export class User {
     public readonly status: UserStatus,
     public readonly createdAt: Date,
     public readonly verifiedAt: Date | null,
+    public readonly locale: UserLocale | null,
   ) {}
 
   static fromPersistence(props: UserProps): User {
@@ -40,6 +47,7 @@ export class User {
       props.status,
       props.createdAt,
       props.verifiedAt,
+      props.locale,
     );
   }
 
@@ -60,6 +68,7 @@ export class User {
       'verified',
       this.createdAt,
       verifiedAt,
+      this.locale,
     );
   }
 
@@ -73,6 +82,21 @@ export class User {
       this.status,
       this.createdAt,
       this.verifiedAt,
+      this.locale,
+    );
+  }
+
+  withLocale(locale: UserLocale): User {
+    return new User(
+      this.id,
+      this.firstName,
+      this.lastName,
+      this.email,
+      this.passwordHash,
+      this.status,
+      this.createdAt,
+      this.verifiedAt,
+      locale,
     );
   }
 }

@@ -1,8 +1,12 @@
 import { getCurrentUser } from '../../auth-actions';
+import { getLocale, getTranslations } from '../../../lib/i18n/server';
 import { Badge, Breadcrumbs, Card, EmptyState, PageHeader } from '../../components/ui';
+import { LanguageSettings } from './language-settings';
 
 export default async function SettingsPage() {
   const user = await getCurrentUser();
+  const t = await getTranslations('settings');
+  const initialLocale = user?.locale ?? (await getLocale());
 
   return (
     <main className="page">
@@ -24,6 +28,10 @@ export default async function SettingsPage() {
             </dd>
           </dl>
         )}
+      </Card>
+
+      <Card title="Language & Region" description={t('languageDescription')}>
+        <LanguageSettings initialLocale={initialLocale} label={t('language')} />
       </Card>
 
       <Card title="Workspace Settings">

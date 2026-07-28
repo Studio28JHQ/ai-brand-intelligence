@@ -9,5 +9,6 @@ export function toUserMetadata(user: User): UserMetadata {
     email: user.email,
     status: user.status,
     createdAt: user.createdAt.toISOString(),
+    locale: user.locale,
   };
 }

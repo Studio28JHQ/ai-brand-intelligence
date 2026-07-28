@@ -1,3 +1,5 @@
+import type { SupportedLocale } from './locale-preference';
+
 export type UserStatus = 'pending-verification' | 'verified';
 export type OtpPurpose = 'email-verification' | 'password-reset';
 
@@ -8,6 +10,9 @@ export interface UserMetadata {
   email: string;
   status: UserStatus;
   createdAt: string;
+  /** `null` until the user explicitly sets a language preference (`F10-S05B`); until then the
+   * effective locale is browser-detected per session, not read from here. */
+  locale: SupportedLocale | null;
 }
 
 export interface RegisterResponse {

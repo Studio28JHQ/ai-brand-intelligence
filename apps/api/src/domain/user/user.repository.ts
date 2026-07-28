@@ -1,4 +1,4 @@
-import { User } from './user.entity';
+import { User, UserLocale } from './user.entity';
 
 export const USER_REPOSITORY = Symbol('USER_REPOSITORY');
 
@@ -8,4 +8,5 @@ export interface UserRepository {
   findByEmail(email: string): Promise<User | null>;
   markVerified(id: string, verifiedAt: Date): Promise<User>;
   updatePassword(id: string, passwordHash: string): Promise<User>;
+  updateLocale(id: string, locale: UserLocale): Promise<User>;
 }

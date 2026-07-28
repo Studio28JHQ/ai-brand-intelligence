@@ -16,6 +16,7 @@ import { LoginUseCase } from '../../application/auth/login.use-case';
 import { ForgotPasswordUseCase } from '../../application/auth/forgot-password.use-case';
 import { ResetPasswordUseCase } from '../../application/auth/reset-password.use-case';
 import { GetCurrentUserUseCase } from '../../application/auth/get-current-user.use-case';
+import { UpdateUserLocaleUseCase } from '../../application/auth/update-user-locale.use-case';
 import { AuthController } from './auth.controller';
 
 @Module({
@@ -45,6 +46,7 @@ import { AuthController } from './auth.controller';
     ForgotPasswordUseCase,
     ResetPasswordUseCase,
     GetCurrentUserUseCase,
+    UpdateUserLocaleUseCase,
   ],
 })
 export class AuthModule {}

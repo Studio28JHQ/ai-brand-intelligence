@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { PrismaClient } from '@ai-visibility/database';
-import { User, UserStatus } from '../../domain/user/user.entity';
+import { User, UserLocale, UserStatus } from '../../domain/user/user.entity';
 import { UserRepository } from '../../domain/user/user.repository';
 import { UserNotFoundError } from '../../domain/user/user.errors';
 import { PRISMA_CLIENT } from '../database/database.module';
@@ -14,6 +14,7 @@ interface UserRecord {
   status: string;
   createdAt: Date;
   verifiedAt: Date | null;
+  locale: string | null;
 }
 
 @Injectable()
@@ -48,6 +49,11 @@ export class PrismaUserRepository implements UserRepository {
     return this.persist(current.withPasswordHash(passwordHash));
   }
 
+  async updateLocale(id: string, locale: UserLocale): Promise<User> {
+    const current = await this.findByIdOrThrow(id);
+    return this.persist(current.withLocale(locale));
+  }
+
   private async findByIdOrThrow(id: string): Promise<User> {
     const record = await this.prisma.user.findUnique({ where: { id } });
     if (!record) {
@@ -63,6 +69,7 @@ export class PrismaUserRepository implements UserRepository {
         passwordHash: user.passwordHash,
         status: user.status,
         verifiedAt: user.verifiedAt,
+        locale: user.locale,
       },
     });
     return this.toDomain(record);
@@ -78,6 +85,7 @@ export class PrismaUserRepository implements UserRepository {
       status: record.status as UserStatus,
       createdAt: record.createdAt,
       verifiedAt: record.verifiedAt,
+      locale: record.locale as UserLocale | null,
     });
   }
 }

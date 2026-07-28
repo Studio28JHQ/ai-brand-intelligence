@@ -20,6 +20,7 @@ import { LoginUseCase } from '../../application/auth/login.use-case';
 import { ForgotPasswordUseCase } from '../../application/auth/forgot-password.use-case';
 import { ResetPasswordUseCase } from '../../application/auth/reset-password.use-case';
 import { GetCurrentUserUseCase } from '../../application/auth/get-current-user.use-case';
+import { UpdateUserLocaleUseCase } from '../../application/auth/update-user-locale.use-case';
 import { UserAlreadyExistsError, UserNotFoundError } from '../../domain/user/user.errors';
 import {
   EmailNotVerifiedError,
@@ -39,6 +40,7 @@ import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { ResendOtpDto } from './dto/resend-otp.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { UpdateLocaleDto } from './dto/update-locale.dto';
 import { toUserMetadata } from './user-metadata.mapper';
 
 const GENERIC_OTP_SENT_MESSAGE = 'If an account exists for this email, a verification code has been sent.';
@@ -53,6 +55,7 @@ export class AuthController {
     private readonly forgotPasswordUseCase: ForgotPasswordUseCase,
     private readonly resetPasswordUseCase: ResetPasswordUseCase,
     private readonly getCurrentUserUseCase: GetCurrentUserUseCase,
+    private readonly updateUserLocaleUseCase: UpdateUserLocaleUseCase,
   ) {}
 
   @Post('register')
@@ -165,5 +168,19 @@ export class AuthController {
     }
     const user = await this.getCurrentUserUseCase.execute(token);
     return { user: user ? toUserMetadata(user) : null };
+  }
+
+  @Post('locale')
+  async updateLocale(
+    @Req() request: Request,
+    @Body() dto: UpdateLocaleDto,
+  ): Promise<{ user: ReturnType<typeof toUserMetadata> }> {
+    const token = request.headers.authorization?.replace(/^Bearer\s+/i, '');
+    const currentUser = token ? await this.getCurrentUserUseCase.execute(token) : null;
+    if (!currentUser) {
+      throw new UnauthorizedException('Authentication required.');
+    }
+    const updated = await this.updateUserLocaleUseCase.execute(currentUser.id, dto.locale);
+    return { user: toUserMetadata(updated) };
   }
 }

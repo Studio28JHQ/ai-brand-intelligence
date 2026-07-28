@@ -47,10 +47,9 @@ export function detectBrowserLocale(acceptLanguageHeader: string | null | undefi
 }
 
 export interface ResolveLocaleInput {
-  // Step 1: the authenticated user's saved preference (F10-S05A defines the contract —
-  // `@ai-visibility/contracts`' `UserLocalePreference` — real persistence lands in the next
-  // sprint, so this is always `null`/`undefined` in production today; the resolver already
-  // honors it correctly the moment a real value exists).
+  // Step 1: the authenticated user's saved preference (real persistence, `F10-S05B` — a nullable
+  // `locale` column on `User`, exposed via `UserMetadata.locale`). `null` until the user has
+  // explicitly set one, in which case this step is skipped in favor of browser detection.
   userPreference?: string | null;
   // Step 2: the request's raw `Accept-Language` header.
   acceptLanguageHeader?: string | null;

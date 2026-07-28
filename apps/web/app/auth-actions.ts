@@ -2,7 +2,8 @@
 
 import { cookies } from 'next/headers';
 import { loadConfig } from '@ai-visibility/config';
-import type { OtpPurpose, UserMetadata } from '@ai-visibility/contracts';
+import type { OtpPurpose, SupportedLocale, UserMetadata } from '@ai-visibility/contracts';
+import { LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE_SECONDS } from '../proxy';
 
 const SESSION_COOKIE = 'session';
 
@@ -145,6 +146,18 @@ export async function loginUser(input: LoginInput): Promise<{ success?: boolean;
     path: '/',
   });
 
+  // A saved preference always overrides whatever the locale cookie currently holds (likely just
+  // browser-detected, possibly from a different device) — this is the one moment that makes "a
+  // different browser/device receives the stored preference after authentication" true. A user
+  // with no saved preference yet (`locale: null`) leaves the existing cookie untouched.
+  if (result.data!.user.locale) {
+    cookieStore.set(LOCALE_COOKIE, result.data!.user.locale, {
+      path: '/',
+      maxAge: LOCALE_COOKIE_MAX_AGE_SECONDS,
+      sameSite: 'lax',
+    });
+  }
+
   return { success: true };
 }
 
@@ -178,4 +191,45 @@ export async function getCurrentUser(): Promise<UserMetadata | null> {
   } catch {
     return null;
   }
+}
+
+/**
+ * Persists the user's explicit language choice via the real `/auth/locale` endpoint (`F10-S05B`),
+ * then immediately syncs the `NEXT_LOCALE` cookie to match — the caller still has to trigger a
+ * `router.refresh()` (or equivalent) afterward for the UI to actually re-render in the new locale,
+ * since a Server Action alone doesn't re-run the Server Components already mounted on the page.
+ */
+export async function updateLocalePreference(locale: SupportedLocale): Promise<{ success?: boolean; error?: string }> {
+  const config = loadConfig();
+  const cookieStore = await cookies();
+  const token = cookieStore.get(SESSION_COOKIE)?.value;
+
+  if (!token) {
+    return { error: 'You must be signed in to change your language preference.' };
+  }
+
+  let response: Response;
+  try {
+    response = await fetch(`${config.API_URL}/auth/locale`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ locale }),
+    });
+  } catch (error) {
+    console.error('[auth-actions] Could not reach the API to update the language preference:', error);
+    return { error: 'Unable to reach the server. Please try again.' };
+  }
+
+  if (!response.ok) {
+    console.error(`[auth-actions] API rejected the language preference update (status ${response.status}).`);
+    return { error: 'Could not save your language preference. Please try again.' };
+  }
+
+  cookieStore.set(LOCALE_COOKIE, locale, {
+    path: '/',
+    maxAge: LOCALE_COOKIE_MAX_AGE_SECONDS,
+    sameSite: 'lax',
+  });
+
+  return { success: true };
 }
