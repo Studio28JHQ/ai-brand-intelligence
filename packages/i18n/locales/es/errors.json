@@ -5,5 +5,12 @@
   "validationRequired": "Este campo es obligatorio.",
   "unauthorized": "No tienes autorización para ver esta página.",
   "forbidden": "No tienes permiso para realizar esta acción.",
-  "serverError": "Ocurrió un error en el servidor. Inténtalo de nuevo más tarde."
+  "serverError": "Ocurrió un error en el servidor. Inténtalo de nuevo más tarde.",
+  "pageNotFoundTitle": "Página no encontrada",
+  "notFoundCardTitle": "No pudimos encontrar esa página",
+  "notFoundDescription": "Puede que se haya movido, o que el enlace sea incorrecto.",
+  "backToWorkspace": "Volver al Espacio de Trabajo",
+  "somethingWentWrongTitle": "Algo salió mal",
+  "unexpectedError": "Ocurrió un error inesperado.",
+  "tryAgain": "Intentar de Nuevo"
 }

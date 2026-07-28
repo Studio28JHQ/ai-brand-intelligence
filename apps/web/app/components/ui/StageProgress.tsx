@@ -1,8 +1,13 @@
+'use client';
+
+import { useTranslations } from '../../../lib/i18n/client';
+
 export function StageProgress({ stages, current }: { stages: string[]; current: string }) {
+  const tCommon = useTranslations('common');
   const currentIndex = stages.indexOf(current);
 
   return (
-    <ol className="stage-progress" aria-label="Stage progress">
+    <ol className="stage-progress" aria-label={tCommon('stageProgress')}>
       {stages.map((stage, index) => {
         const state = index < currentIndex ? 'done' : index === currentIndex ? 'current' : 'upcoming';
         return (

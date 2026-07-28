@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from '../../../lib/i18n/client';
 
 export function PasswordField({
   id,
@@ -17,6 +18,7 @@ export function PasswordField({
   autoComplete?: string;
   required?: boolean;
 }) {
+  const tAuth = useTranslations('auth');
   const [visible, setVisible] = useState(false);
 
   return (
@@ -36,10 +38,10 @@ export function PasswordField({
           type="button"
           className="password-field__toggle"
           onClick={() => setVisible((prev) => !prev)}
-          aria-label={visible ? 'Hide password' : 'Show password'}
+          aria-label={visible ? tAuth('hidePassword') : tAuth('showPassword')}
           aria-pressed={visible}
         >
-          {visible ? 'Hide' : 'Show'}
+          {visible ? tAuth('hide') : tAuth('show')}
         </button>
       </div>
     </div>

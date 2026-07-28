@@ -12,6 +12,10 @@ import enOptimization from '../locales/en/optimization.json';
 import enReports from '../locales/en/reports.json';
 import enSettings from '../locales/en/settings.json';
 import enErrors from '../locales/en/errors.json';
+import enLanding from '../locales/en/landing.json';
+import enClients from '../locales/en/clients.json';
+import enActivity from '../locales/en/activity.json';
+import enOnboarding from '../locales/en/onboarding.json';
 
 import esCommon from '../locales/es/common.json';
 import esNavigation from '../locales/es/navigation.json';
@@ -25,6 +29,10 @@ import esOptimization from '../locales/es/optimization.json';
 import esReports from '../locales/es/reports.json';
 import esSettings from '../locales/es/settings.json';
 import esErrors from '../locales/es/errors.json';
+import esLanding from '../locales/es/landing.json';
+import esClients from '../locales/es/clients.json';
+import esActivity from '../locales/es/activity.json';
+import esOnboarding from '../locales/es/onboarding.json';
 
 import ptBrCommon from '../locales/pt-BR/common.json';
 import ptBrNavigation from '../locales/pt-BR/navigation.json';
@@ -38,6 +46,10 @@ import ptBrOptimization from '../locales/pt-BR/optimization.json';
 import ptBrReports from '../locales/pt-BR/reports.json';
 import ptBrSettings from '../locales/pt-BR/settings.json';
 import ptBrErrors from '../locales/pt-BR/errors.json';
+import ptBrLanding from '../locales/pt-BR/landing.json';
+import ptBrClients from '../locales/pt-BR/clients.json';
+import ptBrActivity from '../locales/pt-BR/activity.json';
+import ptBrOnboarding from '../locales/pt-BR/onboarding.json';
 
 // Arbitrary nesting depth: a domain file can group related keys under a sub-object
 // (e.g. `{ "buttons": { "save": "Save" } }`, looked up as `t('buttons.save')`).
@@ -67,6 +79,10 @@ const MESSAGES: Record<SupportedLocale, Record<MessageDomain, Messages>> = {
     reports: enReports,
     settings: enSettings,
     errors: enErrors,
+    landing: enLanding,
+    clients: enClients,
+    activity: enActivity,
+    onboarding: enOnboarding,
   },
   es: {
     common: esCommon,
@@ -81,6 +97,10 @@ const MESSAGES: Record<SupportedLocale, Record<MessageDomain, Messages>> = {
     reports: esReports,
     settings: esSettings,
     errors: esErrors,
+    landing: esLanding,
+    clients: esClients,
+    activity: esActivity,
+    onboarding: esOnboarding,
   },
   'pt-BR': {
     common: ptBrCommon,
@@ -95,6 +115,10 @@ const MESSAGES: Record<SupportedLocale, Record<MessageDomain, Messages>> = {
     reports: ptBrReports,
     settings: ptBrSettings,
     errors: ptBrErrors,
+    landing: ptBrLanding,
+    clients: ptBrClients,
+    activity: ptBrActivity,
+    onboarding: ptBrOnboarding,
   },
 };
 

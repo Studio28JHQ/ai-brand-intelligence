@@ -6,8 +6,10 @@ import { resetPassword } from '../auth-actions';
 import { AuthCard } from '../components/auth/AuthCard';
 import { PasswordField } from '../components/auth/PasswordField';
 import { Banner, EmptyState } from '../components/ui';
+import { useTranslations } from '../../lib/i18n/client';
 
 export function ResetPasswordForm() {
+  const t = useTranslations('auth');
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token') ?? '';
@@ -19,13 +21,13 @@ export function ResetPasswordForm() {
 
   if (!token) {
     return (
-      <AuthCard title="Reset your password">
+      <AuthCard title={t('resetYourPasswordTitle')}>
         <EmptyState
-          title="This link is invalid or has expired"
-          description="Request a new password reset code and try again."
+          title={t('linkInvalidTitle')}
+          description={t('linkInvalidDescription')}
           action={
             <a href="/forgot-password" className="btn btn-primary btn-sm">
-              Request New Code
+              {t('requestNewCode')}
             </a>
           }
         />
@@ -38,7 +40,7 @@ export function ResetPasswordForm() {
     setError(undefined);
 
     if (newPassword !== confirmNewPassword) {
-      setError('Password and confirmation do not match.');
+      setError(t('passwordMismatch'));
       return;
     }
 
@@ -55,20 +57,20 @@ export function ResetPasswordForm() {
   };
 
   return (
-    <AuthCard title="Set a new password">
+    <AuthCard title={t('setNewPasswordTitle')}>
       <form onSubmit={handleSubmit} className="stack">
         <PasswordField
           id="newPassword"
-          label="New Password"
+          label={t('newPasswordLabel')}
           value={newPassword}
           onChange={setNewPassword}
           autoComplete="new-password"
         />
-        <p className="field-hint">At least 8 characters, with an uppercase letter, a lowercase letter, and a number.</p>
+        <p className="field-hint">{t('passwordHint')}</p>
 
         <PasswordField
           id="confirmNewPassword"
-          label="Confirm New Password"
+          label={t('confirmNewPasswordLabel')}
           value={confirmNewPassword}
           onChange={setConfirmNewPassword}
           autoComplete="new-password"
@@ -77,7 +79,7 @@ export function ResetPasswordForm() {
         {error && <Banner variant="error">{error}</Banner>}
 
         <button type="submit" className="btn btn-primary" disabled={submitting}>
-          {submitting ? 'Resetting…' : 'Reset Password'}
+          {submitting ? t('resetting') : t('resetPasswordButton')}
         </button>
       </form>
     </AuthCard>

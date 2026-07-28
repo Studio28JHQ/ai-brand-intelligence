@@ -2,28 +2,31 @@ import Link from 'next/link';
 import { getDashboard, getProjectPages } from '../../../../actions';
 import { Breadcrumbs, Card, PageHeader } from '../../../../components/ui';
 import { PagesTable } from './pages-table';
+import { getTranslations } from '../../../../../lib/i18n/server';
 
 export default async function ProjectPagesPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const [dashboard, pages] = await Promise.all([getDashboard(id), getProjectPages(id)]);
-  const projectName = dashboard?.project.projectName ?? 'Project';
+  const t = await getTranslations('pages');
+  const tNav = await getTranslations('navigation');
+  const projectName = dashboard?.project.projectName ?? tNav('projects');
 
   return (
     <main className="page">
       <Breadcrumbs
         items={[
-          { label: 'Dashboard', href: '/workspace' },
+          { label: tNav('dashboard'), href: '/workspace' },
           { label: projectName, href: `/projects/${id}/dashboard` },
-          { label: 'Pages' },
+          { label: t('title') },
         ]}
       />
 
       <PageHeader
-        title="Pages"
-        description="Every distinct URL audited for this Project — one row per crawled page, each linking to its most recent real Audit."
+        title={t('title')}
+        description={t('description')}
         actions={
           <Link href={`/projects/${id}/site-explorer`} className="btn btn-secondary">
-            Open Site Explorer
+            {t('openSiteExplorer')}
           </Link>
         }
       />

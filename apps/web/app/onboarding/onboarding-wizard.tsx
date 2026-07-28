@@ -13,7 +13,8 @@ import {
   listProjects,
   CreateAuditState,
 } from '../actions';
-import { Badge, Banner, Card, EmptyState, StageProgress } from '../components/ui';
+import { Badge, Banner, Card, EmptyState, StageProgress, statusToVariant } from '../components/ui';
+import { useTranslations } from '../../lib/i18n/client';
 import {
   loadAgencyProfile,
   markOnboardingCompleted,
@@ -24,14 +25,6 @@ import {
 type Step = 'welcome' | 'agency' | 'client' | 'audit' | 'report' | 'done';
 
 const STEP_ORDER: Step[] = ['welcome', 'agency', 'client', 'audit', 'report', 'done'];
-const STEP_LABEL: Record<Step, string> = {
-  welcome: 'Welcome',
-  agency: 'Your Agency',
-  client: 'First Client',
-  audit: 'First Audit',
-  report: 'Your Report',
-  done: 'Done',
-};
 
 interface ReportSummary {
   aiVisibilityStatus: string | null;
@@ -44,6 +37,16 @@ interface ReportSummary {
 const initialAuditState: CreateAuditState = {};
 
 export function OnboardingWizard() {
+  const t = useTranslations('onboarding');
+  const tCommon = useTranslations('common');
+  const STEP_LABEL: Record<Step, string> = {
+    welcome: t('steps.welcome'),
+    agency: t('steps.agency'),
+    client: t('steps.client'),
+    audit: t('steps.audit'),
+    report: t('steps.report'),
+    done: t('steps.done'),
+  };
   const [step, setStep] = useState<Step>('welcome');
   const [checkingProgress, setCheckingProgress] = useState(true);
 
@@ -150,7 +153,7 @@ export function OnboardingWizard() {
   if (checkingProgress) {
     return (
       <Card>
-        <p className="text-secondary">Checking your workspace…</p>
+        <p className="text-secondary">{t('checkingWorkspace')}</p>
       </Card>
     );
   }
@@ -160,23 +163,20 @@ export function OnboardingWizard() {
       <StageProgress stages={STEP_ORDER.map((candidate) => STEP_LABEL[candidate])} current={STEP_LABEL[step]} />
 
       {step === 'welcome' && (
-        <Card title="Welcome to AI Visibility Auditor">
-          <p>
-            In a few minutes you&apos;ll set up your agency, add your first client, run their first Audit, and see
-            your first AI Visibility report — no setup required beyond entering your client&apos;s website.
-          </p>
+        <Card title={t('welcomeTitle')}>
+          <p>{t('welcomeBody')}</p>
           <button type="button" className="btn btn-primary" onClick={() => setStep('agency')}>
-            Get Started
+            {t('getStarted')}
           </button>
         </Card>
       )}
 
       {step === 'agency' && (
-        <Card title="Your Agency">
-          <p className="text-secondary">Tell us a little about your agency. This personalizes your workspace.</p>
+        <Card title={t('agencyTitle')}>
+          <p className="text-secondary">{t('agencyIntro')}</p>
           <form onSubmit={handleSaveAgency} className="form-row">
             <div className="field" style={{ flex: '1 1 240px' }}>
-              <label htmlFor="agency-name">Agency name</label>
+              <label htmlFor="agency-name">{t('agencyNameLabel')}</label>
               <input
                 className="input"
                 id="agency-name"
@@ -188,7 +188,7 @@ export function OnboardingWizard() {
               />
             </div>
             <div className="field" style={{ flex: '1 1 240px' }}>
-              <label htmlFor="agency-website">Agency website (optional)</label>
+              <label htmlFor="agency-website">{t('agencyWebsiteLabel')}</label>
               <input
                 className="input"
                 id="agency-website"
@@ -199,20 +199,22 @@ export function OnboardingWizard() {
               />
             </div>
             <button type="submit" className="btn btn-primary">
-              Continue
+              {t('continue')}
             </button>
           </form>
         </Card>
       )}
 
       {step === 'client' && (
-        <Card title="Your First Client">
+        <Card title={t('clientTitle')}>
           <p className="text-secondary">
-            Add the business whose AI Visibility you&apos;ll be auditing{agencyProfile?.name ? ` for ${agencyProfile.name}` : ''}.
+            {agencyProfile?.name
+              ? t('clientIntroWithAgency', { agencyName: agencyProfile.name })
+              : t('clientIntro')}
           </p>
           <form onSubmit={handleCreateClient} className="form-row">
             <div className="field" style={{ flex: '1 1 200px' }}>
-              <label htmlFor="onboarding-client-name">Client name</label>
+              <label htmlFor="onboarding-client-name">{t('clientNameLabel')}</label>
               <input
                 className="input"
                 id="onboarding-client-name"
@@ -224,7 +226,7 @@ export function OnboardingWizard() {
               />
             </div>
             <div className="field" style={{ flex: '1 1 160px' }}>
-              <label htmlFor="onboarding-client-industry">Industry</label>
+              <label htmlFor="onboarding-client-industry">{t('industryLabel')}</label>
               <input
                 className="input"
                 id="onboarding-client-industry"
@@ -236,7 +238,7 @@ export function OnboardingWizard() {
               />
             </div>
             <div className="field" style={{ flex: '1 1 200px' }}>
-              <label htmlFor="onboarding-client-domain">Primary domain</label>
+              <label htmlFor="onboarding-client-domain">{t('primaryDomainLabel')}</label>
               <input
                 className="input"
                 id="onboarding-client-domain"
@@ -248,7 +250,7 @@ export function OnboardingWizard() {
               />
             </div>
             <button type="submit" className="btn btn-primary">
-              Continue
+              {t('continue')}
             </button>
           </form>
           {clientError && <Banner variant="error">{clientError}</Banner>}
@@ -256,16 +258,13 @@ export function OnboardingWizard() {
       )}
 
       {step === 'audit' && (
-        <Card title="Your First Audit">
-          <p className="text-secondary">
-            Enter {client ? client.name : 'your client'}&apos;s website. We&apos;ll automatically set up their
-            workspace and run a complete AI Visibility Audit — this takes a few seconds.
-          </p>
+        <Card title={t('auditTitle')}>
+          <p className="text-secondary">{t('auditIntro', { clientName: client ? client.name : t('yourClient') })}</p>
           <form action={auditFormAction} className="form-row">
             <input type="hidden" name="source" value="onboarding" />
             {client && <input type="hidden" name="clientId" value={client.id} />}
             <div className="field" style={{ flex: '1 1 260px' }}>
-              <label htmlFor="onboarding-audit-url">Website URL</label>
+              <label htmlFor="onboarding-audit-url">{t('websiteUrlLabel')}</label>
               <input
                 className="input"
                 id="onboarding-audit-url"
@@ -276,7 +275,7 @@ export function OnboardingWizard() {
               />
             </div>
             <button className="btn btn-primary" type="submit" disabled={auditPending}>
-              {auditPending ? 'Analyzing…' : 'Run My First Audit'}
+              {auditPending ? t('analyzing') : t('runFirstAudit')}
             </button>
           </form>
           {auditState.error && <Banner variant="error">{auditState.error}</Banner>}
@@ -284,27 +283,35 @@ export function OnboardingWizard() {
       )}
 
       {step === 'report' && report && (
-        <Card title="Your First AI Visibility Report">
+        <Card title={t('reportTitle')}>
           <p className="text-secondary">
-            Here&apos;s a complete picture of how AI systems see {client ? client.name : 'your client'}&apos;s
-            website today.
+            {t('reportIntro', { clientName: client ? client.name : t('yourClient') })}
           </p>
           <dl className="dl">
-            <dt>AI Visibility Status</dt>
-            <dd>{report.aiVisibilityStatus ? <Badge>{report.aiVisibilityStatus}</Badge> : '—'}</dd>
-            <dt>Findings</dt>
+            <dt>{t('aiVisibilityStatus')}</dt>
+            <dd>
+              {report.aiVisibilityStatus ? (
+                <Badge variant={statusToVariant(report.aiVisibilityStatus)}>
+                  {tCommon(`statusValues.${report.aiVisibilityStatus}`)}
+                </Badge>
+              ) : (
+                '—'
+              )}
+            </dd>
+            <dt>{t('findings')}</dt>
             <dd>{report.findingsCount}</dd>
-            <dt>Optimization Opportunities</dt>
+            <dt>{t('optimizationOpportunities')}</dt>
             <dd>{report.planItemsCount}</dd>
           </dl>
 
           {report.topFindings.length > 0 && (
             <div className="section">
-              <h4>Top Findings</h4>
+              <h4>{t('topFindings')}</h4>
               <ul className="stack-sm">
                 {report.topFindings.map((finding, index) => (
                   <li key={index} className="text-secondary">
-                    {finding.ruleId} — <Badge>{finding.severity}</Badge>
+                    {finding.ruleId} —{' '}
+                    <Badge variant={statusToVariant(finding.severity)}>{tCommon(`statusValues.${finding.severity}`)}</Badge>
                   </li>
                 ))}
               </ul>
@@ -313,11 +320,12 @@ export function OnboardingWizard() {
 
           {report.topPlanItems.length > 0 && (
             <div className="section">
-              <h4>Top Opportunities</h4>
+              <h4>{t('topOpportunities')}</h4>
               <ul className="stack-sm">
                 {report.topPlanItems.map((item, index) => (
                   <li key={index}>
-                    {item.title} — <Badge>{item.priority}</Badge>
+                    {item.title} —{' '}
+                    <Badge variant={statusToVariant(item.priority)}>{tCommon(`statusValues.${item.priority}`)}</Badge>
                   </li>
                 ))}
               </ul>
@@ -325,38 +333,38 @@ export function OnboardingWizard() {
           )}
 
           {report.findingsCount === 0 && report.planItemsCount === 0 && (
-            <EmptyState title="Nothing flagged yet" description="This site is already in great shape." />
+            <EmptyState title={t('nothingFlaggedTitle')} description={t('nothingFlaggedDescription')} />
           )}
 
           <button type="button" className="btn btn-primary" onClick={handleFinish}>
-            Continue
+            {t('continue')}
           </button>
         </Card>
       )}
 
       {step === 'done' && (
-        <Card title="You're All Set">
-          <p className="text-secondary">Your workspace is ready. Here&apos;s what we set up for you:</p>
+        <Card title={t('doneTitle')}>
+          <p className="text-secondary">{t('doneIntro')}</p>
           <ul className="stack-sm">
-            {agencyProfile?.name && <li>✓ Agency profile saved for {agencyProfile.name}</li>}
-            <li>✓ First client{client ? ` — ${client.name}` : ' added'}</li>
-            <li>✓ Workspace and project created automatically</li>
-            <li>✓ First Audit completed</li>
-            <li>✓ First AI Visibility report generated</li>
+            {agencyProfile?.name && <li>✓ {t('agencyProfileSaved', { agencyName: agencyProfile.name })}</li>}
+            <li>✓ {client ? t('firstClientNamed', { name: client.name }) : t('firstClientGeneric')}</li>
+            <li>✓ {t('workspaceCreated')}</li>
+            <li>✓ {t('firstAuditCompleted')}</li>
+            <li>✓ {t('firstReportGenerated')}</li>
           </ul>
           <div className="cluster">
             {dashboardHref && (
               <Link href={dashboardHref} className="btn btn-primary">
-                Go to Your Dashboard
+                {t('goToDashboard')}
               </Link>
             )}
             {auditHref && (
               <Link href={auditHref} className="btn btn-secondary">
-                View Full Report
+                {t('viewFullReport')}
               </Link>
             )}
             <Link href="/workspace" className="btn btn-ghost">
-              Back to Workspace
+              {t('backToWorkspace')}
             </Link>
           </div>
         </Card>

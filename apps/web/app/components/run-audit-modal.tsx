@@ -4,6 +4,7 @@ import { useId, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Banner } from './ui';
 import { runNewAudit } from '../actions';
+import { useTranslations } from '../../lib/i18n/client';
 
 // The primary "Run New Audit" action, reused everywhere the ticket asks for it (Project
 // Dashboard, Project Overview, Audit History). Opens a native <dialog> (the same pattern
@@ -14,13 +15,15 @@ import { runNewAudit } from '../actions';
 // Execution Timeline, not a fabricated "in progress" state.
 export function RunAuditModal({
   defaultUrl,
-  triggerLabel = 'Run New Audit',
+  triggerLabel,
   source,
 }: {
   defaultUrl?: string;
   triggerLabel?: string;
   source: string;
 }) {
+  const t = useTranslations('audits');
+  const tCommon = useTranslations('common');
   const dialogRef = useRef<HTMLDialogElement>(null);
   const urlInputId = useId();
   const router = useRouter();
@@ -41,7 +44,7 @@ export function RunAuditModal({
 
   async function handleConfirm() {
     if (url.trim().length === 0) {
-      setError('Target URL is required.');
+      setError(t('targetUrlRequired'));
       return;
     }
     setSubmitting(true);
@@ -54,20 +57,20 @@ export function RunAuditModal({
       router.push(`/audits/${result.auditId}`);
       return;
     }
-    setError(result.error ?? 'Could not start the Audit.');
+    setError(result.error ?? t('couldNotStartAudit'));
   }
 
   return (
     <>
       <button type="button" className="btn btn-primary" onClick={open}>
-        {triggerLabel}
+        {triggerLabel ?? t('runNewAudit')}
       </button>
       <dialog ref={dialogRef} className="dialog">
-        <p className="dialog__title">Run New Audit</p>
+        <p className="dialog__title">{t('runNewAuditDialogTitle')}</p>
 
         <div className="stack">
           <div className="field">
-            <label htmlFor={urlInputId}>Target URL</label>
+            <label htmlFor={urlInputId}>{t('targetUrlLabel')}</label>
             <input
               id={urlInputId}
               className="input"
@@ -81,14 +84,14 @@ export function RunAuditModal({
           </div>
 
           <div className="field">
-            <label>Audit Type</label>
+            <label>{t('auditTypeLabel')}</label>
             <label className="site-explorer__issue-toggle">
               <input type="radio" name={`${urlInputId}-audit-type`} checked readOnly />
-              Full Audit — the complete deterministic pipeline (SEO, Technical, Content, Accessibility, Performance, AI Visibility).
+              {t('fullAuditDescription')}
             </label>
-            <label className="site-explorer__issue-toggle" title="Not yet available — will run a smaller, faster subset of checks.">
+            <label className="site-explorer__issue-toggle" title={t('quickAuditNotYetAvailable')}>
               <input type="radio" name={`${urlInputId}-audit-type`} disabled />
-              <span className="text-tertiary">Quick Audit (coming soon)</span>
+              <span className="text-tertiary">{t('quickAudit')}</span>
             </label>
           </div>
 
@@ -96,10 +99,10 @@ export function RunAuditModal({
 
           <div className="cluster">
             <button type="button" className="btn btn-primary" disabled={submitting} onClick={handleConfirm}>
-              {submitting ? 'Starting Audit…' : 'Confirm & Run Audit'}
+              {submitting ? t('startingAudit') : t('confirmAndRunAudit')}
             </button>
             <button type="button" className="btn btn-ghost" disabled={submitting} onClick={close}>
-              Cancel
+              {tCommon('cancel')}
             </button>
           </div>
         </div>

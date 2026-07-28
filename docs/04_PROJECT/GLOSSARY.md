@@ -23,3 +23,68 @@ Business Engine terminology (Engine, Business Module, Public Interface, Workflow
 - **Telemetry Event** — a structured operational event (name, category, severity, correlation ID, source, timestamp, data) published through the `TelemetryEventPublisher` abstraction in `packages/shared/src/telemetry`.
 - **Correlation ID** — a single identifier generated (or received via the `x-correlation-id` header) per HTTP request, threaded through the Audit lifecycle, the Workflow Runtime, and every Business Engine invocation so all telemetry and log lines for one request can be tied together.
 - **Read Model** — a query-oriented projection of persisted data assembled specifically for a read use case (for example the Audit Comparison Service's result), as distinct from the write-side domain entities that produced the underlying data.
+
+# Translation Terms
+
+The fixed English → Spanish → Portuguese (Brazil) rendering for this product's recurring domain
+terms (`F10-S05C`), so every `packages/i18n/locales/*` file uses the same word for the same
+concept rather than each translator/contributor inventing their own. A term not listed here should
+still be translated consistently with these — favor the same register (plain, direct, no
+marketing fluff) and prefer a term already used elsewhere in this table over a new synonym.
+Never translate proper nouns, rule ids, technical identifiers, or user-entered content at all —
+see `docs/04_PROJECT/DECISION_LOG.md#cto-110`'s "justified exceptions."
+
+| English | Español | Português (Brasil) |
+|---|---|---|
+| Audit | Auditoría | Auditoria |
+| Finding | Hallazgo | Descoberta |
+| Signal | Señal | Sinal |
+| Score | Puntuación | Pontuação |
+| Baseline | Línea Base | Linha de Base |
+| Recommendation | Recomendación | Recomendação |
+| Optimization Plan | Plan de Optimización | Plano de Otimização |
+| Optimization Campaign | Campaña de Optimización | Campanha de Otimização |
+| Optimization Cycle | Ciclo de Optimización | Ciclo de Otimização |
+| AI Visibility | Visibilidad en IA | Visibilidade em IA |
+| Project | Proyecto | Projeto |
+| Client | Cliente | Cliente |
+| Dashboard | Panel | Painel |
+| Rule | Regla | Regra |
+| Heuristic | Heurística | Heurística |
+| Evidence | Evidencia | Evidência |
+| Severity | Gravedad | Severidade |
+| Category | Categoría | Categoria |
+| Priority | Prioridad | Prioridade |
+| Confidence | Confianza | Confiança |
+| Impact Assessment | Evaluación de Impacto | Avaliação de Impacto |
+| Executive Client Report | Informe Ejecutivo para el Cliente | Relatório Executivo para o Cliente |
+| AI Consultant | Consultor de IA | Consultor de IA |
+| Daily Briefing | Resumen Diario | Resumo Diário |
+| Page | Página | Página |
+| Site Explorer | Explorador del Sitio | Explorador do Site |
+| Activity | Actividad | Atividade |
+| Triggered By | Iniciado por | Iniciado por |
+| Compare / Comparison | Comparar / Comparación | Comparar / Comparação |
+| Verification | Verificación | Verificação |
+| Workflow | Flujo de Trabajo | Fluxo de Trabalho |
+| Queue / Queued | Cola / En cola | Fila / Na fila |
+
+Status values (`AuditStatus` and similar lifecycle states) — kept identical everywhere one appears:
+
+| English | Español | Português (Brasil) |
+|---|---|---|
+| Pending | Pendiente | Pendente |
+| Running | En ejecución | Em execução |
+| Completed | Completado | Concluído |
+| Failed | Fallido | Falhou |
+| Cancelled | Cancelado | Cancelado |
+| Queued | En cola | Na fila |
+
+Severity/priority levels:
+
+| English | Español | Português (Brasil) |
+|---|---|---|
+| Critical | Crítico | Crítico |
+| High | Alto | Alto |
+| Medium | Medio | Médio |
+| Low | Bajo | Baixo |

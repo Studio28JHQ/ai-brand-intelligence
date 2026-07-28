@@ -1,10 +1,14 @@
 import type { Metadata } from 'next';
 import { ForgotPasswordForm } from './forgot-password-form';
+import { getTranslations } from '../../lib/i18n/server';
 
-export const metadata: Metadata = {
-  title: 'Forgot Password — AI Visibility Auditor',
-  description: 'Request a password reset code.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('auth');
+  return {
+    title: t('forgotPasswordMetaTitle'),
+    description: t('forgotPasswordMetaDescription'),
+  };
+}
 
 export default function ForgotPasswordPage() {
   return <ForgotPasswordForm />;

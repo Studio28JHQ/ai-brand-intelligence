@@ -1,4 +1,5 @@
 import type { BriefingItem, BriefingItemCategory } from '@ai-visibility/contracts';
+import type { Translator } from '@ai-visibility/i18n';
 
 export type RecommendationSection =
   | 'high-priority-alerts'
@@ -16,13 +17,17 @@ const SECTION_BY_CATEGORY: Record<BriefingItemCategory, RecommendationSection> =
   'recent-improvement': 'daily-highlights',
 };
 
-export const RECOMMENDATION_SECTION_LABELS: Record<RecommendationSection, string> = {
-  'high-priority-alerts': 'High-Priority Alerts',
-  'risk-notifications': 'Risk Notifications',
-  'verification-reminders': 'Verification Reminders',
-  'optimization-opportunities': 'Optimization Opportunities',
-  'daily-highlights': 'Daily Highlights',
+const SECTION_LABEL_KEYS: Record<RecommendationSection, string> = {
+  'high-priority-alerts': 'sectionHighPriorityAlerts',
+  'risk-notifications': 'sectionRiskNotifications',
+  'verification-reminders': 'sectionVerificationReminders',
+  'optimization-opportunities': 'sectionOptimizationOpportunities',
+  'daily-highlights': 'sectionDailyHighlights',
 };
+
+export function recommendationSectionLabel(section: RecommendationSection, t: Translator): string {
+  return t(SECTION_LABEL_KEYS[section]);
+}
 
 const SECTION_ORDER: RecommendationSection[] = [
   'high-priority-alerts',
@@ -46,14 +51,19 @@ export function groupRecommendationsBySection(
   })).filter((group) => group.items.length > 0);
 }
 
-export function buildExecutiveSummary(items: ReadonlyArray<BriefingItem>, projectName: string): string {
+export function buildExecutiveSummary(items: ReadonlyArray<BriefingItem>, projectName: string, t: Translator): string {
   if (items.length === 0) {
-    return `No open recommendations for ${projectName} right now — everything reviewed is on track.`;
+    return t('executiveSummaryNoOpen', { projectName });
   }
 
   const parts = groupRecommendationsBySection(items).map(
-    (group) => `${group.items.length} ${RECOMMENDATION_SECTION_LABELS[group.section].toLowerCase()}`,
+    (group) => `${group.items.length} ${recommendationSectionLabel(group.section, t).toLowerCase()}`,
   );
 
-  return `${projectName} has ${items.length} open recommendation${items.length === 1 ? '' : 's'}: ${parts.join(', ')}.`;
+  return t('executiveSummaryHasOpen', {
+    projectName,
+    count: items.length,
+    plural: items.length === 1 ? '' : 's',
+    parts: parts.join(', '),
+  });
 }

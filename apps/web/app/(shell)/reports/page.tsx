@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getCurrentCycle, listProjects } from '../../actions';
-import { Badge, Breadcrumbs, Card, EmptyState, PageHeader } from '../../components/ui';
+import { Badge, Breadcrumbs, Card, EmptyState, PageHeader, statusToVariant } from '../../components/ui';
+import { getTranslations } from '../../../lib/i18n/server';
 
 const REPORT_READY_STATUSES = new Set(['verification', 'completed']);
 
@@ -8,17 +9,17 @@ export default async function ReportsPage() {
   const projects = await listProjects();
   const cycles = await Promise.all(projects.map(async (project) => ({ project, cycle: await getCurrentCycle(project.id) })));
   const withReports = cycles.filter((entry) => entry.cycle !== null && REPORT_READY_STATUSES.has(entry.cycle.status));
+  const t = await getTranslations('reports');
+  const tNav = await getTranslations('navigation');
+  const tCommon = await getTranslations('common');
 
   return (
     <main className="page">
-      <Breadcrumbs items={[{ label: 'Dashboard', href: '/workspace' }, { label: 'Reports' }]} />
-      <PageHeader title="Reports" description="Executive Client Reports available once a Cycle reaches verification." />
+      <Breadcrumbs items={[{ label: tNav('dashboard'), href: '/workspace' }, { label: tNav('reports') }]} />
+      <PageHeader title={tNav('reports')} description={t('description')} />
 
       {withReports.length === 0 && (
-        <EmptyState
-          title="No Reports available yet"
-          description="A Report becomes available once a Project's Optimization Cycle reaches verification."
-        />
+        <EmptyState title={t('noReportsAvailableYet')} description={t('noReportsAvailableDescription')} />
       )}
 
       {withReports.map(({ project, cycle }) => (
@@ -28,10 +29,10 @@ export default async function ReportsPage() {
               <h3>{project.name}</h3>
               <p className="text-secondary">{project.canonicalWebsite}</p>
             </div>
-            <Badge>{cycle!.status}</Badge>
+            <Badge variant={statusToVariant(cycle!.status)}>{tCommon(`statusValues.${cycle!.status}`)}</Badge>
           </div>
           <Link href={`/projects/${project.id}/cycles/${cycle!.id}/report`} className="btn btn-secondary btn-sm">
-            View Report
+            {t('viewReport')}
           </Link>
         </Card>
       ))}

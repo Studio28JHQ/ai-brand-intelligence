@@ -6,39 +6,40 @@ import { LanguageSettings } from './language-settings';
 export default async function SettingsPage() {
   const user = await getCurrentUser();
   const t = await getTranslations('settings');
+  const tNav = await getTranslations('navigation');
+  const tCommon = await getTranslations('common');
   const initialLocale = user?.locale ?? (await getLocale());
 
   return (
     <main className="page">
-      <Breadcrumbs items={[{ label: 'Dashboard', href: '/workspace' }, { label: 'Settings' }]} />
-      <PageHeader title="Settings" description="Your account and workspace settings." />
+      <Breadcrumbs items={[{ label: tNav('dashboard'), href: '/workspace' }, { label: tNav('settings') }]} />
+      <PageHeader title={t('title')} description={t('description')} />
 
-      <Card title="Account Settings">
+      <Card title={t('accountSettings')}>
         {user && (
           <dl className="dl">
-            <dt>Name</dt>
+            <dt>{t('nameLabel')}</dt>
             <dd>
               {user.firstName} {user.lastName}
             </dd>
-            <dt>Email</dt>
+            <dt>{t('emailLabel')}</dt>
             <dd>{user.email}</dd>
-            <dt>Status</dt>
+            <dt>{tCommon('status')}</dt>
             <dd>
-              <Badge variant={user.status === 'verified' ? 'success' : 'warning'}>{user.status}</Badge>
+              <Badge variant={user.status === 'verified' ? 'success' : 'warning'}>
+                {tCommon(`statusValues.${user.status}`)}
+              </Badge>
             </dd>
           </dl>
         )}
       </Card>
 
-      <Card title="Language & Region" description={t('languageDescription')}>
+      <Card title={t('languageRegionTitle')} description={t('languageDescription')}>
         <LanguageSettings initialLocale={initialLocale} label={t('language')} />
       </Card>
 
-      <Card title="Workspace Settings">
-        <EmptyState
-          title="Not available yet"
-          description="Workspace-level settings (agency branding, team members, billing) aren't part of this platform yet."
-        />
+      <Card title={t('workspaceSettings')}>
+        <EmptyState title={t('workspaceNotAvailableTitle')} description={t('workspaceNotAvailableDescription')} />
       </Card>
     </main>
   );

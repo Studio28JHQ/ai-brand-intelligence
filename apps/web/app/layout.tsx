@@ -1,13 +1,16 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { AppHeader } from './components/AppHeader';
-import { getClientI18nPayload } from '../lib/i18n/server';
+import { getClientI18nPayload, getTranslations } from '../lib/i18n/server';
 import { I18nProvider } from '../lib/i18n/client';
 
-export const metadata: Metadata = {
-  title: 'AI Visibility Auditor',
-  description: 'Audit, optimize, and report on AI Visibility for your Clients.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('common');
+  return {
+    title: t('appTitle'),
+    description: t('appDescription'),
+  };
+}
 
 export default async function RootLayout({
   children,

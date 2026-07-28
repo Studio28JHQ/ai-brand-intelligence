@@ -2,18 +2,10 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import type { CategoryScoreComparison, PageAuditHistoryEntry, PageComparisonResult, ProjectPage, ScoreTrend } from '@ai-visibility/contracts';
-import { Badge, Card, EmptyState } from '../../../../components/ui';
+import { Badge, Card, EmptyState, statusToVariant } from '../../../../components/ui';
 import { comparePages, getPageAuditHistory } from '../../../../actions';
-
-const CATEGORY_LABELS: Record<string, string> = {
-  overall: 'Overall',
-  seo: 'SEO',
-  aiVisibility: 'AI Visibility',
-  technical: 'Technical',
-  content: 'Content',
-  accessibility: 'Accessibility',
-  performance: 'Performance',
-};
+import { useTranslations } from '../../../../../lib/i18n/client';
+import type { Translator } from '@ai-visibility/i18n';
 
 function trendVariant(trend: ScoreTrend): 'success' | 'danger' | 'neutral' {
   if (trend === 'improved') return 'success';
@@ -21,15 +13,15 @@ function trendVariant(trend: ScoreTrend): 'success' | 'danger' | 'neutral' {
   return 'neutral';
 }
 
-function trendLabel(trend: ScoreTrend): string {
-  if (trend === 'improved') return '▲ Improved';
-  if (trend === 'declined') return '▼ Declined';
-  if (trend === 'unchanged') return '— Unchanged';
-  return 'Unknown';
+function trendLabel(trend: ScoreTrend, t: Translator): string {
+  if (trend === 'improved') return t('trendImproved');
+  if (trend === 'declined') return t('trendDeclined');
+  if (trend === 'unchanged') return t('trendUnchanged');
+  return t('trendUnknown');
 }
 
-function scoreLabel(score: number | null): string {
-  return score === null ? 'Insufficient Data' : `${score}/100`;
+function scoreLabel(score: number | null, tFindings: Translator): string {
+  return score === null ? tFindings('insufficientData') : `${score}/100`;
 }
 
 function deltaLabel(delta: number | null): string {
@@ -38,15 +30,30 @@ function deltaLabel(delta: number | null): string {
   return `${delta}`;
 }
 
-function ScoreRow({ row }: { row: CategoryScoreComparison }) {
+const CATEGORY_KEYS: Record<string, string> = {
+  seo: 'categorySeo',
+  aiVisibility: 'categoryAiVisibility',
+  technical: 'categoryTechnical',
+  content: 'categoryContent',
+  accessibility: 'categoryAccessibility',
+  performance: 'categoryPerformance',
+};
+
+function categoryLabel(category: string, t: Translator, tFindings: Translator): string {
+  if (category === 'overall') return t('categoryOverall');
+  const key = CATEGORY_KEYS[category];
+  return key ? tFindings(key) : category;
+}
+
+function ScoreRow({ row, t, tFindings }: { row: CategoryScoreComparison; t: Translator; tFindings: Translator }) {
   return (
     <tr className={row.trend === 'improved' ? 'compare-row--improved' : row.trend === 'declined' ? 'compare-row--declined' : ''}>
-      <td>{CATEGORY_LABELS[row.category] ?? row.category}</td>
-      <td>{scoreLabel(row.oldScore)}</td>
-      <td>{scoreLabel(row.newScore)}</td>
+      <td>{categoryLabel(row.category, t, tFindings)}</td>
+      <td>{scoreLabel(row.oldScore, tFindings)}</td>
+      <td>{scoreLabel(row.newScore, tFindings)}</td>
       <td>{deltaLabel(row.delta)}</td>
       <td>
-        <Badge variant={trendVariant(row.trend)}>{trendLabel(row.trend)}</Badge>
+        <Badge variant={trendVariant(row.trend)}>{trendLabel(row.trend, t)}</Badge>
       </td>
     </tr>
   );
@@ -73,71 +80,88 @@ function IssueList({ title, issues, emptyLabel }: { title: string; issues: PageC
   );
 }
 
-function ComparisonResultView({ result }: { result: PageComparisonResult }) {
+function ComparisonResultView({
+  result,
+  t,
+  tFindings,
+  tOptimization,
+  tCommon,
+}: {
+  result: PageComparisonResult;
+  t: Translator;
+  tFindings: Translator;
+  tOptimization: Translator;
+  tCommon: Translator;
+}) {
   const overall = result.scores.find((row) => row.category === 'overall');
   const categoryRows = result.scores.filter((row) => row.category !== 'overall');
+  const notApplicable = tCommon('unknown');
 
   return (
     <div className="stack">
       <Card
-        title="Trend"
-        actions={overall && <Badge variant={trendVariant(overall.trend)}>{trendLabel(overall.trend)}</Badge>}
+        title={t('trendTitle')}
+        actions={overall && <Badge variant={trendVariant(overall.trend)}>{trendLabel(overall.trend, t)}</Badge>}
       >
         <dl className="dl">
-          <dt>Page</dt>
+          <dt>{t('pageLabel')}</dt>
           <dd className="text-mono">{result.url}</dd>
-          <dt>Old Audit</dt>
+          <dt>{t('oldAudit')}</dt>
           <dd>
-            {result.baselineAuditId} ({result.baselineAuditAt ?? 'N/A'})
+            {result.baselineAuditId} ({result.baselineAuditAt ?? notApplicable})
           </dd>
-          <dt>New Audit</dt>
+          <dt>{t('newAudit')}</dt>
           <dd>
-            {result.targetAuditId} ({result.targetAuditAt ?? 'N/A'})
+            {result.targetAuditId} ({result.targetAuditAt ?? notApplicable})
           </dd>
-          <dt>Old Score</dt>
-          <dd>{overall ? scoreLabel(overall.oldScore) : 'N/A'}</dd>
-          <dt>New Score</dt>
-          <dd>{overall ? scoreLabel(overall.newScore) : 'N/A'}</dd>
-          <dt>Delta</dt>
-          <dd>{overall ? deltaLabel(overall.delta) : 'N/A'}</dd>
+          <dt>{t('oldScore')}</dt>
+          <dd>{overall ? scoreLabel(overall.oldScore, tFindings) : notApplicable}</dd>
+          <dt>{t('newScore')}</dt>
+          <dd>{overall ? scoreLabel(overall.newScore, tFindings) : notApplicable}</dd>
+          <dt>{t('delta')}</dt>
+          <dd>{overall ? deltaLabel(overall.delta) : notApplicable}</dd>
         </dl>
       </Card>
 
-      <Card title="Scores by Category" description="Green rows improved, red rows regressed between the two Audits.">
+      <Card title={t('scoresByCategory')} description={t('scoresByCategoryDescription')}>
         <div className="table-wrapper">
           <table className="table">
             <thead>
               <tr>
-                <th>Category</th>
-                <th>Old Score</th>
-                <th>New Score</th>
-                <th>Delta</th>
-                <th>Trend</th>
+                <th>{t('categoryColumn')}</th>
+                <th>{t('oldScore')}</th>
+                <th>{t('newScore')}</th>
+                <th>{t('delta')}</th>
+                <th>{t('trendColumn')}</th>
               </tr>
             </thead>
-            <tbody>{categoryRows.map((row) => <ScoreRow key={row.category} row={row} />)}</tbody>
+            <tbody>
+              {categoryRows.map((row) => (
+                <ScoreRow key={row.category} row={row} t={t} tFindings={tFindings} />
+              ))}
+            </tbody>
           </table>
         </div>
       </Card>
 
-      <Card title="Issues">
+      <Card title={t('issuesTitle')}>
         <div className="stack">
-          <IssueList title="New Issues" issues={result.newIssues} emptyLabel="No new issues appeared." />
-          <IssueList title="Resolved Issues" issues={result.resolvedIssues} emptyLabel="No issues were resolved." />
-          <IssueList title="Persistent Issues" issues={result.persistentIssues} emptyLabel="No issues persisted from the old Audit." />
+          <IssueList title={t('newIssues')} issues={result.newIssues} emptyLabel={t('noNewIssues')} />
+          <IssueList title={t('resolvedIssues')} issues={result.resolvedIssues} emptyLabel={t('noResolvedIssues')} />
+          <IssueList title={t('persistentIssues')} issues={result.persistentIssues} emptyLabel={t('noPersistentIssues')} />
         </div>
       </Card>
 
-      <Card title="Recommendations" description="Real, current Optimization Plan items for the new Audit.">
+      <Card title={tOptimization('title')} description={t('recommendationsDescription')}>
         {result.recommendations.length === 0 ? (
-          <EmptyState title="No Optimization Items" />
+          <EmptyState title={tOptimization('noOptimizationItems')} />
         ) : (
           <div className="stack">
             {result.recommendations.map((item, index) => (
               <Card key={`${item.title}-${index}`} muted>
                 <div className="card__header">
                   <h4>{item.title}</h4>
-                  <Badge>{item.priority}</Badge>
+                  <Badge variant={statusToVariant(item.priority)}>{tCommon(`statusValues.${item.priority}`)}</Badge>
                 </div>
                 <p>{item.description}</p>
               </Card>
@@ -162,6 +186,11 @@ export function CompareAudits({
   initialBaselineAuditId?: string;
   initialTargetAuditId?: string;
 }) {
+  const t = useTranslations('pages');
+  const tFindings = useTranslations('findings');
+  const tOptimization = useTranslations('optimization');
+  const tCommon = useTranslations('common');
+
   const [selectedUrl, setSelectedUrl] = useState<string>(initialUrl ?? pages[0]?.url ?? '');
   const [history, setHistory] = useState<PageAuditHistoryEntry[]>([]);
   const [baselineAuditId, setBaselineAuditId] = useState<string>('');
@@ -209,7 +238,7 @@ export function CompareAudits({
     const comparison = await comparePages(baselineAuditId, targetAuditId);
     setLoading(false);
     if (!comparison) {
-      setError('Could not compare these two Audits — they may not exist, may not be completed, or may not audit the same URL.');
+      setError(t('compareErrorMessage'));
       setResult(null);
       return;
     }
@@ -217,15 +246,15 @@ export function CompareAudits({
   }
 
   if (pages.length === 0) {
-    return <EmptyState title="No Pages yet" description="Run an Audit for this Project before comparing." />;
+    return <EmptyState title={t('noPagesYet')} description={t('noPagesCompareDescription')} />;
   }
 
   return (
     <div className="stack">
-      <Card title="Choose two Audits of the same Page">
+      <Card title={t('chooseTwoAudits')}>
         <div className="form-row">
           <div className="field">
-            <label htmlFor="compare-url">Page</label>
+            <label htmlFor="compare-url">{t('pageLabel')}</label>
             <select id="compare-url" className="select" value={selectedUrl} onChange={(event) => setSelectedUrl(event.target.value)}>
               {pages.map((page) => (
                 <option key={page.url} value={page.url}>
@@ -235,14 +264,14 @@ export function CompareAudits({
             </select>
           </div>
           <div className="field">
-            <label htmlFor="compare-baseline">Old Audit</label>
+            <label htmlFor="compare-baseline">{t('oldAudit')}</label>
             <select
               id="compare-baseline"
               className="select"
               value={baselineAuditId}
               onChange={(event) => setBaselineAuditId(event.target.value)}
             >
-              <option value="">Select an Audit…</option>
+              <option value="">{t('selectAnAudit')}</option>
               {history.map((entry) => (
                 <option key={entry.auditId} value={entry.auditId}>
                   {entry.completedAt ?? entry.createdAt} ({entry.auditId.slice(0, 8)})
@@ -251,14 +280,14 @@ export function CompareAudits({
             </select>
           </div>
           <div className="field">
-            <label htmlFor="compare-target">New Audit</label>
+            <label htmlFor="compare-target">{t('newAudit')}</label>
             <select
               id="compare-target"
               className="select"
               value={targetAuditId}
               onChange={(event) => setTargetAuditId(event.target.value)}
             >
-              <option value="">Select an Audit…</option>
+              <option value="">{t('selectAnAudit')}</option>
               {history.map((entry) => (
                 <option key={entry.auditId} value={entry.auditId}>
                   {entry.completedAt ?? entry.createdAt} ({entry.auditId.slice(0, 8)})
@@ -269,17 +298,15 @@ export function CompareAudits({
           <div className="field">
             <label>&nbsp;</label>
             <button type="button" className="btn btn-primary" disabled={!canCompare || loading} onClick={handleCompare}>
-              {loading ? 'Comparing…' : 'Compare'}
+              {loading ? t('comparing') : t('compare')}
             </button>
           </div>
         </div>
-        {history.length < 2 && selectedUrl && (
-          <p className="text-tertiary">This Page has fewer than two completed Audits — run another Audit for it to compare.</p>
-        )}
+        {history.length < 2 && selectedUrl && <p className="text-tertiary">{t('fewerThanTwoAudits')}</p>}
         {error && <p className="text-secondary">{error}</p>}
       </Card>
 
-      {result && <ComparisonResultView result={result} />}
+      {result && <ComparisonResultView result={result} t={t} tFindings={tFindings} tOptimization={tOptimization} tCommon={tCommon} />}
     </div>
   );
 }

@@ -1,10 +1,17 @@
 {
   "title": "Configuración",
-  "description": "Descripción",
+  "description": "Tu cuenta y la configuración del espacio de trabajo.",
+  "languageRegionTitle": "Idioma y Región",
   "language": "Idioma",
   "languageDescription": "Elige el idioma utilizado en toda la aplicación",
   "profile": "Perfil",
   "account": "Cuenta",
   "save": "Guardar Cambios",
-  "saved": "Cambios guardados"
+  "saved": "Cambios guardados",
+  "accountSettings": "Configuración de la Cuenta",
+  "nameLabel": "Nombre",
+  "emailLabel": "Correo electrónico",
+  "workspaceSettings": "Configuración del Espacio de Trabajo",
+  "workspaceNotAvailableTitle": "Aún no disponible",
+  "workspaceNotAvailableDescription": "La configuración a nivel de espacio de trabajo (marca de la agencia, miembros del equipo, facturación) todavía no es parte de esta plataforma."
 }

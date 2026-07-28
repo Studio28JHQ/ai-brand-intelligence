@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import type { CycleStatus, OptimizationCycleMetadata } from '@ai-visibility/contracts';
 import { getCurrentCycle, transitionCycleStatus } from '../../../../actions';
-import { Badge, Banner, ConfirmButton, EmptyState, SkeletonBlock, StageProgress } from '../../../../components/ui';
+import { Badge, Banner, ConfirmButton, EmptyState, SkeletonBlock, StageProgress, statusToVariant } from '../../../../components/ui';
+import { useTranslations } from '../../../../../lib/i18n/client';
 
 const CYCLE_STAGES: CycleStatus[] = ['planned', 'running', 'verification', 'completed'];
 
@@ -16,6 +17,8 @@ const NEXT_CYCLE_STATUS: Record<CycleStatus, CycleStatus | null> = {
 };
 
 export function CycleManager({ projectId }: { projectId: string }) {
+  const t = useTranslations('dashboard');
+  const tCommon = useTranslations('common');
   const [cycle, setCycle] = useState<OptimizationCycleMetadata | null>(null);
   const [loading, setLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState<string | undefined>(undefined);
@@ -34,7 +37,9 @@ export function CycleManager({ projectId }: { projectId: string }) {
       return;
     }
     const success = await transitionCycleStatus(cycle.id, status);
-    setStatusMessage(success ? `Cycle advanced to '${status}'.` : 'Failed to update cycle status.');
+    setStatusMessage(
+      success ? t('cycleAdvanced', { status: tCommon(`statusValues.${status}`) }) : t('failedToUpdateCycleStatus'),
+    );
     refresh();
   };
 
@@ -43,44 +48,46 @@ export function CycleManager({ projectId }: { projectId: string }) {
   }
 
   if (!cycle) {
-    return <EmptyState title="No Optimization Cycle yet" description="One is created automatically on the next Audit." />;
+    return <EmptyState title={t('noOptimizationCycleYet')} description={t('cycleCreatedAutomatically')} />;
   }
 
   const nextStatus = NEXT_CYCLE_STATUS[cycle.status];
+  const stageLabels = CYCLE_STAGES.map((stage) => tCommon(`statusValues.${stage}`));
+  const currentStageLabel = tCommon(`statusValues.${cycle.status}`);
 
   return (
     <div className="stack">
       {statusMessage && <Banner variant="success">{statusMessage}</Banner>}
-      <StageProgress stages={CYCLE_STAGES} current={cycle.status} />
+      <StageProgress stages={stageLabels} current={currentStageLabel} />
       <dl className="dl">
-        <dt>Goal</dt>
+        <dt>{t('goal')}</dt>
         <dd>{cycle.goal}</dd>
-        <dt>Status</dt>
+        <dt>{tCommon('status')}</dt>
         <dd>
-          <Badge>{cycle.status}</Badge>
+          <Badge variant={statusToVariant(cycle.status)}>{currentStageLabel}</Badge>
         </dd>
-        <dt>Start Date</dt>
-        <dd>{cycle.startDate ?? 'Not started'}</dd>
-        <dt>End Date</dt>
-        <dd>{cycle.endDate ?? 'Not completed'}</dd>
+        <dt>{t('startDate')}</dt>
+        <dd>{cycle.startDate ?? t('notStarted')}</dd>
+        <dt>{t('endDate')}</dt>
+        <dd>{cycle.endDate ?? t('notCompleted')}</dd>
       </dl>
       <div className="cluster">
         {nextStatus &&
           (nextStatus === 'completed' ? (
             <ConfirmButton
-              label={`Advance to ${nextStatus}`}
-              confirmLabel={`Advance this Cycle to '${nextStatus}'?`}
-              confirmDescription="A completed Cycle cannot be reopened."
+              label={t('advanceTo', { status: tCommon(`statusValues.${nextStatus}`) })}
+              confirmLabel={t('advanceCycleConfirm', { status: tCommon(`statusValues.${nextStatus}`) })}
+              confirmDescription={t('cannotReopenCompletedCycle')}
               variant="primary"
               onConfirm={() => handleTransition(nextStatus)}
             />
           ) : (
             <button type="button" className="btn btn-primary" onClick={() => handleTransition(nextStatus)}>
-              Advance to {nextStatus}
+              {t('advanceTo', { status: tCommon(`statusValues.${nextStatus}`) })}
             </button>
           ))}
         <Link href={`/projects/${projectId}/cycles/${cycle.id}/report`} className="btn btn-ghost">
-          View Executive Client Report
+          {t('viewExecutiveClientReport')}
         </Link>
       </div>
     </div>

@@ -1,0 +1,106 @@
+{
+  "metaTitle": "AI Visibility Auditor — Understand How AI Sees Your Brand",
+  "metaDescription": "Measure, explain and improve how AI systems represent your business across modern conversational platforms.",
+  "brand": "AI Visibility Auditor",
+  "startFreeAudit": "Start Free Audit",
+  "nav": {
+    "product": "Product",
+    "howItWorks": "How It Works",
+    "platform": "Platform",
+    "about": "About",
+    "signIn": "Sign In"
+  },
+  "hero": {
+    "title": "Understand How AI Sees Your Brand.",
+    "subheadline": "Measure, explain and improve how AI systems represent your business across modern conversational platforms."
+  },
+  "product": {
+    "title": "AI Visibility You Can Trust",
+    "intro": "AI Visibility is a new, measurable dimension of how your brand is represented — not a guess."
+  },
+  "pillars": {
+    "measurable": {
+      "title": "Measurable",
+      "description": "Every Audit produces a structured AI Visibility status, backed by concrete Findings — not a vague impression."
+    },
+    "explainable": {
+      "title": "Explainable",
+      "description": "Every recommendation carries its own reasoning: which Findings triggered it, what evidence supports it, and what outcome to expect."
+    },
+    "actionable": {
+      "title": "Actionable",
+      "description": "Findings become an Optimization Plan, the Plan becomes a trackable Campaign, and every Action can be verified against a new Audit."
+    }
+  },
+  "howItWorks": {
+    "title": "How It Works",
+    "intro": "One continuous lifecycle, from first Audit to measured business impact."
+  },
+  "workflowSteps": {
+    "audit": { "title": "Audit", "description": "Run a complete AI Visibility Audit against your client's website." },
+    "analyze": { "title": "Analyze", "description": "Review the Findings and the AI Visibility status they produce." },
+    "optimize": { "title": "Optimize", "description": "Turn Findings into a prioritized, evidence-based Optimization Plan." },
+    "verify": { "title": "Verify", "description": "Track Optimization Actions through a Campaign as work gets done." },
+    "measureImpact": { "title": "Measure Impact", "description": "Re-audit and compare against the Baseline to confirm real change." },
+    "continuousImprovement": { "title": "Continuous Improvement", "description": "Close the Optimization Cycle and start the next one." }
+  },
+  "platform": {
+    "title": "Built for the Full Optimization Lifecycle",
+    "intro": "Every capability below is available in the platform today."
+  },
+  "capabilities": {
+    "audits": {
+      "title": "AI Visibility Audits",
+      "description": "Run a complete Audit against any website and get a structured AI Visibility status, Findings, and an Optimization Plan back in seconds."
+    },
+    "consultant": {
+      "title": "AI Consultant",
+      "description": "Ask questions about a Project and get proactive, evidence-based recommendations — derived entirely from your own platform data, never invented."
+    },
+    "campaigns": {
+      "title": "Optimization Campaigns",
+      "description": "Turn an Optimization Plan into trackable work, with Actions your team advances from pending through verified."
+    },
+    "reports": {
+      "title": "Executive Reports",
+      "description": "A structured, client-ready report summarizing Key Findings, Actions Completed, and measured Impact for every Optimization Cycle."
+    },
+    "verification": {
+      "title": "Continuous Verification",
+      "description": "Re-audit any Project to confirm whether completed work actually improved AI Visibility — Findings resolved, and Findings introduced."
+    },
+    "impact": {
+      "title": "Business Impact Analysis",
+      "description": "Compare a Baseline Audit against a Verification Audit to see exactly what changed: AI Visibility status, entity coverage, and resolved Findings."
+    }
+  },
+  "about": {
+    "title": "Why AI Visibility Matters",
+    "paragraph1": "A growing share of purchase research and vendor discovery now happens through conversational AI systems rather than traditional search results. When those systems cannot accurately find, understand, or represent a brand, that brand becomes effectively invisible within an entirely new category of buyer interactions.",
+    "paragraph2": "This is a measurable, addressable problem — not a matter of chance. AI Visibility Auditor gives agencies a structured way to assess that exposure, explain its root causes with evidence, and track measurable progress toward resolving it over time."
+  },
+  "dashboardPreview": {
+    "title": "See Inside the Platform",
+    "intro": "An illustrative look at the Executive Dashboard every Project gets — not real client data.",
+    "illustrativeProject": "Illustrative Project",
+    "ready": "ready",
+    "baseline": "Baseline",
+    "set": "Set",
+    "optimizationCycle": "Optimization Cycle",
+    "verification": "verification",
+    "campaign": "Campaign",
+    "active": "active"
+  },
+  "finalCta": {
+    "title": "See how AI systems represent your brand today."
+  },
+  "footer": {
+    "product": "Product",
+    "documentation": "Documentation",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "contact": "Contact",
+    "notYetAvailable": "Not yet available",
+    "copyright": "© {year} AI Visibility Auditor. All rights reserved."
+  }
+}

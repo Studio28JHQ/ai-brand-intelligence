@@ -1,11 +1,15 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { VerifyEmailForm } from './verify-email-form';
+import { getTranslations } from '../../lib/i18n/server';
 
-export const metadata: Metadata = {
-  title: 'Verify Your Email — AI Visibility Auditor',
-  description: 'Enter the 6-digit verification code we sent you.',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('auth');
+  return {
+    title: t('verifyEmailMetaTitle'),
+    description: t('verifyEmailMetaDescription'),
+  };
+}
 
 export default function VerifyEmailPage() {
   return (

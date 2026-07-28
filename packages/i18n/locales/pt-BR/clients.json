@@ -1,0 +1,16 @@
+{
+  "title": "Clientes",
+  "description": "Todo Cliente da agência auditado nesta plataforma.",
+  "addClient": "Adicionar um Cliente",
+  "clientNameLabel": "Nome do cliente",
+  "industryLabel": "Setor",
+  "primaryDomainLabel": "Domínio principal",
+  "createClient": "Criar Cliente",
+  "clientCreated": "Cliente \"{name}\" criado.",
+  "noClientsMatch": "Nenhum Cliente corresponde a \"{query}\"",
+  "noClientsYet": "Ainda não há Clientes",
+  "clientColumn": "Cliente",
+  "industryColumn": "Setor",
+  "primaryDomainColumn": "Domínio Principal",
+  "projectCount": { "one": "{count} Projeto", "other": "{count} Projetos" }
+}

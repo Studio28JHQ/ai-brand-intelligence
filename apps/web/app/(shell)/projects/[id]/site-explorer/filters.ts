@@ -1,4 +1,5 @@
 import type { ProjectPage } from '@ai-visibility/contracts';
+import type { Translator } from '@ai-visibility/i18n';
 
 export type ScoreBucket = 'all' | 'high' | 'medium' | 'low' | 'insufficient';
 
@@ -9,13 +10,15 @@ export type ScoreBucket = 'all' | 'high' | 'medium' | 'low' | 'insufficient';
 export const ISSUE_FILTER_KEYS = ['missingTitle', 'missingH1', 'thinContent', 'missingStructuredData', 'canonicalIssue'] as const;
 export type IssueFilterKey = (typeof ISSUE_FILTER_KEYS)[number];
 
-export const ISSUE_FILTER_LABELS: Record<IssueFilterKey, string> = {
-  missingTitle: 'Missing Title',
-  missingH1: 'Missing H1',
-  thinContent: 'Thin Content',
-  missingStructuredData: 'Structured Data',
-  canonicalIssue: 'Canonical Issues',
-};
+export function getIssueFilterLabels(t: Translator): Record<IssueFilterKey, string> {
+  return {
+    missingTitle: t('missingTitle'),
+    missingH1: t('missingH1'),
+    thinContent: t('thinContent'),
+    missingStructuredData: t('missingStructuredData'),
+    canonicalIssue: t('canonicalIssues'),
+  };
+}
 
 export interface SiteExplorerFilters {
   query: string;

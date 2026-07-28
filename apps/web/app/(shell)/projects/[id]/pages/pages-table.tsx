@@ -3,27 +3,13 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import type { ProjectPage } from '@ai-visibility/contracts';
-import { Badge, EmptyState } from '../../../../components/ui';
+import { Badge, EmptyState, statusToVariant } from '../../../../components/ui';
+import { useTranslations } from '../../../../../lib/i18n/client';
 
 type SortKey = 'url' | 'status' | 'overallScore' | 'seoScore' | 'aiVisibilityScore' | 'lastAuditAt' | 'findingsCount' | 'priority';
 type SortDirection = 'asc' | 'desc';
 
 const PRIORITY_RANK: Record<string, number> = { high: 3, medium: 2, low: 1 };
-
-const COLUMNS: Array<{ key: SortKey; label: string }> = [
-  { key: 'url', label: 'URL' },
-  { key: 'status', label: 'Status' },
-  { key: 'overallScore', label: 'Overall Score' },
-  { key: 'seoScore', label: 'SEO Score' },
-  { key: 'aiVisibilityScore', label: 'AI Visibility Score' },
-  { key: 'lastAuditAt', label: 'Last Audit' },
-  { key: 'findingsCount', label: 'Findings' },
-  { key: 'priority', label: 'Priority' },
-];
-
-function scoreCell(score: number | null) {
-  return score === null ? <span className="text-tertiary">Insufficient Data</span> : `${score}/100`;
-}
 
 function compareValues(a: ProjectPage, b: ProjectPage, key: SortKey): number {
   switch (key) {
@@ -51,11 +37,29 @@ function compareValues(a: ProjectPage, b: ProjectPage, key: SortKey): number {
 }
 
 export function PagesTable({ pages, projectId }: { pages: ProjectPage[]; projectId: string }) {
+  const t = useTranslations('pages');
+  const tCommon = useTranslations('common');
+  const tFindings = useTranslations('findings');
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [priorityFilter, setPriorityFilter] = useState('all');
   const [sortKey, setSortKey] = useState<SortKey>('url');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+
+  const COLUMNS: Array<{ key: SortKey; label: string }> = [
+    { key: 'url', label: t('url') },
+    { key: 'status', label: tCommon('status') },
+    { key: 'overallScore', label: t('overallScore') },
+    { key: 'seoScore', label: t('seoScore') },
+    { key: 'aiVisibilityScore', label: t('aiVisibilityScore') },
+    { key: 'lastAuditAt', label: t('lastAudit') },
+    { key: 'findingsCount', label: t('findings') },
+    { key: 'priority', label: t('priority') },
+  ];
+
+  function scoreCell(score: number | null) {
+    return score === null ? <span className="text-tertiary">{tFindings('insufficientData')}</span> : `${score}/100`;
+  }
 
   const statuses = useMemo(() => Array.from(new Set(pages.map((page) => page.status))).sort(), [pages]);
 
@@ -89,11 +93,11 @@ export function PagesTable({ pages, projectId }: { pages: ProjectPage[]; project
   if (pages.length === 0) {
     return (
       <EmptyState
-        title="No Pages yet"
-        description="Run an Audit for this Project to see its pages here."
+        title={t('noPagesYet')}
+        description={t('noPagesDescription')}
         action={
           <Link href={`/projects/${projectId}`} className="btn btn-primary btn-sm">
-            Run an Audit
+            {t('runAnAudit')}
           </Link>
         }
       />
@@ -104,25 +108,25 @@ export function PagesTable({ pages, projectId }: { pages: ProjectPage[]; project
     <div className="stack">
       <div className="form-row">
         <div className="field">
-          <label htmlFor="pages-search">Search</label>
+          <label htmlFor="pages-search">{t('searchLabel')}</label>
           <input
             id="pages-search"
             className="input"
             type="search"
-            placeholder="Filter by URL…"
+            placeholder={t('filterByUrlPlaceholder')}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
           />
         </div>
         <div className="field">
-          <label htmlFor="pages-status-filter">Status</label>
+          <label htmlFor="pages-status-filter">{tCommon('status')}</label>
           <select
             id="pages-status-filter"
             className="select"
             value={statusFilter}
             onChange={(event) => setStatusFilter(event.target.value)}
           >
-            <option value="all">All statuses</option>
+            <option value="all">{t('allStatuses')}</option>
             {statuses.map((status) => (
               <option key={status} value={status}>
                 {status}
@@ -131,24 +135,24 @@ export function PagesTable({ pages, projectId }: { pages: ProjectPage[]; project
           </select>
         </div>
         <div className="field">
-          <label htmlFor="pages-priority-filter">Priority</label>
+          <label htmlFor="pages-priority-filter">{t('priority')}</label>
           <select
             id="pages-priority-filter"
             className="select"
             value={priorityFilter}
             onChange={(event) => setPriorityFilter(event.target.value)}
           >
-            <option value="all">All priorities</option>
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
-            <option value="none">None</option>
+            <option value="all">{t('allPriorities')}</option>
+            <option value="high">{tCommon('statusValues.high')}</option>
+            <option value="medium">{tCommon('statusValues.medium')}</option>
+            <option value="low">{tCommon('statusValues.low')}</option>
+            <option value="none">{t('none')}</option>
           </select>
         </div>
       </div>
 
       {visiblePages.length === 0 ? (
-        <EmptyState title="No Pages match your search/filter" />
+        <EmptyState title={t('noPagesMatchFilter')} />
       ) : (
         <div className="table-wrapper">
           <table className="table">
@@ -162,7 +166,7 @@ export function PagesTable({ pages, projectId }: { pages: ProjectPage[]; project
                     </button>
                   </th>
                 ))}
-                <th aria-label="Actions" />
+                <th aria-label={tCommon('actions')} />
               </tr>
             </thead>
             <tbody>
@@ -174,17 +178,23 @@ export function PagesTable({ pages, projectId }: { pages: ProjectPage[]; project
                     </Link>
                   </td>
                   <td>
-                    <Badge>{page.status}</Badge>
+                    <Badge variant={statusToVariant(page.status)}>{tCommon(`statusValues.${page.status}`)}</Badge>
                   </td>
                   <td>{scoreCell(page.overallScore)}</td>
                   <td>{scoreCell(page.seoScore)}</td>
                   <td>{scoreCell(page.aiVisibilityScore)}</td>
                   <td>{page.lastAuditAt ?? '—'}</td>
                   <td>{page.findingsCount}</td>
-                  <td>{page.priority ? <Badge>{page.priority}</Badge> : <span className="text-tertiary">None</span>}</td>
+                  <td>
+                    {page.priority ? (
+                      <Badge variant={statusToVariant(page.priority)}>{tCommon(`statusValues.${page.priority}`)}</Badge>
+                    ) : (
+                      <span className="text-tertiary">{t('none')}</span>
+                    )}
+                  </td>
                   <td>
                     <Link href={`/projects/${projectId}/compare?url=${encodeURIComponent(page.url)}`} className="btn btn-secondary btn-sm">
-                      Compare
+                      {t('compare')}
                     </Link>
                   </td>
                 </tr>

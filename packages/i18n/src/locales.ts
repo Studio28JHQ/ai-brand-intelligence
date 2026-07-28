@@ -25,6 +25,10 @@ export const MESSAGE_DOMAINS = [
   'reports',
   'settings',
   'errors',
+  'landing',
+  'clients',
+  'activity',
+  'onboarding',
 ] as const;
 
 export type MessageDomain = (typeof MESSAGE_DOMAINS)[number];

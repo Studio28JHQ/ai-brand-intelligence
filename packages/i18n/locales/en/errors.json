@@ -5,5 +5,12 @@
   "validationRequired": "This field is required.",
   "unauthorized": "You are not authorized to view this page.",
   "forbidden": "You don't have permission to perform this action.",
-  "serverError": "A server error occurred. Please try again later."
+  "serverError": "A server error occurred. Please try again later.",
+  "pageNotFoundTitle": "Page not found",
+  "notFoundCardTitle": "We couldn't find that page",
+  "notFoundDescription": "It may have been moved, or the link may be incorrect.",
+  "backToWorkspace": "Back to Workspace",
+  "somethingWentWrongTitle": "Something went wrong",
+  "unexpectedError": "An unexpected error occurred.",
+  "tryAgain": "Try Again"
 }

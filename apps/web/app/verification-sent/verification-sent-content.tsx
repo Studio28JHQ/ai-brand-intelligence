@@ -5,23 +5,25 @@ import Link from 'next/link';
 import type { OtpPurpose } from '@ai-visibility/contracts';
 import { AuthCard } from '../components/auth/AuthCard';
 import { EmptyState } from '../components/ui';
+import { useTranslations } from '../../lib/i18n/client';
 
 export function VerificationSentContent() {
+  const t = useTranslations('auth');
   const searchParams = useSearchParams();
   const email = searchParams.get('email') ?? '';
   const purpose = (searchParams.get('purpose') as OtpPurpose | null) ?? 'password-reset';
 
   return (
-    <AuthCard title="Check your email">
+    <AuthCard title={t('checkYourEmailTitle')}>
       <EmptyState
-        title={email ? `We sent a code to ${email}` : 'We sent you a code'}
-        description="Enter it on the next screen to continue. The code expires soon, so check your inbox now."
+        title={email ? t('weSentCodeToShort', { email }) : t('weSentYouCode')}
+        description={t('enterCodeNextScreen')}
         action={
           <Link
             href={`/verify-email?email=${encodeURIComponent(email)}&purpose=${purpose}`}
             className="btn btn-primary btn-sm"
           >
-            Enter Code
+            {t('enterCode')}
           </Link>
         }
       />

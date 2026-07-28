@@ -4,8 +4,10 @@ import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { ActiveOperationEntry } from '@ai-visibility/contracts';
-import { Badge, ConfirmButton, EmptyState } from '../../components/ui';
+import { Badge, ConfirmButton, EmptyState, statusToVariant } from '../../components/ui';
 import { cancelAudit, listActiveOperations, runNewAudit } from '../../actions';
+import { useTranslations } from '../../../lib/i18n/client';
+import type { Translator } from '@ai-visibility/i18n';
 import { ViewLogsModal } from './view-logs-modal';
 
 const POLL_INTERVAL_MS = 4000;
@@ -15,14 +17,16 @@ function formatDuration(ms: number): string {
   return ms < 1000 ? `${ms}ms` : `${(ms / 1000).toFixed(1)}s`;
 }
 
-function formatEstimatedStart(iso: string | null): string {
-  if (!iso) return 'Calculating…';
+function formatEstimatedStart(iso: string | null, t: Translator): string {
+  if (!iso) return t('calculating');
   const deltaMs = new Date(iso).getTime() - Date.now();
-  if (deltaMs <= 0) return 'any moment now';
-  return `~${formatDuration(deltaMs)} from now`;
+  if (deltaMs <= 0) return t('anyMomentNow');
+  return t('fromNow', { duration: formatDuration(deltaMs) });
 }
 
 export function ActivityTable({ initialEntries }: { initialEntries: ActiveOperationEntry[] }) {
+  const t = useTranslations('activity');
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const [entries, setEntries] = useState(initialEntries);
   const [now, setNow] = useState(() => Date.now());
@@ -59,7 +63,7 @@ export function ActivityTable({ initialEntries }: { initialEntries: ActiveOperat
     if (result.success) {
       await refresh();
     } else {
-      setRowError(result.error ?? 'Could not cancel this operation.');
+      setRowError(result.error ?? t('couldNotCancel'));
     }
   }
 
@@ -72,7 +76,7 @@ export function ActivityTable({ initialEntries }: { initialEntries: ActiveOperat
       router.push(`/audits/${result.auditId}`);
       return;
     }
-    setRowError(result.error ?? 'Could not retry this operation.');
+    setRowError(result.error ?? t('couldNotRetry'));
   }
 
   function durationLabel(entry: ActiveOperationEntry): string {
@@ -89,12 +93,7 @@ export function ActivityTable({ initialEntries }: { initialEntries: ActiveOperat
   }
 
   if (entries.length === 0) {
-    return (
-      <EmptyState
-        title="Nothing running right now"
-        description="Operations appear here the moment they start, and stay visible briefly after finishing."
-      />
-    );
+    return <EmptyState title={t('nothingRunningTitle')} description={t('nothingRunningDescription')} />;
   }
 
   return (
@@ -105,15 +104,15 @@ export function ActivityTable({ initialEntries }: { initialEntries: ActiveOperat
         <table className="table">
           <thead>
             <tr>
-              <th>Project</th>
-              <th>Operation</th>
-              <th>Current Step</th>
-              <th>Progress</th>
-              <th>Started</th>
-              <th>Duration</th>
-              <th>Status</th>
+              <th>{t('project')}</th>
+              <th>{t('operation')}</th>
+              <th>{t('currentStep')}</th>
+              <th>{t('progressColumn')}</th>
+              <th>{t('started')}</th>
+              <th>{t('duration')}</th>
+              <th>{tCommon('status')}</th>
               <th>
-                <span className="visually-hidden">Actions</span>
+                <span className="visually-hidden">{tCommon('actions')}</span>
               </th>
             </tr>
           </thead>
@@ -124,33 +123,33 @@ export function ActivityTable({ initialEntries }: { initialEntries: ActiveOperat
                   <Link href={`/projects/${entry.projectId}/dashboard`}>{entry.projectName}</Link>
                   <div className="text-tertiary text-mono">{entry.subject}</div>
                 </td>
-                <td>Audit</td>
+                <td>{t('audit')}</td>
                 <td>
                   {entry.currentStepLabel ?? '—'}
                   {entry.status === 'queued' && (
                     <div className="text-tertiary">
-                      Position {entry.queuePosition ?? '—'} · {formatEstimatedStart(entry.estimatedStartAt)}
+                      {t('position')} {entry.queuePosition ?? '—'} · {formatEstimatedStart(entry.estimatedStartAt, t)}
                     </div>
                   )}
                 </td>
                 <td>{entry.progressPercent !== null ? `${entry.progressPercent}%` : '—'}</td>
-                <td>{entry.startedAt ?? (entry.status === 'queued' ? 'Not yet' : '—')}</td>
+                <td>{entry.startedAt ?? (entry.status === 'queued' ? t('notYetStarted') : '—')}</td>
                 <td>{durationLabel(entry)}</td>
                 <td>
-                  <Badge>{entry.status}</Badge>
+                  <Badge variant={statusToVariant(entry.status)}>{tCommon(`statusValues.${entry.status}`)}</Badge>
                 </td>
                 <td>
                   <div className="cluster">
                     <Link href={`/audits/${entry.id}`} className="btn btn-secondary btn-sm">
-                      Open
+                      {tCommon('open')}
                     </Link>
                     {entry.canCancel && (
                       <ConfirmButton
-                        label="Cancel"
+                        label={tCommon('cancel')}
                         variant="danger"
                         disabled={pendingId === entry.id}
-                        confirmLabel="Cancel this queued Audit?"
-                        confirmDescription="It hasn't started running yet, so this simply removes it from the queue."
+                        confirmLabel={t('cancelQueuedAuditConfirm')}
+                        confirmDescription={t('cancelQueuedAuditDescription')}
                         onConfirm={() => handleCancel(entry)}
                       />
                     )}
@@ -161,11 +160,11 @@ export function ActivityTable({ initialEntries }: { initialEntries: ActiveOperat
                         disabled={pendingId === entry.id}
                         onClick={() => handleRetry(entry)}
                       >
-                        {pendingId === entry.id ? 'Retrying…' : 'Retry'}
+                        {pendingId === entry.id ? t('retrying') : tCommon('retry')}
                       </button>
                     )}
                     <button type="button" className="btn btn-secondary btn-sm" onClick={() => setViewLogsId(entry.id)}>
-                      View Logs
+                      {t('viewLogs')}
                     </button>
                   </div>
                 </td>

@@ -3,12 +3,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import type { AuditMetadata, AuditProgressEvent, AuditStageStatus, AuditStatus, AuditStepProgressEvent } from '@ai-visibility/contracts';
-import { Badge, Card } from '../../../components/ui';
+import { Badge, Card, statusToVariant } from '../../../components/ui';
 import { getAudit } from '../../../actions';
+import { useTranslations } from '../../../../lib/i18n/client';
+import type { Translator } from '@ai-visibility/i18n';
 
 interface Stage {
   key: string;
-  label: string;
+  labelKey: string;
   stepIds: string[];
 }
 
@@ -18,16 +20,16 @@ interface Stage {
 // signals), not a fabricated one. Optimization has no WorkflowContext capability of its own (see
 // docs/04_PROJECT/DECISION_LOG.md#cto-104) but is timed and published for real by CreateAuditUseCase.
 const STAGES: Stage[] = [
-  { key: 'discovery', label: 'Discovery', stepIds: ['discovery'] },
-  { key: 'crawl', label: 'Crawling', stepIds: ['crawl'] },
-  { key: 'inventory', label: 'Inventory', stepIds: ['inventory'] },
-  { key: 'extraction', label: 'Extraction', stepIds: ['extraction'] },
-  { key: 'heuristics', label: 'Heuristics', stepIds: ['heuristics'] },
-  { key: 'analysis', label: 'Analysis', stepIds: ['analysis'] },
-  { key: 'entity', label: 'Entity Detection', stepIds: ['entity'] },
-  { key: 'knowledgeGraph', label: 'Knowledge Graph', stepIds: ['knowledgeGraph'] },
-  { key: 'aiVisibility', label: 'AI Visibility', stepIds: ['aiVisibility', 'aiVisibilityHeuristics', 'aiVisibilityAnalysis'] },
-  { key: 'optimization', label: 'Optimization', stepIds: ['optimization'] },
+  { key: 'discovery', labelKey: 'stageDiscovery', stepIds: ['discovery'] },
+  { key: 'crawl', labelKey: 'stageCrawling', stepIds: ['crawl'] },
+  { key: 'inventory', labelKey: 'stageInventory', stepIds: ['inventory'] },
+  { key: 'extraction', labelKey: 'stageExtraction', stepIds: ['extraction'] },
+  { key: 'heuristics', labelKey: 'stageHeuristics', stepIds: ['heuristics'] },
+  { key: 'analysis', labelKey: 'stageAnalysis', stepIds: ['analysis'] },
+  { key: 'entity', labelKey: 'stageEntityDetection', stepIds: ['entity'] },
+  { key: 'knowledgeGraph', labelKey: 'stageKnowledgeGraph', stepIds: ['knowledgeGraph'] },
+  { key: 'aiVisibility', labelKey: 'stageAiVisibility', stepIds: ['aiVisibility', 'aiVisibilityHeuristics', 'aiVisibilityAnalysis'] },
+  { key: 'optimization', labelKey: 'stageOptimization', stepIds: ['optimization'] },
 ];
 
 const QUEUE_POLL_INTERVAL_MS = 5000;
@@ -62,10 +64,10 @@ function formatDuration(ms: number): string {
   return ms < 1000 ? `${ms}ms` : `${(ms / 1000).toFixed(1)}s`;
 }
 
-function formatEstimatedStart(iso: string): string {
+function formatEstimatedStart(iso: string, t: Translator): string {
   const deltaMs = new Date(iso).getTime() - Date.now();
-  if (deltaMs <= 0) return 'any moment now';
-  return `~${formatDuration(deltaMs)} from now`;
+  if (deltaMs <= 0) return t('anyMomentNow');
+  return `~${formatDuration(deltaMs)}`;
 }
 
 function initialStepsFromHistory(audit: AuditMetadata): Map<string, AuditStepProgressEvent> {
@@ -86,6 +88,8 @@ function initialStepsFromHistory(audit: AuditMetadata): Map<string, AuditStepPro
 }
 
 export function ExecutionTimeline({ audit }: { audit: AuditMetadata }) {
+  const t = useTranslations('audits');
+  const tCommon = useTranslations('common');
   const [auditStatus, setAuditStatus] = useState<AuditStatus>(audit.status);
   const [steps, setSteps] = useState<Map<string, AuditStepProgressEvent>>(() => initialStepsFromHistory(audit));
   const [now, setNow] = useState(() => Date.now());
@@ -173,18 +177,18 @@ export function ExecutionTimeline({ audit }: { audit: AuditMetadata }) {
   const completedCount = stageStatuses.filter(({ status }) => status === 'completed').length;
 
   const currentStepLabel = failedStage
-    ? `${failedStage.stage.label} (failed)`
+    ? `${t(failedStage.stage.labelKey)} (${tCommon('statusValues.failed')})`
     : runningStage
-      ? runningStage.stage.label
+      ? t(runningStage.stage.labelKey)
       : auditStatus === 'queued'
-        ? 'Queued — waiting for another Audit to finish'
+        ? t('queuedWaitingMessage')
         : auditStatus === 'pending'
-          ? 'Queued'
+          ? t('currentStepQueued')
           : auditStatus === 'failed'
-            ? 'Audit failed'
+            ? t('auditFailedStep')
             : auditStatus === 'cancelled'
-              ? 'Audit cancelled'
-              : 'Completed';
+              ? t('auditCancelledStep')
+              : tCommon('statusValues.completed');
 
   const elapsedMs = audit.startedAt ? Math.max(0, now - new Date(audit.startedAt).getTime()) : 0;
 
@@ -198,32 +202,32 @@ export function ExecutionTimeline({ audit }: { audit: AuditMetadata }) {
     averageStageDurationMs !== null && !isTerminal(auditStatus) ? averageStageDurationMs * remainingStageCount : null;
 
   return (
-    <Card title="Live Audit Execution">
+    <Card title={t('liveExecution')}>
       {auditStatus === 'queued' && (
         <dl className="dl">
-          <dt>Status</dt>
+          <dt>{tCommon('status')}</dt>
           <dd>
-            <Badge variant="warning">Already Running</Badge> — another Audit for this Project is in progress
+            <Badge variant="warning">{t('alreadyRunning')}</Badge> — {t('anotherAuditInProgress')}
           </dd>
-          <dt>Queue Position</dt>
-          <dd>{queueInfo.queuePosition !== null ? `${queueInfo.queuePosition} in line` : '—'}</dd>
-          <dt>Estimated Start</dt>
-          <dd>{queueInfo.estimatedStartAt ? formatEstimatedStart(queueInfo.estimatedStartAt) : 'Calculating…'}</dd>
+          <dt>{t('queuePosition')}</dt>
+          <dd>{queueInfo.queuePosition !== null ? t('inLine', { position: queueInfo.queuePosition }) : '—'}</dd>
+          <dt>{t('estimatedStart')}</dt>
+          <dd>{queueInfo.estimatedStartAt ? formatEstimatedStart(queueInfo.estimatedStartAt, t) : t('calculating')}</dd>
         </dl>
       )}
 
       <dl className="dl">
-        <dt>Current Step</dt>
+        <dt>{t('currentStep')}</dt>
         <dd>{currentStepLabel}</dd>
-        <dt>Progress</dt>
+        <dt>{t('progress')}</dt>
         <dd>
-          {completedCount} / {STAGES.length} stages
+          {t('stagesProgress', { completed: completedCount, total: STAGES.length })}
           {failedStage ? '' : ` (${Math.round((completedCount / STAGES.length) * 100)}%)`}
         </dd>
-        <dt>Elapsed Time</dt>
+        <dt>{t('elapsedTime')}</dt>
         <dd>{formatDuration(elapsedMs)}</dd>
-        <dt>Est. Remaining Time</dt>
-        <dd>{isTerminal(auditStatus) ? '—' : estimatedRemainingMs !== null ? `~${formatDuration(estimatedRemainingMs)}` : 'Calculating…'}</dd>
+        <dt>{t('estRemainingTime')}</dt>
+        <dd>{isTerminal(auditStatus) ? '—' : estimatedRemainingMs !== null ? `~${formatDuration(estimatedRemainingMs)}` : t('calculating')}</dd>
       </dl>
 
       {auditStatus === 'completed' && audit.previousAuditId && (
@@ -232,7 +236,7 @@ export function ExecutionTimeline({ audit }: { audit: AuditMetadata }) {
             className="btn btn-secondary btn-sm"
             href={`/projects/${audit.projectId}/compare?url=${encodeURIComponent(audit.url)}&baselineAuditId=${audit.previousAuditId}&targetAuditId=${audit.id}`}
           >
-            Compare With Previous
+            {t('compareWithPrevious')}
           </Link>
         </p>
       )}
@@ -241,17 +245,17 @@ export function ExecutionTimeline({ audit }: { audit: AuditMetadata }) {
         <table className="table">
           <thead>
             <tr>
-              <th>Stage</th>
-              <th>Status</th>
-              <th>Duration</th>
-              <th>Error</th>
+              <th>{t('stageColumn')}</th>
+              <th>{tCommon('status')}</th>
+              <th>{t('duration')}</th>
+              <th>{t('errorColumn')}</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>Queued</td>
+              <td>{t('queuedRow')}</td>
               <td>
-                <Badge>{queuedStatus}</Badge>
+                <Badge variant={statusToVariant(queuedStatus)}>{tCommon(`statusValues.${queuedStatus}`)}</Badge>
               </td>
               <td>—</td>
               <td>—</td>
@@ -260,9 +264,9 @@ export function ExecutionTimeline({ audit }: { audit: AuditMetadata }) {
               const failingStep = stage.stepIds.map((id) => steps.get(id)).find((event) => event?.status === 'failed');
               return (
                 <tr key={stage.key}>
-                  <td>{stage.label}</td>
+                  <td>{t(stage.labelKey)}</td>
                   <td>
-                    <Badge>{status}</Badge>
+                    <Badge variant={statusToVariant(status)}>{tCommon(`statusValues.${status}`)}</Badge>
                   </td>
                   <td>{durationMs !== null ? formatDuration(durationMs) : '—'}</td>
                   <td>{failingStep?.errorMessage ? `${failingStep.errorCode}: ${failingStep.errorMessage}` : '—'}</td>
@@ -270,9 +274,9 @@ export function ExecutionTimeline({ audit }: { audit: AuditMetadata }) {
               );
             })}
             <tr>
-              <td>Completed</td>
+              <td>{tCommon('statusValues.completed')}</td>
               <td>
-                <Badge>{completedStageStatus}</Badge>
+                <Badge variant={statusToVariant(completedStageStatus)}>{tCommon(`statusValues.${completedStageStatus}`)}</Badge>
               </td>
               <td>{audit.startedAt && audit.completedAt ? formatDuration(new Date(audit.completedAt).getTime() - new Date(audit.startedAt).getTime()) : '—'}</td>
               <td>—</td>

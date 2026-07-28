@@ -1,6 +1,7 @@
 import { getDashboard, getProjectPages } from '../../../../actions';
 import { Breadcrumbs, Card, PageHeader } from '../../../../components/ui';
 import { CompareAudits } from './compare-audits';
+import { getTranslations } from '../../../../../lib/i18n/server';
 
 export default async function ComparePage({
   params,
@@ -12,26 +13,25 @@ export default async function ComparePage({
   const { id } = await params;
   const { url, baselineAuditId, targetAuditId } = await searchParams;
   const [dashboard, pages] = await Promise.all([getDashboard(id), getProjectPages(id)]);
-  const projectName = dashboard?.project.projectName ?? 'Project';
+  const t = await getTranslations('pages');
+  const tNav = await getTranslations('navigation');
+  const projectName = dashboard?.project.projectName ?? tNav('projects');
 
   return (
     <main className="page">
       <Breadcrumbs
         items={[
-          { label: 'Dashboard', href: '/workspace' },
+          { label: tNav('dashboard'), href: '/workspace' },
           { label: projectName, href: `/projects/${id}/dashboard` },
-          { label: 'Compare Audits' },
+          { label: t('compareAuditsTitle') },
         ]}
       />
 
-      <PageHeader
-        title="Compare Audits"
-        description="Compare two real Audits of the same Page — Old Score, New Score, Delta, New/Resolved/Persistent Issues, and current Recommendations. No AI provider involved."
-      />
+      <PageHeader title={t('compareAuditsTitle')} description={t('compareAuditsDescription')} />
 
       {pages.length === 0 ? (
         <Card>
-          <p className="text-secondary">No Pages yet — run an Audit for this Project first.</p>
+          <p className="text-secondary">{t('noPagesRunAuditFirst')}</p>
         </Card>
       ) : (
         <CompareAudits

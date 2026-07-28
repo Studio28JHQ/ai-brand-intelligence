@@ -6,5 +6,16 @@
   "website": "Sitio Web",
   "openDashboard": "Abrir Panel",
   "noProjects": "Aún no hay Proyectos",
-  "autoCreateClient": "Crear cliente automáticamente desde la URL"
+  "autoCreateClient": "Crear cliente automáticamente desde la URL",
+  "descriptionForClient": "Proyectos de {name}.",
+  "runNewAudit": "Ejecutar una Nueva Auditoría",
+  "websiteUrlLabel": "URL del sitio web",
+  "analyzing": "Analizando…",
+  "analyze": "Analizar",
+  "auditCreated": "Auditoría Creada",
+  "workflowProgress": "Progreso del Flujo de Trabajo",
+  "overallProgress": "Progreso General",
+  "step": "Paso",
+  "noFindingsForAudit": "No hay Hallazgos para esta Auditoría",
+  "noOptimizationItems": "No hay Elementos de Optimización"
 }

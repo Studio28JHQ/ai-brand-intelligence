@@ -1,10 +1,17 @@
 {
   "title": "Settings",
-  "description": "Description",
+  "description": "Your account and workspace settings.",
+  "languageRegionTitle": "Language & Region",
   "language": "Language",
   "languageDescription": "Choose the language used across the application",
   "profile": "Profile",
   "account": "Account",
   "save": "Save Changes",
-  "saved": "Changes saved"
+  "saved": "Changes saved",
+  "accountSettings": "Account Settings",
+  "nameLabel": "Name",
+  "emailLabel": "Email",
+  "workspaceSettings": "Workspace Settings",
+  "workspaceNotAvailableTitle": "Not available yet",
+  "workspaceNotAvailableDescription": "Workspace-level settings (agency branding, team members, billing) aren't part of this platform yet."
 }

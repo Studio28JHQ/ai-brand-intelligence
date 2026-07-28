@@ -1,12 +1,16 @@
 import { OnboardingWizard } from './onboarding-wizard';
 import { Breadcrumbs, PageHeader } from '../components/ui';
+import { getTranslations } from '../../lib/i18n/server';
 
-export default function OnboardingPage() {
+export default async function OnboardingPage() {
+  const t = await getTranslations('onboarding');
+  const tNav = await getTranslations('navigation');
+
   return (
     <main className="page">
-      <Breadcrumbs items={[{ label: 'Dashboard', href: '/workspace' }, { label: 'Get Started' }]} />
+      <Breadcrumbs items={[{ label: tNav('dashboard'), href: '/workspace' }, { label: t('title') }]} />
 
-      <PageHeader title="Get Started" description="Set up your agency and run your first AI Visibility Audit." />
+      <PageHeader title={t('title')} description={t('description')} />
 
       <OnboardingWizard />
     </main>

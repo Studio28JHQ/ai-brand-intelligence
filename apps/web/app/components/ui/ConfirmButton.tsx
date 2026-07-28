@@ -1,10 +1,11 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { useTranslations } from '../../../lib/i18n/client';
 
 export function ConfirmButton({
   label,
-  confirmLabel = 'Are you sure?',
+  confirmLabel,
   confirmDescription,
   variant = 'secondary',
   onConfirm,
@@ -17,6 +18,7 @@ export function ConfirmButton({
   onConfirm: () => void | Promise<void>;
   disabled?: boolean;
 }) {
+  const tCommon = useTranslations('common');
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [busy, setBusy] = useState(false);
 
@@ -33,14 +35,14 @@ export function ConfirmButton({
         {label}
       </button>
       <dialog ref={dialogRef} className="dialog">
-        <p className="dialog__title">{confirmLabel}</p>
+        <p className="dialog__title">{confirmLabel ?? tCommon('areYouSure')}</p>
         {confirmDescription && <p className="text-secondary">{confirmDescription}</p>}
         <div className="cluster">
           <button type="button" className="btn btn-primary" disabled={busy} onClick={handleConfirm}>
-            {busy ? 'Working…' : 'Confirm'}
+            {busy ? tCommon('working') : tCommon('confirm')}
           </button>
           <button type="button" className="btn btn-ghost" disabled={busy} onClick={() => dialogRef.current?.close()}>
-            Cancel
+            {tCommon('cancel')}
           </button>
         </div>
       </dialog>

@@ -51,7 +51,7 @@ export function Sidebar({ open, onNavigate }: { open: boolean; onNavigate?: () =
         </div>
       </div>
 
-      <nav className="sidebar__nav" aria-label="Primary">
+      <nav className="sidebar__nav" aria-label={t('primaryNav')}>
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
           const active = isActive(pathname, item.href);

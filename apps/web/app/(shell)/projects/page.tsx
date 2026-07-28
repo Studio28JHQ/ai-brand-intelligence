@@ -5,23 +5,39 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import type { ClientMetadata, ProjectMetadata } from '@ai-visibility/contracts';
 import { createAudit, AuditCompletionResult, CreateAuditState, listClients, listProjects } from '../../actions';
-import { Badge, Banner, Breadcrumbs, Card, EmptyState, PageHeader, SkeletonBlock } from '../../components/ui';
+import { Badge, Banner, Breadcrumbs, Card, EmptyState, PageHeader, SkeletonBlock, statusToVariant } from '../../components/ui';
+import { useTranslations } from '../../../lib/i18n/client';
+import type { Translator } from '@ai-visibility/i18n';
 
 const initialState: CreateAuditState = {};
 
-function AuditResultInspector({ result }: { result: AuditCompletionResult }) {
+function AuditResultInspector({
+  result,
+  t,
+  tAudits,
+  tFindings,
+  tOptimization,
+  tCommon,
+}: {
+  result: AuditCompletionResult;
+  t: Translator;
+  tAudits: Translator;
+  tFindings: Translator;
+  tOptimization: Translator;
+  tCommon: Translator;
+}) {
   return (
-    <Card title="Audit Created">
+    <Card title={t('auditCreated')}>
       <div className="cluster">
-        <Badge>{result.status}</Badge>
+        <Badge variant={statusToVariant(result.status)}>{tCommon(`statusValues.${result.status}`)}</Badge>
         <span className="text-tertiary text-mono">{result.id}</span>
       </div>
 
       {result.executionHistory.length > 0 && (
         <div className="section">
-          <h3>Workflow Progress</h3>
+          <h3>{t('workflowProgress')}</h3>
           <dl className="dl">
-            <dt>Overall Progress</dt>
+            <dt>{t('overallProgress')}</dt>
             <dd>
               {Math.round(
                 (result.executionHistory.filter((step) => step.status === 'success').length / result.executionHistory.length) * 100,
@@ -33,9 +49,9 @@ function AuditResultInspector({ result }: { result: AuditCompletionResult }) {
             <table className="table">
               <thead>
                 <tr>
-                  <th>Step</th>
-                  <th>Status</th>
-                  <th>Duration</th>
+                  <th>{t('step')}</th>
+                  <th>{tCommon('status')}</th>
+                  <th>{tAudits('duration')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -43,7 +59,7 @@ function AuditResultInspector({ result }: { result: AuditCompletionResult }) {
                   <tr key={step.stepId}>
                     <td>{step.stepId}</td>
                     <td>
-                      <Badge>{step.status}</Badge>
+                      <Badge variant={statusToVariant(step.status)}>{tCommon(`statusValues.${step.status}`)}</Badge>
                     </td>
                     <td>{step.durationMs}ms</td>
                   </tr>
@@ -55,17 +71,17 @@ function AuditResultInspector({ result }: { result: AuditCompletionResult }) {
       )}
 
       <div className="section">
-        <h3>Findings</h3>
-        {result.findings.length === 0 && <EmptyState title="No Findings for this Audit" />}
+        <h3>{tFindings('title')}</h3>
+        {result.findings.length === 0 && <EmptyState title={t('noFindingsForAudit')} />}
         {result.findings.length > 0 && (
           <div className="table-wrapper">
             <table className="table">
               <thead>
                 <tr>
-                  <th>Rule</th>
-                  <th>Category</th>
-                  <th>Outcome</th>
-                  <th>Severity</th>
+                  <th>{tFindings('rule')}</th>
+                  <th>{tFindings('category')}</th>
+                  <th>{tFindings('outcome')}</th>
+                  <th>{tFindings('severity')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -74,10 +90,10 @@ function AuditResultInspector({ result }: { result: AuditCompletionResult }) {
                     <td>{finding.ruleId}</td>
                     <td>{finding.category}</td>
                     <td>
-                      <Badge>{finding.outcome}</Badge>
+                      <Badge variant={statusToVariant(finding.outcome)}>{tFindings(finding.outcome)}</Badge>
                     </td>
                     <td>
-                      <Badge>{finding.severity}</Badge>
+                      <Badge variant={statusToVariant(finding.severity)}>{tCommon(`statusValues.${finding.severity}`)}</Badge>
                     </td>
                   </tr>
                 ))}
@@ -88,20 +104,20 @@ function AuditResultInspector({ result }: { result: AuditCompletionResult }) {
       </div>
 
       <div className="section">
-        <h3>Optimization Plan</h3>
-        {result.optimizationPlan.length === 0 && <EmptyState title="No Optimization Items" />}
+        <h3>{tOptimization('title')}</h3>
+        {result.optimizationPlan.length === 0 && <EmptyState title={t('noOptimizationItems')} />}
         {result.optimizationPlan.map((item) => (
           <Card key={item.title + item.supportingFindingIds.join(',')} muted>
             <div className="card__header">
               <h4>{item.title}</h4>
-              <Badge>{item.priority}</Badge>
+              <Badge variant={statusToVariant(item.priority)}>{tCommon(`statusValues.${item.priority}`)}</Badge>
             </div>
             <p>{item.description}</p>
             <p className="text-secondary">{item.rationale}</p>
             <dl className="dl">
-              <dt>Expected Impact</dt>
+              <dt>{tOptimization('expectedImpact')}</dt>
               <dd>{item.expectedImpact}</dd>
-              <dt>Estimated Effort</dt>
+              <dt>{tOptimization('estimatedEffort')}</dt>
               <dd>{item.estimatedEffort}</dd>
             </dl>
           </Card>
@@ -112,6 +128,13 @@ function AuditResultInspector({ result }: { result: AuditCompletionResult }) {
 }
 
 export default function ProjectsPage() {
+  const t = useTranslations('projects');
+  const tNav = useTranslations('navigation');
+  const tDashboard = useTranslations('dashboard');
+  const tAudits = useTranslations('audits');
+  const tFindings = useTranslations('findings');
+  const tOptimization = useTranslations('optimization');
+  const tCommon = useTranslations('common');
   const searchParams = useSearchParams();
   const clientIdFilter = searchParams.get('clientId');
 
@@ -136,23 +159,23 @@ export default function ProjectsPage() {
 
   return (
     <main className="page">
-      <Breadcrumbs items={[{ label: 'Dashboard', href: '/workspace' }, { label: 'Projects' }]} />
+      <Breadcrumbs items={[{ label: tNav('dashboard'), href: '/workspace' }, { label: t('title') }]} />
       <PageHeader
-        title="Projects"
-        description={filterLabel ? `Projects for ${filterLabel}.` : "Every Project across your agency's Clients."}
+        title={t('title')}
+        description={filterLabel ? t('descriptionForClient', { name: filterLabel }) : t('description')}
       />
 
-      <Card title="Run a New Audit">
+      <Card title={t('runNewAudit')}>
         <form action={formAction} className="form-row">
           <input type="hidden" name="source" value="projects-page" />
           <div className="field" style={{ flex: '1 1 260px' }}>
-            <label htmlFor="audit-url">Website URL</label>
+            <label htmlFor="audit-url">{t('websiteUrlLabel')}</label>
             <input className="input" id="audit-url" type="url" name="url" placeholder="https://example.com" required />
           </div>
           <div className="field" style={{ flex: '1 1 200px' }}>
-            <label htmlFor="audit-client">Client</label>
+            <label htmlFor="audit-client">{t('client')}</label>
             <select className="select" id="audit-client" name="clientId" defaultValue="">
-              <option value="">Auto-create client from URL</option>
+              <option value="">{t('autoCreateClient')}</option>
               {clients.map((client) => (
                 <option key={client.id} value={client.id}>
                   {client.name}
@@ -161,7 +184,7 @@ export default function ProjectsPage() {
             </select>
           </div>
           <button className="btn btn-primary" type="submit" disabled={pending}>
-            {pending ? 'Analyzing…' : 'Analyze'}
+            {pending ? t('analyzing') : t('analyze')}
           </button>
         </form>
         {state.error && <Banner variant="error">{state.error}</Banner>}
@@ -173,19 +196,19 @@ export default function ProjectsPage() {
         </Card>
       )}
 
-      {!loading && visibleProjects.length === 0 && <EmptyState title="No Projects yet" />}
+      {!loading && visibleProjects.length === 0 && <EmptyState title={t('noProjects')} />}
 
       {!loading && visibleProjects.length > 0 && (
         <div className="table-wrapper">
           <table className="table">
             <thead>
               <tr>
-                <th>Project</th>
-                <th>Client</th>
-                <th>Website</th>
-                <th>Baseline</th>
+                <th>{t('project')}</th>
+                <th>{t('client')}</th>
+                <th>{t('website')}</th>
+                <th>{tDashboard('baseline')}</th>
                 <th>
-                  <span className="visually-hidden">Actions</span>
+                  <span className="visually-hidden">{tCommon('actions')}</span>
                 </th>
               </tr>
             </thead>
@@ -197,14 +220,14 @@ export default function ProjectsPage() {
                   <td className="text-mono">{project.canonicalWebsite}</td>
                   <td>
                     {project.baselineAuditId ? (
-                      <Badge variant="success">Set</Badge>
+                      <Badge variant="success">{tDashboard('set')}</Badge>
                     ) : (
-                      <Badge variant="neutral">Not set</Badge>
+                      <Badge variant="neutral">{tDashboard('notSet')}</Badge>
                     )}
                   </td>
                   <td>
                     <Link href={`/projects/${project.id}/dashboard`} className="btn btn-secondary btn-sm">
-                      Open Dashboard
+                      {t('openDashboard')}
                     </Link>
                   </td>
                 </tr>
@@ -214,7 +237,16 @@ export default function ProjectsPage() {
         </div>
       )}
 
-      {state.result && <AuditResultInspector result={state.result} />}
+      {state.result && (
+        <AuditResultInspector
+          result={state.result}
+          t={t}
+          tAudits={tAudits}
+          tFindings={tFindings}
+          tOptimization={tOptimization}
+          tCommon={tCommon}
+        />
+      )}
     </main>
   );
 }

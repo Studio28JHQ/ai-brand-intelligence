@@ -7,8 +7,10 @@ import { registerUser } from '../auth-actions';
 import { AuthCard } from '../components/auth/AuthCard';
 import { PasswordField } from '../components/auth/PasswordField';
 import { Banner } from '../components/ui';
+import { useTranslations } from '../../lib/i18n/client';
 
 export function RegisterForm() {
+  const t = useTranslations('auth');
   const router = useRouter();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -23,7 +25,7 @@ export function RegisterForm() {
     setError(undefined);
 
     if (password !== confirmPassword) {
-      setError('Password and confirmation do not match.');
+      setError(t('passwordMismatch'));
       return;
     }
 
@@ -41,11 +43,11 @@ export function RegisterForm() {
   };
 
   return (
-    <AuthCard title="Create your account" description="Start auditing AI Visibility for your clients.">
+    <AuthCard title={t('createAccountTitle')} description={t('createAccountDescription')}>
       <form onSubmit={handleSubmit} className="stack">
         <div className="form-row">
           <div className="field" style={{ flex: '1 1 200px' }}>
-            <label htmlFor="firstName">First Name</label>
+            <label htmlFor="firstName">{t('firstNameLabel')}</label>
             <input
               className="input"
               id="firstName"
@@ -57,7 +59,7 @@ export function RegisterForm() {
             />
           </div>
           <div className="field" style={{ flex: '1 1 200px' }}>
-            <label htmlFor="lastName">Last Name</label>
+            <label htmlFor="lastName">{t('lastNameLabel')}</label>
             <input
               className="input"
               id="lastName"
@@ -71,7 +73,7 @@ export function RegisterForm() {
         </div>
 
         <div className="field">
-          <label htmlFor="email">Business Email</label>
+          <label htmlFor="email">{t('businessEmail')}</label>
           <input
             className="input"
             id="email"
@@ -83,12 +85,12 @@ export function RegisterForm() {
           />
         </div>
 
-        <PasswordField id="password" label="Password" value={password} onChange={setPassword} autoComplete="new-password" />
-        <p className="field-hint">At least 8 characters, with an uppercase letter, a lowercase letter, and a number.</p>
+        <PasswordField id="password" label={t('password')} value={password} onChange={setPassword} autoComplete="new-password" />
+        <p className="field-hint">{t('passwordHint')}</p>
 
         <PasswordField
           id="confirmPassword"
-          label="Confirm Password"
+          label={t('confirmPasswordLabel')}
           value={confirmPassword}
           onChange={setConfirmPassword}
           autoComplete="new-password"
@@ -97,11 +99,11 @@ export function RegisterForm() {
         {error && <Banner variant="error">{error}</Banner>}
 
         <button type="submit" className="btn btn-primary" disabled={submitting}>
-          {submitting ? 'Creating account…' : 'Create Account'}
+          {submitting ? t('creatingAccount') : t('createAccount')}
         </button>
 
         <p className="text-secondary">
-          Already have an account? <Link href="/login">Sign in</Link>
+          {t('alreadyHaveAccount')} <Link href="/login">{t('signInLink')}</Link>
         </p>
       </form>
     </AuthCard>

@@ -1,7 +1,9 @@
 import type { OptimizationItem, RuleExplanation } from '@ai-visibility/contracts';
-import { Badge, Card, EmptyState } from '../../../components/ui';
+import { Badge, Card, EmptyState, statusToVariant } from '../../../components/ui';
 import { RecommendationExplainability } from '../../../components/recommendation-explainability';
 import type { PageDetailSection } from './page-detail';
+import { getTranslations } from '../../../../lib/i18n/server';
+import type { Translator } from '@ai-visibility/i18n';
 
 function findRuleForItem(rules: RuleExplanation[], item: OptimizationItem): RuleExplanation | undefined {
   return rules.find((rule) => item.supportingFindingIds.includes(rule.finding.id));
@@ -33,10 +35,10 @@ function RuleGroup({ label, rules }: { label: string; rules: RuleExplanation[] }
   );
 }
 
-function EvidenceBlock({ rules }: { rules: RuleExplanation[] }) {
+function EvidenceBlock({ rules, label }: { rules: RuleExplanation[]; label: string }) {
   return (
     <div>
-      <p className="text-secondary">Evidence</p>
+      <p className="text-secondary">{label}</p>
       <div className="stack-sm">
         {rules.map((rule) => (
           <div key={rule.finding.id}>
@@ -51,24 +53,34 @@ function EvidenceBlock({ rules }: { rules: RuleExplanation[] }) {
   );
 }
 
-function RecommendationsBlock({ recommendations, rules }: { recommendations: OptimizationItem[]; rules: RuleExplanation[] }) {
+function RecommendationsBlock({
+  recommendations,
+  rules,
+  t,
+  tCommon,
+}: {
+  recommendations: OptimizationItem[];
+  rules: RuleExplanation[];
+  t: Translator;
+  tCommon: Translator;
+}) {
   if (recommendations.length === 0) {
     return (
       <div>
-        <p className="text-secondary">Recommendations</p>
-        <p className="text-tertiary">None — nothing failed in this section.</p>
+        <p className="text-secondary">{t('recommendations')}</p>
+        <p className="text-tertiary">{t('noneNothingFailed')}</p>
       </div>
     );
   }
   return (
     <div>
-      <p className="text-secondary">Recommendations</p>
+      <p className="text-secondary">{t('recommendations')}</p>
       <div className="stack-sm">
         {recommendations.map((item, index) => (
           <Card key={`${item.title}-${index}`} muted>
             <div className="card__header">
               <h4>{item.title}</h4>
-              <Badge>{item.priority}</Badge>
+              <Badge variant={statusToVariant(item.priority)}>{tCommon(`statusValues.${item.priority}`)}</Badge>
             </div>
             <p>{item.description}</p>
             <RecommendationExplainability item={item} rule={findRuleForItem(rules, item)} />
@@ -83,11 +95,15 @@ function RecommendationsBlock({ recommendations, rules }: { recommendations: Opt
 // exactly as the deterministic engine classified them (never hidden, never re-bucketed), Evidence
 // is each Rule's own Finding.evidence verbatim, and Recommendations are the real Optimization Plan
 // items whose supportingFindingIds reference one of this section's Findings.
-export function DetailSectionCard({ section }: { section: PageDetailSection }) {
+export async function DetailSectionCard({ section }: { section: PageDetailSection }) {
+  const t = await getTranslations('audits');
+  const tFindings = await getTranslations('findings');
+  const tCommon = await getTranslations('common');
+
   if (section.rules.length === 0) {
     return (
       <Card title={section.title}>
-        <EmptyState title="No data" description="No Rule evaluated this section for this Audit." />
+        <EmptyState title={t('noDataTitle')} description={t('noRuleEvaluatedSection')} />
       </Card>
     );
   }
@@ -100,12 +116,12 @@ export function DetailSectionCard({ section }: { section: PageDetailSection }) {
   return (
     <Card title={section.title}>
       <div className="stack">
-        <RuleGroup label="Issues" rules={issues} />
-        <RuleGroup label="Warnings" rules={warnings} />
-        <RuleGroup label="Passed Checks" rules={passed} />
-        <RuleGroup label="Skipped (Rule did not run)" rules={skipped} />
-        <EvidenceBlock rules={section.rules} />
-        <RecommendationsBlock recommendations={section.recommendations} rules={section.rules} />
+        <RuleGroup label={t('issuesLabel')} rules={issues} />
+        <RuleGroup label={t('warningsLabel')} rules={warnings} />
+        <RuleGroup label={t('passedChecksLabel')} rules={passed} />
+        <RuleGroup label={t('skippedLabel')} rules={skipped} />
+        <EvidenceBlock rules={section.rules} label={tFindings('evidence')} />
+        <RecommendationsBlock recommendations={section.recommendations} rules={section.rules} t={t} tCommon={tCommon} />
       </div>
     </Card>
   );

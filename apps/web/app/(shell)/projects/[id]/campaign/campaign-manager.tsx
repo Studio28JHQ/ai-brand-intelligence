@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import type { CampaignMetadata } from '@ai-visibility/contracts';
 import { createCampaign, getLatestCampaign, setActionStatus, setCampaignStatus } from '../../../../actions';
-import { Badge, Banner, Card, ConfirmButton, EmptyState, SkeletonBlock, StageProgress } from '../../../../components/ui';
+import { Badge, Banner, Card, ConfirmButton, EmptyState, SkeletonBlock, StageProgress, statusToVariant } from '../../../../components/ui';
+import { useTranslations } from '../../../../../lib/i18n/client';
 
 const CAMPAIGN_STAGES = ['draft', 'active', 'completed', 'archived'];
 
@@ -22,6 +23,8 @@ const NEXT_ACTION_STATUS: Record<string, 'in-progress' | 'completed' | 'verified
 };
 
 export function CampaignManager({ projectId }: { projectId: string }) {
+  const t = useTranslations('optimization');
+  const tCommon = useTranslations('common');
   const [campaign, setCampaign] = useState<CampaignMetadata | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | undefined>(undefined);
@@ -39,7 +42,7 @@ export function CampaignManager({ projectId }: { projectId: string }) {
   const handleCreate = async () => {
     const { error: createError } = await createCampaign(projectId);
     setError(createError);
-    setStatusMessage(createError ? undefined : 'Campaign created.');
+    setStatusMessage(createError ? undefined : t('campaignCreated'));
     if (!createError) {
       refresh();
     }
@@ -50,7 +53,11 @@ export function CampaignManager({ projectId }: { projectId: string }) {
       return;
     }
     const success = await setCampaignStatus(campaign.id, status);
-    setStatusMessage(success ? `Campaign advanced to '${status}'.` : 'Failed to update campaign status.');
+    setStatusMessage(
+      success
+        ? t('campaignAdvanced', { status: tCommon(`statusValues.${status}`) })
+        : t('failedToUpdateCampaignStatus'),
+    );
     refresh();
   };
 
@@ -59,7 +66,9 @@ export function CampaignManager({ projectId }: { projectId: string }) {
       return;
     }
     const success = await setActionStatus(campaign.id, actionId, status);
-    setStatusMessage(success ? `Action advanced to '${status}'.` : 'Failed to update action status.');
+    setStatusMessage(
+      success ? t('actionAdvanced', { status: tCommon(`statusValues.${status}`) }) : t('failedToUpdateActionStatus'),
+    );
     refresh();
   };
 
@@ -68,7 +77,7 @@ export function CampaignManager({ projectId }: { projectId: string }) {
       <Card>
         <div className="cluster">
           <button type="button" className="btn btn-primary" onClick={handleCreate}>
-            Create Campaign from Current Optimization Plan
+            {t('createCampaignFromPlan')}
           </button>
         </div>
         {error && <Banner variant="error">{error}</Banner>}
@@ -82,10 +91,7 @@ export function CampaignManager({ projectId }: { projectId: string }) {
       )}
       {!loading && !campaign && (
         <Card>
-          <EmptyState
-            title="No Campaign yet for this Project"
-            description="Create one above from your current Optimization Plan to start tracking work."
-          />
+          <EmptyState title={t('noCampaignYetForProject')} description={t('createOneAboveDescription')} />
         </Card>
       )}
 
@@ -93,19 +99,24 @@ export function CampaignManager({ projectId }: { projectId: string }) {
         <Card>
           <div className="card__header">
             <div>
-              <h3>Campaign {campaign.id.slice(0, 8)}</h3>
-              <p className="text-secondary">Source Audit: {campaign.sourceAuditId.slice(0, 8)} · Created {campaign.createdAt}</p>
+              <h3>{t('campaignIdLabel', { id: campaign.id.slice(0, 8) })}</h3>
+              <p className="text-secondary">
+                {t('sourceAuditCreated', { auditId: campaign.sourceAuditId.slice(0, 8), date: campaign.createdAt })}
+              </p>
             </div>
-            <Badge>{campaign.status}</Badge>
+            <Badge variant={statusToVariant(campaign.status)}>{tCommon(`statusValues.${campaign.status}`)}</Badge>
           </div>
-          <StageProgress stages={CAMPAIGN_STAGES} current={campaign.status} />
+          <StageProgress
+            stages={CAMPAIGN_STAGES.map((stage) => tCommon(`statusValues.${stage}`))}
+            current={tCommon(`statusValues.${campaign.status}`)}
+          />
           {NEXT_CAMPAIGN_STATUS[campaign.status] && (
             <div>
               {NEXT_CAMPAIGN_STATUS[campaign.status] === 'archived' ? (
                 <ConfirmButton
-                  label="Advance to archived"
-                  confirmLabel="Advance this Campaign to 'archived'?"
-                  confirmDescription="Archived Campaigns cannot be reopened."
+                  label={t('advanceToArchived')}
+                  confirmLabel={t('advanceCampaignConfirm')}
+                  confirmDescription={t('archivedCannotReopen')}
                   variant="primary"
                   onConfirm={() => handleCampaignStatus('archived')}
                 />
@@ -117,25 +128,25 @@ export function CampaignManager({ projectId }: { projectId: string }) {
                     handleCampaignStatus(NEXT_CAMPAIGN_STATUS[campaign.status] as 'active' | 'completed')
                   }
                 >
-                  Advance to {NEXT_CAMPAIGN_STATUS[campaign.status]}
+                  {t('advanceTo', { status: tCommon(`statusValues.${NEXT_CAMPAIGN_STATUS[campaign.status]}`) })}
                 </button>
               )}
             </div>
           )}
 
           <div className="section">
-            <h3>Optimization Actions</h3>
-            {campaign.actions.length === 0 && <EmptyState title="No Actions in this Campaign" />}
+            <h3>{t('optimizationActionsTitle')}</h3>
+            {campaign.actions.length === 0 && <EmptyState title={t('noActionsInCampaign')} />}
             {campaign.actions.length > 0 && (
               <div className="table-wrapper">
                 <table className="table">
                   <thead>
                     <tr>
-                      <th>Title</th>
-                      <th>Status</th>
-                      <th>Supporting Findings</th>
+                      <th>{t('titleColumn')}</th>
+                      <th>{tCommon('status')}</th>
+                      <th>{t('supportingFindingsColumn')}</th>
                       <th>
-                        <span className="visually-hidden">Actions</span>
+                        <span className="visually-hidden">{tCommon('actions')}</span>
                       </th>
                     </tr>
                   </thead>
@@ -144,9 +155,9 @@ export function CampaignManager({ projectId }: { projectId: string }) {
                       <tr key={action.id}>
                         <td>{action.title}</td>
                         <td>
-                          <Badge>{action.status}</Badge>
+                          <Badge variant={statusToVariant(action.status)}>{tCommon(`statusValues.${action.status}`)}</Badge>
                         </td>
-                        <td className="text-secondary">{action.supportingFindingIds.join(', ') || 'None'}</td>
+                        <td className="text-secondary">{action.supportingFindingIds.join(', ') || t('none')}</td>
                         <td>
                           {NEXT_ACTION_STATUS[action.status] && (
                             <button
@@ -159,7 +170,7 @@ export function CampaignManager({ projectId }: { projectId: string }) {
                                 )
                               }
                             >
-                              Advance to {NEXT_ACTION_STATUS[action.status]}
+                              {t('advanceTo', { status: tCommon(`statusValues.${NEXT_ACTION_STATUS[action.status]}`) })}
                             </button>
                           )}
                         </td>

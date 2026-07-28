@@ -6,5 +6,16 @@
   "website": "Website",
   "openDashboard": "Open Dashboard",
   "noProjects": "No Projects yet",
-  "autoCreateClient": "Auto-create client from URL"
+  "autoCreateClient": "Auto-create client from URL",
+  "descriptionForClient": "Projects for {name}.",
+  "runNewAudit": "Run a New Audit",
+  "websiteUrlLabel": "Website URL",
+  "analyzing": "Analyzing…",
+  "analyze": "Analyze",
+  "auditCreated": "Audit Created",
+  "workflowProgress": "Workflow Progress",
+  "overallProgress": "Overall Progress",
+  "step": "Step",
+  "noFindingsForAudit": "No Findings for this Audit",
+  "noOptimizationItems": "No Optimization Items"
 }

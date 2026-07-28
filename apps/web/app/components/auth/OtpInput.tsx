@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
+import { useTranslations } from '../../../lib/i18n/client';
 
 const LENGTH = 6;
 
@@ -13,6 +14,7 @@ export function OtpInput({
   onChange: (value: string) => void;
   disabled?: boolean;
 }) {
+  const tAuth = useTranslations('auth');
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const digits = Array.from({ length: LENGTH }, (_, index) => value[index] ?? '');
 
@@ -49,7 +51,7 @@ export function OtpInput({
   };
 
   return (
-    <div className="otp-input" role="group" aria-label="Six-digit verification code">
+    <div className="otp-input" role="group" aria-label={tAuth('sixDigitCode')}>
       {digits.map((digit, index) => (
         <input
           key={index}
@@ -66,7 +68,7 @@ export function OtpInput({
           onChange={(event) => handleChange(index, event.target.value)}
           onKeyDown={(event) => handleKeyDown(index, event)}
           onPaste={handlePaste}
-          aria-label={`Digit ${index + 1} of ${LENGTH}`}
+          aria-label={tAuth('digitOfLength', { index: index + 1, length: LENGTH })}
         />
       ))}
     </div>

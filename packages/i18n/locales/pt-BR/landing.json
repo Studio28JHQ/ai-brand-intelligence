@@ -1,0 +1,106 @@
+{
+  "metaTitle": "AI Visibility Auditor — Entenda Como a IA Vê Sua Marca",
+  "metaDescription": "Meça, explique e melhore como os sistemas de IA representam seu negócio nas plataformas conversacionais modernas.",
+  "brand": "AI Visibility Auditor",
+  "startFreeAudit": "Iniciar Auditoria Gratuita",
+  "nav": {
+    "product": "Produto",
+    "howItWorks": "Como Funciona",
+    "platform": "Plataforma",
+    "about": "Sobre",
+    "signIn": "Entrar"
+  },
+  "hero": {
+    "title": "Entenda Como a IA Vê Sua Marca.",
+    "subheadline": "Meça, explique e melhore como os sistemas de IA representam seu negócio nas plataformas conversacionais modernas."
+  },
+  "product": {
+    "title": "Visibilidade em IA em que Você Pode Confiar",
+    "intro": "Visibilidade em IA é uma nova dimensão mensurável de como sua marca é representada — não um palpite."
+  },
+  "pillars": {
+    "measurable": {
+      "title": "Mensurável",
+      "description": "Cada Auditoria produz um status de Visibilidade em IA estruturado, apoiado por Descobertas concretas — não uma impressão vaga."
+    },
+    "explainable": {
+      "title": "Explicável",
+      "description": "Cada recomendação carrega seu próprio raciocínio: quais Descobertas a originaram, qual evidência a apoia e qual resultado esperar."
+    },
+    "actionable": {
+      "title": "Acionável",
+      "description": "As Descobertas se tornam um Plano de Otimização, o Plano se torna uma Campanha rastreável, e cada Ação pode ser verificada em uma nova Auditoria."
+    }
+  },
+  "howItWorks": {
+    "title": "Como Funciona",
+    "intro": "Um ciclo contínuo, da primeira Auditoria ao impacto de negócio medido."
+  },
+  "workflowSteps": {
+    "audit": { "title": "Auditoria", "description": "Execute uma Auditoria de Visibilidade em IA completa no site do seu cliente." },
+    "analyze": { "title": "Analisar", "description": "Revise as Descobertas e o status de Visibilidade em IA que elas produzem." },
+    "optimize": { "title": "Otimizar", "description": "Transforme as Descobertas em um Plano de Otimização priorizado e baseado em evidências." },
+    "verify": { "title": "Verificar", "description": "Acompanhe as Ações de Otimização em uma Campanha à medida que o trabalho é realizado." },
+    "measureImpact": { "title": "Medir Impacto", "description": "Reaudite e compare com a Linha de Base para confirmar uma mudança real." },
+    "continuousImprovement": { "title": "Melhoria Contínua", "description": "Encerre o Ciclo de Otimização e comece o próximo." }
+  },
+  "platform": {
+    "title": "Criado para o Ciclo Completo de Otimização",
+    "intro": "Cada capacidade abaixo está disponível na plataforma hoje."
+  },
+  "capabilities": {
+    "audits": {
+      "title": "Auditorias de Visibilidade em IA",
+      "description": "Execute uma Auditoria completa em qualquer site e obtenha um status de Visibilidade em IA estruturado, Descobertas e um Plano de Otimização em segundos."
+    },
+    "consultant": {
+      "title": "Consultor de IA",
+      "description": "Faça perguntas sobre um Projeto e obtenha recomendações proativas baseadas em evidências — derivadas inteiramente dos dados da sua própria plataforma, nunca inventadas."
+    },
+    "campaigns": {
+      "title": "Campanhas de Otimização",
+      "description": "Transforme um Plano de Otimização em trabalho rastreável, com Ações que sua equipe avança de pendente até verificado."
+    },
+    "reports": {
+      "title": "Relatórios Executivos",
+      "description": "Um relatório estruturado, pronto para o cliente, resumindo as Principais Descobertas, as Ações Concluídas e o Impacto medido de cada Ciclo de Otimização."
+    },
+    "verification": {
+      "title": "Verificação Contínua",
+      "description": "Reaudite qualquer Projeto para confirmar se o trabalho concluído realmente melhorou a Visibilidade em IA — Descobertas resolvidas e Descobertas introduzidas."
+    },
+    "impact": {
+      "title": "Análise de Impacto no Negócio",
+      "description": "Compare uma Auditoria de Linha de Base com uma Auditoria de Verificação para ver exatamente o que mudou: status de Visibilidade em IA, cobertura de entidades e Descobertas resolvidas."
+    }
+  },
+  "about": {
+    "title": "Por Que a Visibilidade em IA Importa",
+    "paragraph1": "Uma parcela crescente da pesquisa de compra e da descoberta de fornecedores agora acontece por meio de sistemas de IA conversacional, em vez dos resultados de busca tradicionais. Quando esses sistemas não conseguem encontrar, entender ou representar uma marca com precisão, essa marca se torna efetivamente invisível dentro de uma categoria totalmente nova de interações com compradores.",
+    "paragraph2": "Este é um problema mensurável e solucionável — não uma questão de acaso. O AI Visibility Auditor oferece às agências uma forma estruturada de avaliar essa exposição, explicar suas causas raiz com evidências e acompanhar o progresso mensurável em direção à sua resolução ao longo do tempo."
+  },
+  "dashboardPreview": {
+    "title": "Veja o Interior da Plataforma",
+    "intro": "Uma visão ilustrativa do Painel Executivo que cada Projeto recebe — não são dados reais de clientes.",
+    "illustrativeProject": "Projeto Ilustrativo",
+    "ready": "pronto",
+    "baseline": "Linha de Base",
+    "set": "Definida",
+    "optimizationCycle": "Ciclo de Otimização",
+    "verification": "verificação",
+    "campaign": "Campanha",
+    "active": "ativa"
+  },
+  "finalCta": {
+    "title": "Veja hoje como os sistemas de IA representam sua marca."
+  },
+  "footer": {
+    "product": "Produto",
+    "documentation": "Documentação",
+    "privacy": "Privacidade",
+    "terms": "Termos",
+    "contact": "Contato",
+    "notYetAvailable": "Ainda não disponível",
+    "copyright": "© {year} AI Visibility Auditor. Todos os direitos reservados."
+  }
+}

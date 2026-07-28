@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { getAudit, getAuditAnalysis } from '../../../actions';
-import { Badge, Breadcrumbs, Card, EmptyState, PageHeader } from '../../../components/ui';
+import { Badge, Breadcrumbs, Card, EmptyState, PageHeader, statusToVariant } from '../../../components/ui';
 import { RunAuditModal } from '../../../components/run-audit-modal';
 import { ScoresPanel } from '../../../components/scores-panel';
 import { RecommendationExplainability } from '../../../components/recommendation-explainability';
@@ -8,11 +8,17 @@ import { findRuleExplanationForItem } from '../../../lib/recommendation-explaina
 import { DetailSectionCard } from './detail-section-card';
 import { ExecutionTimeline } from './execution-timeline';
 import { buildDetailSections, externalLinksSignal, findRuleByRuleId, findSignalByKey } from './page-detail';
+import { getTranslations } from '../../../../lib/i18n/server';
 
 export default async function AuditDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const audit = await getAudit(id);
   const analysis = audit?.status === 'completed' ? await getAuditAnalysis(id) : null;
+  const t = await getTranslations('audits');
+  const tNav = await getTranslations('navigation');
+  const tFindings = await getTranslations('findings');
+  const tOptimization = await getTranslations('optimization');
+  const tCommon = await getTranslations('common');
 
   const indexabilityRule = analysis ? findRuleByRuleId(analysis, 'seo-indexability') : undefined;
   const indexabilitySignal = findSignalByKey(indexabilityRule, 'indexability');
@@ -22,17 +28,17 @@ export default async function AuditDetailPage({ params }: { params: Promise<{ id
 
   return (
     <main className="page">
-      <Breadcrumbs items={[{ label: 'Dashboard', href: '/workspace' }, { label: 'Audit' }]} />
+      <Breadcrumbs items={[{ label: tNav('dashboard'), href: '/workspace' }, { label: t('auditId') }]} />
 
       <PageHeader
-        title="Page Detail"
+        title={t('pageDetail')}
         description={audit?.url}
         actions={
           audit && (
             <div className="cluster">
-              <RunAuditModal defaultUrl={audit.url} source="run-again" triggerLabel="Run Again" />
+              <RunAuditModal defaultUrl={audit.url} source="run-again" triggerLabel={t('runAgain')} />
               <Link href={`/projects/${audit.projectId}/dashboard`} className="btn btn-primary">
-                View Project Dashboard
+                {t('viewProjectDashboard')}
               </Link>
             </div>
           )
@@ -41,34 +47,34 @@ export default async function AuditDetailPage({ params }: { params: Promise<{ id
 
       {!audit && (
         <Card>
-          <EmptyState title="Audit not found" />
+          <EmptyState title={t('auditNotFound')} />
         </Card>
       )}
 
       {audit && (
         <div className="stack">
-          <Card title="Overview">
+          <Card title={t('overview')}>
             <dl className="dl">
-              <dt>URL</dt>
+              <dt>{t('urlLabel')}</dt>
               <dd className="text-mono">{audit.url}</dd>
-              <dt>HTTP Status</dt>
-              <dd>{typeof indexabilitySignal?.data.httpStatus === 'number' ? indexabilitySignal.data.httpStatus : 'N/A'}</dd>
-              <dt>Canonical</dt>
+              <dt>{t('httpStatus')}</dt>
+              <dd>{typeof indexabilitySignal?.data.httpStatus === 'number' ? indexabilitySignal.data.httpStatus : t('notApplicable')}</dd>
+              <dt>{t('canonical')}</dt>
               <dd className="text-mono">
-                {typeof canonicalSignal?.data.canonicalUrl === 'string' ? canonicalSignal.data.canonicalUrl : 'Not set'}
+                {typeof canonicalSignal?.data.canonicalUrl === 'string' ? canonicalSignal.data.canonicalUrl : tCommon('notSet')}
               </dd>
-              <dt>Indexability</dt>
+              <dt>{t('indexability')}</dt>
               <dd>
                 {indexabilityRule ? (
                   <Badge variant={indexabilityRule.finding.evidence.isIndexable ? 'success' : 'danger'}>
-                    {indexabilityRule.finding.evidence.isIndexable ? 'Indexable' : 'Blocked'}
+                    {indexabilityRule.finding.evidence.isIndexable ? t('indexable') : t('blocked')}
                   </Badge>
                 ) : (
-                  'N/A'
+                  t('notApplicable')
                 )}
               </dd>
-              <dt>Crawl Date</dt>
-              <dd>{audit.completedAt ?? 'N/A'}</dd>
+              <dt>{t('crawlDate')}</dt>
+              <dd>{audit.completedAt ?? t('notApplicable')}</dd>
             </dl>
           </Card>
 
@@ -82,34 +88,31 @@ export default async function AuditDetailPage({ params }: { params: Promise<{ id
                 <DetailSectionCard key={section.key} section={section} />
               ))}
 
-              <Card
-                title="External Links"
-                description="No Analysis Rule evaluates External Links today — this count is a real Signal, shown without a fabricated pass/fail check."
-              >
+              <Card title={t('externalLinksTitle')} description={t('externalLinksDescription')}>
                 {externalLinks ? (
                   <dl className="dl">
-                    <dt>External Links</dt>
-                    <dd>{typeof externalLinks.data.externalLinkCount === 'number' ? externalLinks.data.externalLinkCount : 'N/A'}</dd>
+                    <dt>{t('externalLinksLabel')}</dt>
+                    <dd>{typeof externalLinks.data.externalLinkCount === 'number' ? externalLinks.data.externalLinkCount : t('notApplicable')}</dd>
                   </dl>
                 ) : (
-                  <EmptyState title="No data" description="No Signal available for this Audit." />
+                  <EmptyState title={t('noDataTitle')} description={t('noSignalAvailable')} />
                 )}
               </Card>
 
-              <Card title="Findings">
+              <Card title={tFindings('title')}>
                 {(!analysis || analysis.findings.length === 0) && (
-                  <EmptyState title="No Findings recorded" description="Nothing to fix — this Audit didn't identify any issues." />
+                  <EmptyState title={tFindings('noFindings')} description={t('nothingToFixDescription')} />
                 )}
                 {analysis && analysis.findings.length > 0 && (
                   <div className="table-wrapper">
                     <table className="table">
                       <thead>
                         <tr>
-                          <th>Rule</th>
-                          <th>Category</th>
-                          <th>Source Engine</th>
-                          <th>Outcome</th>
-                          <th>Severity</th>
+                          <th>{tFindings('rule')}</th>
+                          <th>{tFindings('category')}</th>
+                          <th>{tFindings('sourceEngine')}</th>
+                          <th>{tFindings('outcome')}</th>
+                          <th>{tFindings('severity')}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -121,10 +124,10 @@ export default async function AuditDetailPage({ params }: { params: Promise<{ id
                             <td>{finding.category}</td>
                             <td>{finding.sourceEngine}</td>
                             <td>
-                              <Badge>{finding.outcome}</Badge>
+                              <Badge variant={statusToVariant(finding.outcome)}>{tFindings(finding.outcome)}</Badge>
                             </td>
                             <td>
-                              <Badge>{finding.severity}</Badge>
+                              <Badge variant={statusToVariant(finding.severity)}>{tCommon(`statusValues.${finding.severity}`)}</Badge>
                             </td>
                           </tr>
                         ))}
@@ -134,22 +137,22 @@ export default async function AuditDetailPage({ params }: { params: Promise<{ id
                 )}
               </Card>
 
-              <Card title="Recommendations">
-                {(!analysis || analysis.optimizationPlan.length === 0) && <EmptyState title="No Optimization Items" />}
+              <Card title={t('recommendations')}>
+                {(!analysis || analysis.optimizationPlan.length === 0) && <EmptyState title={tOptimization('noOptimizationItems')} />}
                 <div className="stack">
                   {analysis?.optimizationPlan.map((item, index) => (
                     <Card key={`${item.title}-${index}`} muted>
                       <div className="card__header">
                         <h4>{item.title}</h4>
-                        <Badge>{item.priority}</Badge>
+                        <Badge variant={statusToVariant(item.priority)}>{tCommon(`statusValues.${item.priority}`)}</Badge>
                       </div>
                       <p>{item.description}</p>
                       <dl className="dl">
-                        <dt>Expected Impact</dt>
+                        <dt>{tOptimization('expectedImpact')}</dt>
                         <dd>{item.expectedImpact}</dd>
-                        <dt>Estimated Effort</dt>
+                        <dt>{tOptimization('estimatedEffort')}</dt>
                         <dd>{item.estimatedEffort}</dd>
-                        <dt>Optimization Rule</dt>
+                        <dt>{tOptimization('optimizationRule')}</dt>
                         <dd>
                           {item.optimizationRuleId} (v{item.optimizationRuleVersion})
                         </dd>

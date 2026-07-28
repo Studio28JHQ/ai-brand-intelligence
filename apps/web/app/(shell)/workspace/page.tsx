@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import type { BriefingItem } from '@ai-visibility/contracts';
 import { getCurrentCycle, getDailyBriefing, listClients, listProjects } from '../../actions';
-import { Badge, Card, CONFIDENCE_VARIANT, EmptyState, PageHeader } from '../../components/ui';
+import { Badge, Card, CONFIDENCE_VARIANT, EmptyState, PageHeader, statusToVariant } from '../../components/ui';
+import { getTranslations } from '../../../lib/i18n/server';
+import type { Translator } from '@ai-visibility/i18n';
 
 const PRIORITY_CATEGORIES = new Set<BriefingItem['category']>(['project-attention', 'ai-visibility-regression', 'critical-finding']);
 const RECOMMENDATION_CATEGORIES = new Set<BriefingItem['category']>(['high-impact-opportunity']);
@@ -14,7 +16,7 @@ function byCategory(items: BriefingItem[], categories: Set<BriefingItem['categor
   return items.filter((item) => categories.has(item.category));
 }
 
-function BriefingCard({ item }: { item: BriefingItem }) {
+function BriefingCard({ item, t, tCommon }: { item: BriefingItem; t: Translator; tCommon: Translator }) {
   return (
     <Card muted>
       <div className="card__header">
@@ -24,14 +26,14 @@ function BriefingCard({ item }: { item: BriefingItem }) {
           </p>
           <h4>{item.title}</h4>
         </div>
-        <Badge variant={CONFIDENCE_VARIANT}>{item.confidence}</Badge>
+        <Badge variant={CONFIDENCE_VARIANT}>{tCommon(`statusValues.${item.confidence}`)}</Badge>
       </div>
       <p>{item.reason}</p>
       <p className="text-secondary">
-        <strong>Recommended next action:</strong> {item.recommendedNextAction}
+        <strong>{t('recommendedNextAction')}</strong> {item.recommendedNextAction}
       </p>
       <Link href={`/projects/${item.projectId}/dashboard`} className="btn btn-ghost btn-sm">
-        Open Project
+        {t('openProject')}
       </Link>
     </Card>
   );
@@ -41,19 +43,23 @@ function BriefingSection({
   title,
   items,
   emptyDescription,
+  t,
+  tCommon,
 }: {
   title: string;
   items: BriefingItem[];
   emptyDescription: string;
+  t: Translator;
+  tCommon: Translator;
 }) {
   return (
     <section className="section">
       <h2 className="section__title">{title}</h2>
-      {items.length === 0 && <EmptyState title="Nothing here right now" description={emptyDescription} />}
+      {items.length === 0 && <EmptyState title={t('nothingHereRightNow')} description={emptyDescription} />}
       {items.length > 0 && (
         <div className="grid-2">
           {items.map((item) => (
-            <BriefingCard key={item.id} item={item} />
+            <BriefingCard key={item.id} item={item} t={t} tCommon={tCommon} />
           ))}
         </div>
       )}
@@ -68,6 +74,8 @@ function BriefingSection({
  * Client/Project/Audit management UI moved to `/clients`, `/projects`, `/audits`).
  */
 export default async function DashboardPage() {
+  const t = await getTranslations('dashboard');
+  const tCommon = await getTranslations('common');
   const [briefing, projects, clients] = await Promise.all([getDailyBriefing(), listProjects(), listClients()]);
   const items = briefing?.items ?? [];
   const isEmptyWorkspace = projects.length === 0 && clients.length === 0;
@@ -81,15 +89,15 @@ export default async function DashboardPage() {
 
   return (
     <main className="page">
-      <PageHeader title="Dashboard" description="What happened, what needs attention, and what to do next." />
+      <PageHeader title={t('workspaceTitle')} description={t('workspaceDescription')} />
 
       {isEmptyWorkspace && (
         <EmptyState
-          title="Welcome to your workspace"
-          description="New here? Our guided setup walks you through your agency, your first client, and your first AI Visibility report."
+          title={t('welcomeTitle')}
+          description={t('welcomeDescription')}
           action={
             <Link href="/onboarding" className="btn btn-primary btn-sm">
-              Get Started
+              {t('getStarted')}
             </Link>
           }
         />
@@ -98,33 +106,38 @@ export default async function DashboardPage() {
       {!isEmptyWorkspace && (
         <>
           <BriefingSection
-            title="Priority Cards"
+            title={t('priorityCards')}
             items={byCategory(items, PRIORITY_CATEGORIES)}
-            emptyDescription={`Nothing needs attention across ${briefing?.projectsSummarized ?? 0} active Project(s).`}
+            emptyDescription={t('nothingNeedsAttention', { count: briefing?.projectsSummarized ?? 0 })}
+            t={t}
+            tCommon={tCommon}
           />
           <BriefingSection
-            title="Pending Actions"
+            title={t('pendingActions')}
             items={byCategory(items, PENDING_ACTION_CATEGORIES)}
-            emptyDescription="No Campaigns are waiting on verification."
+            emptyDescription={t('noCampaignsAwaitingVerification')}
+            t={t}
+            tCommon={tCommon}
           />
           <BriefingSection
-            title="AI Recommendations"
+            title={t('aiRecommendations')}
             items={byCategory(items, RECOMMENDATION_CATEGORIES)}
-            emptyDescription="No high-impact opportunities identified right now."
+            emptyDescription={t('noHighImpactOpportunities')}
+            t={t}
+            tCommon={tCommon}
           />
           <BriefingSection
-            title="Recent Activity"
+            title={t('recentActivity')}
             items={byCategory(items, RECENT_ACTIVITY_CATEGORIES)}
-            emptyDescription="No recently completed improvements yet."
+            emptyDescription={t('noRecentImprovements')}
+            t={t}
+            tCommon={tCommon}
           />
 
           <section className="section">
-            <h2 className="section__title">Latest Reports</h2>
+            <h2 className="section__title">{t('latestReports')}</h2>
             {latestReports.length === 0 && (
-              <EmptyState
-                title="No Reports available yet"
-                description="A Report becomes available once a Project's Optimization Cycle reaches verification."
-              />
+              <EmptyState title={t('noReportsYet')} description={t('noReportsDescription')} />
             )}
             {latestReports.length > 0 && (
               <div className="grid-2">
@@ -132,10 +145,10 @@ export default async function DashboardPage() {
                   <Card key={project.id} muted>
                     <div className="card__header">
                       <h4>{project.name}</h4>
-                      <Badge>{cycle!.status}</Badge>
+                      <Badge variant={statusToVariant(cycle!.status)}>{tCommon(`statusValues.${cycle!.status}`)}</Badge>
                     </div>
                     <Link href={`/projects/${project.id}/cycles/${cycle!.id}/report`} className="btn btn-secondary btn-sm">
-                      View Report
+                      {t('viewReport')}
                     </Link>
                   </Card>
                 ))}

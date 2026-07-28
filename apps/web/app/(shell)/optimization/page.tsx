@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getLatestCampaign, listProjects } from '../../actions';
-import { Badge, Breadcrumbs, Card, EmptyState, PageHeader } from '../../components/ui';
+import { Badge, Breadcrumbs, Card, EmptyState, PageHeader, statusToVariant } from '../../components/ui';
+import { getTranslations } from '../../../lib/i18n/server';
 
 export default async function OptimizationPage() {
   const projects = await listProjects();
@@ -8,17 +9,17 @@ export default async function OptimizationPage() {
     projects.map(async (project) => ({ project, campaign: await getLatestCampaign(project.id) })),
   );
   const withCampaigns = campaigns.filter((entry) => entry.campaign !== null);
+  const t = await getTranslations('optimization');
+  const tNav = await getTranslations('navigation');
+  const tCommon = await getTranslations('common');
 
   return (
     <main className="page">
-      <Breadcrumbs items={[{ label: 'Dashboard', href: '/workspace' }, { label: 'Optimization' }]} />
-      <PageHeader title="Optimization" description="Optimization Campaigns in progress across your Projects." />
+      <Breadcrumbs items={[{ label: tNav('dashboard'), href: '/workspace' }, { label: tNav('optimization') }]} />
+      <PageHeader title={tNav('optimization')} description={t('pageDescription')} />
 
       {withCampaigns.length === 0 && (
-        <EmptyState
-          title="No Optimization Campaigns yet"
-          description="A Campaign is created from a Project's Dashboard once a Baseline Audit is set."
-        />
+        <EmptyState title={t('noCampaignsYet')} description={t('noCampaignsDescription')} />
       )}
 
       {withCampaigns.map(({ project, campaign }) => (
@@ -28,17 +29,19 @@ export default async function OptimizationPage() {
               <h3>{project.name}</h3>
               <p className="text-secondary">{project.canonicalWebsite}</p>
             </div>
-            <Badge>{campaign!.status}</Badge>
+            <Badge variant={statusToVariant(campaign!.status)}>{tCommon(`statusValues.${campaign!.status}`)}</Badge>
           </div>
           <dl className="dl">
-            <dt>Actions</dt>
+            <dt>{tCommon('actions')}</dt>
             <dd>
-              {campaign!.actions.filter((action) => action.status === 'verified').length} of {campaign!.actions.length}{' '}
-              verified
+              {t('verifiedOfTotal', {
+                verified: campaign!.actions.filter((action) => action.status === 'verified').length,
+                total: campaign!.actions.length,
+              })}
             </dd>
           </dl>
           <Link href={`/projects/${project.id}/campaign`} className="btn btn-secondary btn-sm">
-            Open Campaign
+            {t('openCampaign')}
           </Link>
         </Card>
       ))}

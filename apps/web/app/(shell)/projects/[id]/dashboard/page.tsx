@@ -1,24 +1,33 @@
 import Link from 'next/link';
 import { getDashboard } from '../../../../actions';
 import { CycleManager } from './cycle-manager';
-import { Badge, Breadcrumbs, Card, EmptyState, NextStepBanner, PageHeader } from '../../../../components/ui';
+import { Badge, Breadcrumbs, Card, EmptyState, NextStepBanner, PageHeader, statusToVariant } from '../../../../components/ui';
 import { ScoresPanel, ScoresSummaryBadge } from '../../../../components/scores-panel';
 import { RecommendationExplainability } from '../../../../components/recommendation-explainability';
 import { RunAuditModal } from '../../../../components/run-audit-modal';
 import { findRuleExplanationForItem } from '../../../../lib/recommendation-explainability';
 import { computeNextStep } from '../../../../lib/next-step';
 import { ReauditChangedPagesButton } from './reaudit-changed-pages-button';
+import { getTranslations } from '../../../../../lib/i18n/server';
 
 export default async function ExecutiveDashboardPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const dashboard = await getDashboard(id);
+  const t = await getTranslations('dashboard');
+  const tNav = await getTranslations('navigation');
+  const tPages = await getTranslations('pages');
+  const tOptimization = await getTranslations('optimization');
+  const tAudits = await getTranslations('audits');
+  const tCommon = await getTranslations('common');
+  const tFindings = await getTranslations('findings');
+  const notApplicable = tAudits('notApplicable');
 
   return (
     <main className="page">
-      <Breadcrumbs items={[{ label: 'Dashboard', href: '/workspace' }, { label: dashboard?.project.projectName ?? 'Project' }]} />
+      <Breadcrumbs items={[{ label: tNav('dashboard'), href: '/workspace' }, { label: dashboard?.project.projectName ?? tNav('projects') }]} />
 
       <PageHeader
-        title="Executive Dashboard"
+        title={t('title')}
         description={dashboard ? `${dashboard.project.clientName} · ${dashboard.project.primaryDomain}` : undefined}
         actions={
           <div className="cluster">
@@ -27,20 +36,20 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
               <RunAuditModal
                 defaultUrl={dashboard.project.baselineAuditUrl}
                 source="run-from-baseline"
-                triggerLabel="Run From Baseline"
+                triggerLabel={t('runFromBaseline')}
               />
             )}
             <Link href={`/projects/${id}/pages`} className="btn btn-secondary">
-              View Pages
+              {t('viewPages')}
             </Link>
             <Link href={`/projects/${id}/site-explorer`} className="btn btn-secondary">
-              Site Explorer
+              {tPages('siteExplorer')}
             </Link>
             <Link href={`/projects/${id}/compare`} className="btn btn-secondary">
-              Compare Audits
+              {tPages('compareAuditsTitle')}
             </Link>
             <Link href={`/projects/${id}/consultant`} className="btn btn-secondary">
-              Ask the AI Consultant
+              {t('askAiConsultant')}
             </Link>
           </div>
         }
@@ -48,7 +57,7 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
 
       {!dashboard && (
         <Card>
-          <EmptyState title="Dashboard not available" description="The Project may not exist, or the API may be unreachable." />
+          <EmptyState title={t('dashboardNotAvailable')} description={t('dashboardNotAvailableDescription')} />
         </Card>
       )}
 
@@ -57,7 +66,7 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
           <NextStepBanner step={computeNextStep(dashboard, id)} />
 
           <Card
-            title="Project Overview"
+            title={t('projectOverview')}
             actions={
               <div className="cluster">
                 <RunAuditModal defaultUrl={dashboard.project.canonicalWebsite} source="project-overview" />
@@ -66,66 +75,89 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
             }
           >
             <dl className="dl">
-              <dt>Project</dt>
+              <dt>{t('projectLabel')}</dt>
               <dd>{dashboard.project.projectName}</dd>
-              <dt>Client</dt>
+              <dt>{t('clientLabel')}</dt>
               <dd>{dashboard.project.clientName}</dd>
-              <dt>Primary Domain</dt>
+              <dt>{t('primaryDomainLabel')}</dt>
               <dd>{dashboard.project.primaryDomain}</dd>
-              <dt>Baseline</dt>
-              <dd>{dashboard.project.baselineAuditId ? <Badge variant="success">Set</Badge> : <Badge>Not set</Badge>}</dd>
-              <dt>Baseline Set At</dt>
-              <dd>{dashboard.project.baselineSetAt ?? 'N/A'}</dd>
-              <dt>Latest Audit</dt>
-              <dd>{dashboard.project.latestAuditId ?? 'N/A'}</dd>
+              <dt>{t('baseline')}</dt>
+              <dd>{dashboard.project.baselineAuditId ? <Badge variant="success">{t('set')}</Badge> : <Badge>{t('notSet')}</Badge>}</dd>
+              <dt>{t('baselineSetAt')}</dt>
+              <dd>{dashboard.project.baselineSetAt ?? notApplicable}</dd>
+              <dt>{t('latestAudit')}</dt>
+              <dd>{dashboard.project.latestAuditId ?? notApplicable}</dd>
             </dl>
           </Card>
 
-          <Card
-            title="Current Optimization Cycle"
-            description="Groups every Audit, Optimization Plan, and Campaign for one measurable business period, from Planned through Completed."
-          >
+          <Card title={t('currentOptimizationCycle')} description={t('currentOptimizationCycleDescription')}>
             <CycleManager projectId={id} />
           </Card>
 
           <div className="grid-2">
-            <Card title="Visibility Overview">
+            <Card title={t('visibilityOverview')}>
               <dl className="dl">
-                <dt>Overall Score</dt>
+                <dt>{t('overallScore')}</dt>
                 <dd>
                   <ScoresSummaryBadge scores={dashboard.scores} />
                 </dd>
-                <dt>AI Visibility Score</dt>
-                <dd>{dashboard.visibility.currentScore ? <Badge>{dashboard.visibility.currentScore}</Badge> : 'N/A'}</dd>
-                <dt>Baseline Score</dt>
-                <dd>{dashboard.visibility.baselineScore ? <Badge>{dashboard.visibility.baselineScore}</Badge> : 'N/A'}</dd>
-                <dt>Score Trend</dt>
+                <dt>{t('aiVisibilityScore')}</dt>
                 <dd>
-                  <Badge>{dashboard.visibility.scoreTrend}</Badge>
+                  {dashboard.visibility.currentScore ? (
+                    <Badge variant={statusToVariant(dashboard.visibility.currentScore)}>
+                      {tCommon(`statusValues.${dashboard.visibility.currentScore}`)}
+                    </Badge>
+                  ) : (
+                    notApplicable
+                  )}
                 </dd>
-                <dt>Total Findings</dt>
+                <dt>{t('baselineScore')}</dt>
+                <dd>
+                  {dashboard.visibility.baselineScore ? (
+                    <Badge variant={statusToVariant(dashboard.visibility.baselineScore)}>
+                      {tCommon(`statusValues.${dashboard.visibility.baselineScore}`)}
+                    </Badge>
+                  ) : (
+                    notApplicable
+                  )}
+                </dd>
+                <dt>{t('scoreTrend')}</dt>
+                <dd>
+                  <Badge variant={statusToVariant(dashboard.visibility.scoreTrend)}>
+                    {tCommon(`statusValues.${dashboard.visibility.scoreTrend}`)}
+                  </Badge>
+                </dd>
+                <dt>{t('totalFindings')}</dt>
                 <dd>{dashboard.visibility.totalFindings}</dd>
-                <dt>Critical Findings</dt>
+                <dt>{t('criticalFindings')}</dt>
                 <dd>{dashboard.visibility.criticalFindings}</dd>
-                <dt>Opportunities</dt>
+                <dt>{t('opportunities')}</dt>
                 <dd>{dashboard.visibility.opportunities}</dd>
               </dl>
             </Card>
 
-            <Card title="Recent Activity">
+            <Card title={t('recentActivity')}>
               <dl className="dl">
-                <dt>Latest Completed Audit</dt>
-                <dd>{dashboard.recentActivity.latestCompletedAuditId ?? 'N/A'}</dd>
-                <dt>Completed At</dt>
-                <dd>{dashboard.recentActivity.latestCompletedAuditDate ?? 'N/A'}</dd>
-                <dt>Last Baseline Change</dt>
-                <dd>{dashboard.recentActivity.lastBaselineChangeAuditId ?? 'N/A'}</dd>
-                <dt>Changed At</dt>
-                <dd>{dashboard.recentActivity.lastBaselineChangeAt ?? 'N/A'}</dd>
-                <dt>Last Execution</dt>
-                <dd>{dashboard.recentActivity.lastExecutionStatus ? <Badge>{dashboard.recentActivity.lastExecutionStatus}</Badge> : 'N/A'}</dd>
-                <dt>Executed At</dt>
-                <dd>{dashboard.recentActivity.lastExecutionAt ?? 'N/A'}</dd>
+                <dt>{t('latestCompletedAudit')}</dt>
+                <dd>{dashboard.recentActivity.latestCompletedAuditId ?? notApplicable}</dd>
+                <dt>{t('completedAt')}</dt>
+                <dd>{dashboard.recentActivity.latestCompletedAuditDate ?? notApplicable}</dd>
+                <dt>{t('lastBaselineChange')}</dt>
+                <dd>{dashboard.recentActivity.lastBaselineChangeAuditId ?? notApplicable}</dd>
+                <dt>{t('changedAt')}</dt>
+                <dd>{dashboard.recentActivity.lastBaselineChangeAt ?? notApplicable}</dd>
+                <dt>{t('lastExecution')}</dt>
+                <dd>
+                  {dashboard.recentActivity.lastExecutionStatus ? (
+                    <Badge variant={statusToVariant(dashboard.recentActivity.lastExecutionStatus)}>
+                      {tCommon(`statusValues.${dashboard.recentActivity.lastExecutionStatus}`)}
+                    </Badge>
+                  ) : (
+                    notApplicable
+                  )}
+                </dd>
+                <dt>{t('executedAt')}</dt>
+                <dd>{dashboard.recentActivity.lastExecutionAt ?? notApplicable}</dd>
               </dl>
             </Card>
           </div>
@@ -133,66 +165,69 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
           {dashboard.scores ? (
             <ScoresPanel scores={dashboard.scores} />
           ) : (
-            <Card title="Scores">
-              <EmptyState
-                title="No scores yet"
-                description="Scores are computed heuristically from a completed Audit's Findings — run an Audit for this Project to see them here."
-              />
+            <Card title={tFindings('scoresTitle')}>
+              <EmptyState title={t('noScoresYet')} description={t('noScoresDescription')} />
             </Card>
           )}
 
-          <Card title="Optimization Plan — Priority Actions">
+          <Card title={t('optimizationPlanPriorityActions')}>
             {dashboard.priorityActions.length === 0 && (
-              <EmptyState
-                title="No priority actions"
-                description="Nothing is currently flagged for this Project — run a new Audit if you'd like to check again."
-              />
+              <EmptyState title={t('noPriorityActions')} description={t('noPriorityActionsDescription')} />
             )}
             <div className="stack">
               {dashboard.priorityActions.map((action, index) => (
                 <Card key={`${action.title}-${index}`} muted>
                   <div className="card__header">
                     <h4>{action.title}</h4>
-                    <Badge>{action.priority}</Badge>
+                    <Badge variant={statusToVariant(action.priority)}>{tCommon(`statusValues.${action.priority}`)}</Badge>
                   </div>
                   <p>{action.description}</p>
                   <p className="text-secondary">{action.rationale}</p>
                   <dl className="dl">
-                    <dt>Expected Impact</dt>
+                    <dt>{tOptimization('expectedImpact')}</dt>
                     <dd>{action.expectedImpact}</dd>
-                    <dt>Estimated Effort</dt>
+                    <dt>{tOptimization('estimatedEffort')}</dt>
                     <dd>{action.estimatedEffort}</dd>
-                    <dt>Supporting Findings</dt>
-                    <dd>{action.supportingFindingIds.join(', ') || 'None'}</dd>
-                    <dt>Optimization Rule</dt>
+                    <dt>{tOptimization('supportingFindings')}</dt>
+                    <dd>{action.supportingFindingIds.join(', ') || t('none')}</dd>
+                    <dt>{tOptimization('optimizationRule')}</dt>
                     <dd>
                       {action.optimizationRuleId} (v{action.optimizationRuleVersion})
                     </dd>
                   </dl>
                   <details>
-                    <summary>Reasoning</summary>
+                    <summary>{t('reasoningLabel')}</summary>
                     <div className="stack-sm">
                       <p>
-                        <strong>Why this action exists</strong>
+                        <strong>{t('whyThisActionExists')}</strong>
                       </p>
                       <ul className="stack-sm">
                         {action.reasoning.triggeringFindings.map((finding) => (
                           <li key={finding.findingId} className="text-secondary">
-                            Finding {finding.findingId}: rule &apos;{finding.ruleId}&apos; ({finding.category}, {finding.sourceEngine})
-                            evaluated to &apos;{finding.outcome}&apos;.
+                            {t('findingReasoningLine', {
+                              id: finding.findingId,
+                              ruleId: finding.ruleId,
+                              category: finding.category,
+                              sourceEngine: finding.sourceEngine,
+                              outcome: finding.outcome,
+                            })}
                           </li>
                         ))}
                         {action.reasoning.appliedRules.map((rule) => (
                           <li key={`${rule.ruleId}-${rule.ruleVersion}`} className="text-secondary">
-                            Applied Optimization Rule &apos;{rule.ruleId}&apos; v{rule.ruleVersion} ({rule.category}, severity{' '}
-                            {rule.severity}).
+                            {t('appliedRuleLine', {
+                              ruleId: rule.ruleId,
+                              version: rule.ruleVersion,
+                              category: rule.category,
+                              severity: rule.severity,
+                            })}
                           </li>
                         ))}
                       </ul>
                       <p>
-                        <strong>What evidence supports it</strong>
+                        <strong>{t('whatEvidenceSupports')}</strong>
                       </p>
-                      {action.reasoning.evidence.length === 0 && <p className="text-secondary">No evidence facts recorded.</p>}
+                      {action.reasoning.evidence.length === 0 && <p className="text-secondary">{t('noEvidenceFacts')}</p>}
                       <ul className="stack-sm">
                         {action.reasoning.evidence.map((entry, entryIndex) => (
                           <li key={`${entry.field}-${entryIndex}`} className="text-secondary">
@@ -201,26 +236,28 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
                         ))}
                       </ul>
                       <p className="text-secondary">
-                        Knowledge Graph facts:{' '}
-                        {action.reasoning.knowledgeGraphFacts.map((fact) => `${fact.dimension}=${fact.level}`).join(', ') || 'None'}
+                        {t('knowledgeGraphFacts')}{' '}
+                        {action.reasoning.knowledgeGraphFacts.map((fact) => `${fact.dimension}=${fact.level}`).join(', ') || t('none')}
                       </p>
                       <p className="text-secondary">
-                        Entity relationships:{' '}
+                        {t('entityRelationships')}{' '}
                         {action.reasoning.entityRelationships.length === 0
-                          ? 'None (not applicable to this rule)'
+                          ? t('notApplicableToRule')
                           : action.reasoning.entityRelationships
                               .map((rel) => `${rel.sourceEntityName} -${rel.relationshipType}-> ${rel.targetEntityName}`)
                               .join(', ')}
                       </p>
                       <p>
-                        <strong>Expected benefit</strong>
+                        <strong>{t('expectedBenefit')}</strong>
                       </p>
                       <p className="text-secondary">
-                        Impact level: {action.reasoning.expectedOutcome.impactLevel} on{' '}
-                        {action.reasoning.expectedOutcome.targetDimension}
+                        {t('impactLevelOn', {
+                          level: action.reasoning.expectedOutcome.impactLevel,
+                          dimension: action.reasoning.expectedOutcome.targetDimension,
+                        })}
                       </p>
-                      <p className="text-secondary">Confidence: {action.reasoning.confidence}</p>
-                      <p>Assumptions:</p>
+                      <p className="text-secondary">{t('confidenceColon', { confidence: action.reasoning.confidence })}</p>
+                      <p>{t('assumptions')}</p>
                       <ul className="stack-sm">
                         {action.reasoning.assumptions.map((assumption) => (
                           <li key={assumption.code} className="text-secondary">
@@ -241,75 +278,74 @@ export default async function ExecutiveDashboardPage({ params }: { params: Promi
 
           <div className="grid-2">
             <Card
-              title="Optimization Campaign"
+              title={tOptimization('campaign')}
               actions={
                 <Link href={`/projects/${id}/campaign`} className="btn btn-secondary btn-sm">
-                  Manage Campaign
+                  {tOptimization('manageCampaign')}
                 </Link>
               }
             >
               {!dashboard.campaign && (
                 <EmptyState
-                  title="No Campaign yet"
-                  description="Create one from your current Optimization Plan to start tracking work."
+                  title={tOptimization('noCampaign')}
+                  description={tOptimization('createCampaignDescription')}
                   action={
                     <Link href={`/projects/${id}/campaign`} className="btn btn-primary btn-sm">
-                      Create Campaign
+                      {tOptimization('createCampaign')}
                     </Link>
                   }
                 />
               )}
               {dashboard.campaign && (
                 <dl className="dl">
-                  <dt>Status</dt>
+                  <dt>{tCommon('status')}</dt>
                   <dd>
-                    <Badge>{dashboard.campaign.status}</Badge>
+                    <Badge variant={statusToVariant(dashboard.campaign.status)}>{tCommon(`statusValues.${dashboard.campaign.status}`)}</Badge>
                   </dd>
-                  <dt>Total Actions</dt>
+                  <dt>{t('totalActions')}</dt>
                   <dd>{dashboard.campaign.totalActions}</dd>
-                  <dt>Pending</dt>
+                  <dt>{t('pendingActionsLabel')}</dt>
                   <dd>{dashboard.campaign.pendingActions}</dd>
-                  <dt>In Progress</dt>
+                  <dt>{t('inProgress')}</dt>
                   <dd>{dashboard.campaign.inProgressActions}</dd>
-                  <dt>Completed</dt>
+                  <dt>{tCommon('statusValues.completed')}</dt>
                   <dd>{dashboard.campaign.completedActions}</dd>
-                  <dt>Verified</dt>
+                  <dt>{tCommon('statusValues.verified')}</dt>
                   <dd>{dashboard.campaign.verifiedActions}</dd>
-                  <dt>Progress</dt>
+                  <dt>{tAudits('progress')}</dt>
                   <dd>{dashboard.campaign.progressPercentage}%</dd>
                 </dl>
               )}
             </Card>
 
-            <Card title="Campaign Impact">
+            <Card title={tOptimization('impact')}>
               {!dashboard.campaignImpact && (
-                <EmptyState
-                  title="No Impact Assessment available yet"
-                  description="This appears once a Verification Audit is run after your Campaign is completed."
-                />
+                <EmptyState title={t('noImpactAssessment')} description={t('noImpactAssessmentDescription')} />
               )}
               {dashboard.campaignImpact && (
                 <div className="stack-sm">
                   <dl className="dl">
-                    <dt>Verification Date</dt>
+                    <dt>{t('verificationDate')}</dt>
                     <dd>{dashboard.campaignImpact.verificationDate}</dd>
-                    <dt>AI Visibility Trend</dt>
+                    <dt>{t('aiVisibilityTrend')}</dt>
                     <dd>
-                      <Badge>{dashboard.campaignImpact.aiVisibilityTrend}</Badge>
+                      <Badge variant={statusToVariant(dashboard.campaignImpact.aiVisibilityTrend)}>
+                        {tCommon(`statusValues.${dashboard.campaignImpact.aiVisibilityTrend}`)}
+                      </Badge>
                     </dd>
-                    <dt>Findings Resolved</dt>
+                    <dt>{t('findingsResolved')}</dt>
                     <dd>{dashboard.campaignImpact.findingsResolvedCount}</dd>
-                    <dt>Findings Introduced</dt>
+                    <dt>{t('findingsIntroduced')}</dt>
                     <dd>{dashboard.campaignImpact.findingsIntroducedCount}</dd>
-                    <dt>Remaining Opportunities</dt>
+                    <dt>{t('remainingOpportunities')}</dt>
                     <dd>{dashboard.campaignImpact.remainingOpportunitiesCount}</dd>
                   </dl>
-                  <h4>Improvement Summary</h4>
-                  {dashboard.campaignImpact.improvements.length === 0 && <p className="text-secondary">No improvements recorded yet.</p>}
+                  <h4>{t('improvementSummary')}</h4>
+                  {dashboard.campaignImpact.improvements.length === 0 && <p className="text-secondary">{t('noImprovementsYet')}</p>}
                   <ul className="stack-sm">
                     {dashboard.campaignImpact.improvements.map((entry, index) => (
                       <li key={`${entry.category}-${index}`} className="text-secondary">
-                        <Badge variant="neutral">{entry.category}</Badge> {entry.description}
+                        <Badge variant="neutral">{tCommon(`statusValues.${entry.category}`)}</Badge> {entry.description}
                       </li>
                     ))}
                   </ul>

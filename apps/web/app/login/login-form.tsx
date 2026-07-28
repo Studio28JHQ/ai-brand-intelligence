@@ -7,10 +7,10 @@ import { loginUser, resendOtp } from '../auth-actions';
 import { AuthCard } from '../components/auth/AuthCard';
 import { PasswordField } from '../components/auth/PasswordField';
 import { Banner } from '../components/ui';
-
-const UNVERIFIED_MESSAGE = 'Please verify your email before signing in.';
+import { useTranslations } from '../../lib/i18n/client';
 
 export function LoginForm({ title, description }: { title: string; description: string }) {
+  const t = useTranslations('auth');
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -23,7 +23,7 @@ export function LoginForm({ title, description }: { title: string; description: 
 
   const justVerified = searchParams.get('verified') === '1';
   const justReset = searchParams.get('reset') === '1';
-  const isUnverifiedError = error === UNVERIFIED_MESSAGE;
+  const isUnverifiedError = error === 'Please verify your email before signing in.';
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -52,11 +52,11 @@ export function LoginForm({ title, description }: { title: string; description: 
   return (
     <AuthCard title={title} description={description}>
       <form onSubmit={handleSubmit} className="stack">
-        {justVerified && <Banner variant="success">Your email is verified. You can sign in now.</Banner>}
-        {justReset && <Banner variant="success">Your password has been reset. Sign in with your new password.</Banner>}
+        {justVerified && <Banner variant="success">{t('justVerifiedMessage')}</Banner>}
+        {justReset && <Banner variant="success">{t('justResetMessage')}</Banner>}
 
         <div className="field">
-          <label htmlFor="email">Email</label>
+          <label htmlFor="email">{t('email')}</label>
           <input
             className="input"
             id="email"
@@ -68,15 +68,15 @@ export function LoginForm({ title, description }: { title: string; description: 
           />
         </div>
 
-        <PasswordField id="password" label="Password" value={password} onChange={setPassword} autoComplete="current-password" />
+        <PasswordField id="password" label={t('password')} value={password} onChange={setPassword} autoComplete="current-password" />
 
         <div className="cluster" style={{ justifyContent: 'space-between' }}>
           <label className="cluster" style={{ gap: 'var(--space-2)', fontSize: 'var(--text-sm)' }}>
             <input type="checkbox" checked={rememberMe} onChange={(event) => setRememberMe(event.target.checked)} />
-            Remember me
+            {t('rememberMe')}
           </label>
           <Link href="/forgot-password" className="text-secondary">
-            Forgot password?
+            {t('forgotPassword')}
           </Link>
         </div>
 
@@ -87,20 +87,20 @@ export function LoginForm({ title, description }: { title: string; description: 
               <>
                 {' '}
                 <button type="button" className="btn btn-ghost btn-sm" onClick={handleResend}>
-                  Resend verification code
+                  {t('resendVerificationCode')}
                 </button>
               </>
             )}
           </Banner>
         )}
-        {resent && <Banner variant="success">Verification code resent. Check your email.</Banner>}
+        {resent && <Banner variant="success">{t('verificationCodeResent')}</Banner>}
 
         <button type="submit" className="btn btn-primary" disabled={submitting}>
-          {submitting ? 'Signing in…' : 'Sign In'}
+          {submitting ? t('signingIn') : t('signIn')}
         </button>
 
         <p className="text-secondary">
-          Don&apos;t have an account? <Link href="/register">Create one</Link>
+          {t('dontHaveAccount')} <Link href="/register">{t('signUp')}</Link>
         </p>
       </form>
     </AuthCard>

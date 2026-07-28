@@ -7,5 +7,18 @@
   "optimization": "Optimization",
   "reports": "Reports",
   "settings": "Settings",
-  "agencyLabel": "Agency"
+  "agencyLabel": "Agency",
+  "defaultWorkspace": "Default Workspace",
+  "toggleNavigation": "Toggle navigation",
+  "searchClients": "Search Clients",
+  "searchClientsPlaceholder": "Search Clients…",
+  "notificationsLabel": "Notifications",
+  "notificationsNeedingAttention": "Notifications ({count} needing attention)",
+  "nothingNeedsAttention": "Nothing needs your attention right now.",
+  "myProfile": "My Profile",
+  "workspaceSettings": "Workspace Settings",
+  "accountSettings": "Account Settings",
+  "signOut": "Sign Out",
+  "unverified": "Unverified",
+  "primaryNav": "Primary"
 }

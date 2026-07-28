@@ -9,6 +9,7 @@ import { AuthCard } from '../components/auth/AuthCard';
 import { OtpInput } from '../components/auth/OtpInput';
 import { Banner } from '../components/ui';
 import { CheckCircleIcon } from '../components/ui/icons';
+import { useTranslations } from '../../lib/i18n/client';
 
 const RESEND_COOLDOWN_SECONDS = 60;
 
@@ -19,6 +20,7 @@ function formatCountdown(seconds: number): string {
 }
 
 export function VerifyEmailForm() {
+  const t = useTranslations('auth');
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get('email') ?? '';
@@ -87,47 +89,40 @@ export function VerifyEmailForm() {
     setCooldown(RESEND_COOLDOWN_SECONDS);
     const deliveryFailed = result.emailDelivered === false;
     setResendFailed(deliveryFailed);
-    setResendMessage(
-      deliveryFailed
-        ? 'A new code was generated, but the email could not be sent. Please try again shortly or contact support.'
-        : 'A new code has been sent.',
-    );
+    setResendMessage(deliveryFailed ? t('resendFailedMessage') : t('newCodeSent'));
   };
 
   const changeEmailHref = purpose === 'email-verification' ? '/register' : '/forgot-password';
 
   if (succeeded) {
     return (
-      <AuthCard title="Verified">
+      <AuthCard title={t('verifiedTitle')}>
         <div className="stack" style={{ alignItems: 'center', textAlign: 'center' }}>
           <span className="text-secondary" style={{ color: 'var(--color-success)' }}>
             <CheckCircleIcon />
           </span>
-          <p>
-            {purpose === 'email-verification'
-              ? 'Your email is verified. Redirecting to sign in…'
-              : 'Code verified. Redirecting…'}
-          </p>
+          <p>{purpose === 'email-verification' ? t('redirectingToSignIn') : t('redirectingGeneric')}</p>
         </div>
       </AuthCard>
     );
   }
 
   return (
-    <AuthCard title="Enter your verification code" description={email ? `We sent a 6-digit code to ${email}.` : undefined}>
+    <AuthCard
+      title={t('enterVerificationCodeTitle')}
+      description={email ? t('weSentCodeTo', { email }) : undefined}
+    >
       <div className="stack">
         <OtpInput value={code} onChange={setCode} disabled={verifying} />
 
         {initialEmailDeliveryFailed && !error && !resendMessage && (
-          <Banner variant="error">
-            Your account was created, but we couldn&apos;t send the verification email. Use Resend below to try again.
-          </Banner>
+          <Banner variant="error">{t('emailNotSentBanner')}</Banner>
         )}
         {error && <Banner variant="error">{error}</Banner>}
         {resendMessage && <Banner variant={resendFailed ? 'error' : 'success'}>{resendMessage}</Banner>}
 
         <button type="button" className="btn btn-primary" disabled={code.length !== 6 || verifying} onClick={handleVerify}>
-          {verifying ? 'Verifying…' : 'Verify Code'}
+          {verifying ? t('verifying') : t('verifyCode')}
         </button>
 
         <div className="cluster" style={{ justifyContent: 'space-between' }}>
@@ -137,10 +132,10 @@ export function VerifyEmailForm() {
             disabled={cooldown > 0}
             onClick={handleResend}
           >
-            {cooldown > 0 ? `Resend code in ${formatCountdown(cooldown)}` : 'Resend code'}
+            {cooldown > 0 ? t('resendCodeIn', { countdown: formatCountdown(cooldown) }) : t('resendCode')}
           </button>
           <Link href={changeEmailHref} className="text-secondary">
-            Change email
+            {t('changeEmail')}
           </Link>
         </div>
       </div>

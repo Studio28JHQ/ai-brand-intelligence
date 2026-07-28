@@ -7,6 +7,7 @@ import type { BriefingItem, UserMetadata } from '@ai-visibility/contracts';
 import { logoutUser } from '../../auth-actions';
 import { Badge } from '../ui';
 import { BellIcon, ChevronDownIcon, LogOutIcon, MenuIcon, SearchIcon } from '../ui/icons';
+import { useTranslations } from '../../../lib/i18n/client';
 
 function initials(user: UserMetadata): string {
   return `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase();
@@ -32,19 +33,20 @@ function useClickOutside(onOutside: () => void) {
  * real dropdown (not a static label) so adding a second Workspace later is additive, not a rewrite.
  */
 function WorkspaceSelector() {
+  const t = useTranslations('navigation');
   const [openState, setOpenState] = useState(false);
   const ref = useClickOutside(() => setOpenState(false));
 
   return (
     <div className="topbar__dropdown" ref={ref}>
       <button type="button" className="topbar__dropdown-trigger" onClick={() => setOpenState((value) => !value)} aria-haspopup="true" aria-expanded={openState}>
-        Default Workspace
+        {t('defaultWorkspace')}
         <ChevronDownIcon />
       </button>
       {openState && (
         <div className="topbar__dropdown-menu" role="menu">
           <span className="topbar__dropdown-item topbar__dropdown-item--active" role="menuitem" aria-current="true">
-            Default Workspace
+            {t('defaultWorkspace')}
           </span>
         </div>
       )}
@@ -53,6 +55,7 @@ function WorkspaceSelector() {
 }
 
 function Search() {
+  const t = useTranslations('navigation');
   const router = useRouter();
   const [query, setQuery] = useState('');
 
@@ -69,12 +72,12 @@ function Search() {
     >
       <SearchIcon />
       <label htmlFor="topbar-search" className="visually-hidden">
-        Search Clients
+        {t('searchClients')}
       </label>
       <input
         id="topbar-search"
         type="search"
-        placeholder="Search Clients…"
+        placeholder={t('searchClientsPlaceholder')}
         value={query}
         onChange={(event) => setQuery(event.target.value)}
       />
@@ -83,6 +86,7 @@ function Search() {
 }
 
 function Notifications({ items }: { items: BriefingItem[] }) {
+  const t = useTranslations('navigation');
   const [openState, setOpenState] = useState(false);
   const ref = useClickOutside(() => setOpenState(false));
   const highPriority = items.filter((item) => item.confidence === 'high');
@@ -95,14 +99,18 @@ function Notifications({ items }: { items: BriefingItem[] }) {
         onClick={() => setOpenState((value) => !value)}
         aria-haspopup="true"
         aria-expanded={openState}
-        aria-label={`Notifications${highPriority.length > 0 ? ` (${highPriority.length} needing attention)` : ''}`}
+        aria-label={
+          highPriority.length > 0
+            ? t('notificationsNeedingAttention', { count: highPriority.length })
+            : t('notificationsLabel')
+        }
       >
         <BellIcon />
         {highPriority.length > 0 && <span className="topbar__badge">{highPriority.length}</span>}
       </button>
       {openState && (
         <div className="topbar__dropdown-menu topbar__dropdown-menu--wide" role="menu">
-          {items.length === 0 && <p className="topbar__dropdown-empty">Nothing needs your attention right now.</p>}
+          {items.length === 0 && <p className="topbar__dropdown-empty">{t('nothingNeedsAttention')}</p>}
           {items.slice(0, 6).map((item) => (
             <Link
               key={item.id}
@@ -122,6 +130,7 @@ function Notifications({ items }: { items: BriefingItem[] }) {
 }
 
 function UserMenu({ user }: { user: UserMetadata }) {
+  const t = useTranslations('navigation');
   const router = useRouter();
   const [openState, setOpenState] = useState(false);
   const ref = useClickOutside(() => setOpenState(false));
@@ -150,13 +159,13 @@ function UserMenu({ user }: { user: UserMetadata }) {
             <span className="text-secondary">{user.email}</span>
           </div>
           <Link href="/settings" className="topbar__dropdown-item" role="menuitem" onClick={() => setOpenState(false)}>
-            My Profile
+            {t('myProfile')}
           </Link>
           <Link href="/settings" className="topbar__dropdown-item" role="menuitem" onClick={() => setOpenState(false)}>
-            Workspace Settings
+            {t('workspaceSettings')}
           </Link>
           <Link href="/settings" className="topbar__dropdown-item" role="menuitem" onClick={() => setOpenState(false)}>
-            Account Settings
+            {t('accountSettings')}
           </Link>
           <button
             type="button"
@@ -170,7 +179,7 @@ function UserMenu({ user }: { user: UserMetadata }) {
             }}
           >
             <LogOutIcon />
-            Sign Out
+            {t('signOut')}
           </button>
         </div>
       )}
@@ -187,9 +196,11 @@ export function TopBar({
   notifications: BriefingItem[];
   onToggleSidebar: () => void;
 }) {
+  const t = useTranslations('navigation');
+
   return (
     <header className="topbar">
-      <button type="button" className="topbar__menu-button" onClick={onToggleSidebar} aria-label="Toggle navigation">
+      <button type="button" className="topbar__menu-button" onClick={onToggleSidebar} aria-label={t('toggleNavigation')}>
         <MenuIcon />
       </button>
       <WorkspaceSelector />
@@ -197,7 +208,7 @@ export function TopBar({
       <Search />
       <Notifications items={notifications} />
       <UserMenu user={user} />
-      {user.status !== 'verified' && <Badge variant="warning">Unverified</Badge>}
+      {user.status !== 'verified' && <Badge variant="warning">{t('unverified')}</Badge>}
     </header>
   );
 }

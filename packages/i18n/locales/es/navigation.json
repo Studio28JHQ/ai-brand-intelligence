@@ -7,5 +7,18 @@
   "optimization": "Optimización",
   "reports": "Informes",
   "settings": "Configuración",
-  "agencyLabel": "Agencia"
+  "agencyLabel": "Agencia",
+  "defaultWorkspace": "Espacio de Trabajo Predeterminado",
+  "toggleNavigation": "Alternar navegación",
+  "searchClients": "Buscar Clientes",
+  "searchClientsPlaceholder": "Buscar Clientes…",
+  "notificationsLabel": "Notificaciones",
+  "notificationsNeedingAttention": "Notificaciones ({count} requieren atención)",
+  "nothingNeedsAttention": "Nada requiere tu atención en este momento.",
+  "myProfile": "Mi Perfil",
+  "workspaceSettings": "Configuración del Espacio de Trabajo",
+  "accountSettings": "Configuración de la Cuenta",
+  "signOut": "Cerrar Sesión",
+  "unverified": "No verificado",
+  "primaryNav": "Principal"
 }

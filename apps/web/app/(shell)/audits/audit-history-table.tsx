@@ -4,18 +4,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { AuditHistoryEntry, AuditStatus } from '@ai-visibility/contracts';
-import { Badge, ConfirmButton, EmptyState } from '../../components/ui';
+import { Badge, ConfirmButton, EmptyState, statusToVariant } from '../../components/ui';
 import { deleteAudit, listAuditHistory, setProjectBaseline } from '../../actions';
+import { useTranslations } from '../../../lib/i18n/client';
+import type { Translator } from '@ai-visibility/i18n';
 
 const REFRESH_INTERVAL_MS = 8000;
-
-const TRIGGERED_BY_LABELS: Record<string, string> = {
-  dashboard: 'Dashboard',
-  'project-overview': 'Project Overview',
-  'audit-history': 'Audit History',
-  'projects-page': 'Projects Page',
-  onboarding: 'Onboarding',
-};
 
 type SortKey = 'startedAt' | 'finishedAt' | 'durationMs' | 'overallScore' | 'status';
 type StatusFilter = 'all' | AuditStatus;
@@ -33,16 +27,23 @@ function formatScore(score: number | null): string {
   return score === null ? '—' : `${score}/100`;
 }
 
-function formatEstimatedStart(iso: string | null): string {
-  if (!iso) return 'Calculating…';
+function formatEstimatedStart(iso: string | null, t: Translator): string {
+  if (!iso) return t('calculating');
   const deltaMs = new Date(iso).getTime() - Date.now();
-  if (deltaMs <= 0) return 'any moment now';
+  if (deltaMs <= 0) return t('anyMomentNow');
   return deltaMs < 1000 ? `~${deltaMs}ms` : `~${(deltaMs / 1000).toFixed(1)}s`;
 }
 
-function triggeredByLabel(value: string | null): string {
-  if (!value) return 'Unknown';
-  return TRIGGERED_BY_LABELS[value] ?? value;
+function triggeredByLabel(value: string | null, t: Translator): string {
+  if (!value) return t('triggeredByUnknown');
+  const key: Record<string, string> = {
+    dashboard: 'triggeredByDashboard',
+    'project-overview': 'triggeredByProjectOverview',
+    'audit-history': 'triggeredByAuditHistory',
+    'projects-page': 'triggeredByProjectsPage',
+    onboarding: 'triggeredByOnboarding',
+  };
+  return key[value] ? t(key[value]) : value;
 }
 
 function compareValues(a: string | number | null, b: string | number | null): number {
@@ -55,6 +56,8 @@ function compareValues(a: string | number | null, b: string | number | null): nu
 }
 
 export function AuditHistoryTable({ initialEntries }: { initialEntries: AuditHistoryEntry[] }) {
+  const t = useTranslations('audits');
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const [entries, setEntries] = useState(initialEntries);
   const [search, setSearch] = useState('');
@@ -156,11 +159,11 @@ export function AuditHistoryTable({ initialEntries }: { initialEntries: AuditHis
     if (!first || !second) return;
 
     if (first.status !== 'completed' || second.status !== 'completed') {
-      setCompareError('Compare requires two completed Audits.');
+      setCompareError(t('compareRequiresTwoCompleted'));
       return;
     }
     if (first.projectId !== second.projectId || first.url !== second.url) {
-      setCompareError('Compare requires two Audits of the same Project and Page URL.');
+      setCompareError(t('compareRequiresSameProjectUrl'));
       return;
     }
 
@@ -177,7 +180,7 @@ export function AuditHistoryTable({ initialEntries }: { initialEntries: AuditHis
       await refresh();
       return;
     }
-    setRowError(result.error ?? 'Could not delete the Audit.');
+    setRowError(result.error ?? t('couldNotDeleteAudit'));
   }
 
   async function handleSetBaseline(entry: AuditHistoryEntry) {
@@ -186,7 +189,7 @@ export function AuditHistoryTable({ initialEntries }: { initialEntries: AuditHis
     if (ok) {
       await refresh();
     } else {
-      setRowError('Could not set this Audit as the Baseline.');
+      setRowError(t('couldNotSetBaseline'));
     }
   }
 
@@ -194,41 +197,41 @@ export function AuditHistoryTable({ initialEntries }: { initialEntries: AuditHis
     <div className="stack">
       <div className="form-row">
         <div className="field" style={{ flex: '1 1 260px' }}>
-          <label htmlFor="audit-history-search">Search</label>
+          <label htmlFor="audit-history-search">{t('searchLabel')}</label>
           <input
             id="audit-history-search"
             className="input"
             type="text"
-            placeholder="Audit ID, URL, or Project…"
+            placeholder={t('searchPlaceholder')}
             value={search}
             onChange={(event) => setSearch(event.target.value)}
           />
         </div>
         <div className="field">
-          <label htmlFor="audit-history-status">Status</label>
+          <label htmlFor="audit-history-status">{tCommon('status')}</label>
           <select
             id="audit-history-status"
             className="select"
             value={statusFilter}
             onChange={(event) => setStatusFilter(event.target.value as StatusFilter)}
           >
-            <option value="all">All Statuses</option>
-            <option value="pending">Pending</option>
-            <option value="running">Running</option>
-            <option value="completed">Completed</option>
-            <option value="failed">Failed</option>
-            <option value="cancelled">Cancelled</option>
+            <option value="all">{t('allStatuses')}</option>
+            <option value="pending">{tCommon('statusValues.pending')}</option>
+            <option value="running">{tCommon('statusValues.running')}</option>
+            <option value="completed">{tCommon('statusValues.completed')}</option>
+            <option value="failed">{tCommon('statusValues.failed')}</option>
+            <option value="cancelled">{tCommon('statusValues.cancelled')}</option>
           </select>
         </div>
         <div className="field">
-          <label htmlFor="audit-history-project">Project</label>
+          <label htmlFor="audit-history-project">{t('projectLabel')}</label>
           <select
             id="audit-history-project"
             className="select"
             value={projectFilter}
             onChange={(event) => setProjectFilter(event.target.value)}
           >
-            <option value="all">All Projects</option>
+            <option value="all">{t('allProjects')}</option>
             {projectOptions.map(([id, name]) => (
               <option key={id} value={id}>
                 {name}
@@ -239,7 +242,7 @@ export function AuditHistoryTable({ initialEntries }: { initialEntries: AuditHis
         <div className="field">
           <label>&nbsp;</label>
           <button type="button" className="btn btn-secondary" disabled={selectedIds.size !== 2} onClick={handleCompare}>
-            Compare Selected ({selectedIds.size}/2)
+            {t('compareSelectedCount', { selected: selectedIds.size })}
           </button>
         </div>
       </div>
@@ -247,7 +250,7 @@ export function AuditHistoryTable({ initialEntries }: { initialEntries: AuditHis
       {compareError && <p className="text-secondary">{compareError}</p>}
       {rowError && <p className="text-secondary">{rowError}</p>}
 
-      {sorted.length === 0 && <EmptyState title="No Audits match these filters" />}
+      {sorted.length === 0 && <EmptyState title={t('noAuditsMatchFilters')} />}
 
       {sorted.length > 0 && (
         <div className="table-wrapper">
@@ -255,29 +258,29 @@ export function AuditHistoryTable({ initialEntries }: { initialEntries: AuditHis
             <thead>
               <tr>
                 <th>
-                  <span className="visually-hidden">Compare</span>
+                  <span className="visually-hidden">{t('compareColumnHidden')}</span>
                 </th>
-                <th>Audit ID</th>
-                <th>Project</th>
+                <th>{t('auditId')}</th>
+                <th>{t('projectLabel')}</th>
                 <th role="button" onClick={() => toggleSort('startedAt')}>
-                  Started {sortKey === 'startedAt' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
+                  {t('started')} {sortKey === 'startedAt' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
                 </th>
                 <th role="button" onClick={() => toggleSort('finishedAt')}>
-                  Finished {sortKey === 'finishedAt' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
+                  {t('finished')} {sortKey === 'finishedAt' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
                 </th>
                 <th role="button" onClick={() => toggleSort('durationMs')}>
-                  Duration {sortKey === 'durationMs' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
+                  {t('duration')} {sortKey === 'durationMs' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
                 </th>
                 <th role="button" onClick={() => toggleSort('overallScore')}>
-                  Overall Score {sortKey === 'overallScore' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
+                  {t('overallScore')} {sortKey === 'overallScore' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
                 </th>
                 <th role="button" onClick={() => toggleSort('status')}>
-                  Status {sortKey === 'status' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
+                  {tCommon('status')} {sortKey === 'status' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
                 </th>
-                <th>Triggered By</th>
-                <th>Audit Type</th>
+                <th>{t('triggeredBy')}</th>
+                <th>{t('auditType')}</th>
                 <th>
-                  <span className="visually-hidden">Actions</span>
+                  <span className="visually-hidden">{t('actionsColumnHidden')}</span>
                 </th>
               </tr>
             </thead>
@@ -290,7 +293,7 @@ export function AuditHistoryTable({ initialEntries }: { initialEntries: AuditHis
                       checked={selectedIds.has(entry.id)}
                       disabled={entry.status !== 'completed' && !selectedIds.has(entry.id)}
                       onChange={() => toggleSelected(entry.id)}
-                      aria-label={`Select Audit ${entry.id} for comparison`}
+                      aria-label={t('selectAuditForComparison', { id: entry.id })}
                     />
                   </td>
                   <td>
@@ -302,47 +305,47 @@ export function AuditHistoryTable({ initialEntries }: { initialEntries: AuditHis
                     {entry.isBaseline && (
                       <>
                         {' '}
-                        <Badge variant="primary">Baseline</Badge>
+                        <Badge variant="primary">{t('baseline')}</Badge>
                       </>
                     )}
                   </td>
                   <td>
                     {entry.status === 'queued' ? (
                       <span>
-                        <Badge variant="warning">Already Running</Badge> — position {entry.queuePosition ?? '—'}
+                        <Badge variant="warning">{t('alreadyRunning')}</Badge> — {t('position')} {entry.queuePosition ?? '—'}
                       </span>
                     ) : (
                       (entry.startedAt ?? '—')
                     )}
                   </td>
                   <td>{entry.finishedAt ?? '—'}</td>
-                  <td>{entry.status === 'queued' ? formatEstimatedStart(entry.estimatedStartAt) : formatDuration(entry.durationMs)}</td>
+                  <td>
+                    {entry.status === 'queued'
+                      ? formatEstimatedStart(entry.estimatedStartAt, t)
+                      : formatDuration(entry.durationMs)}
+                  </td>
                   <td>{formatScore(entry.overallScore)}</td>
                   <td>
-                    <Badge>{entry.status}</Badge>
+                    <Badge variant={statusToVariant(entry.status)}>{tCommon(`statusValues.${entry.status}`)}</Badge>
                   </td>
-                  <td>{triggeredByLabel(entry.triggeredBy)}</td>
+                  <td>{triggeredByLabel(entry.triggeredBy, t)}</td>
                   <td>{entry.auditType}</td>
                   <td>
                     <div className="cluster">
                       <Link href={`/audits/${entry.id}`} className="btn btn-secondary btn-sm">
-                        Open
+                        {t('open')}
                       </Link>
                       {entry.status === 'completed' && !entry.isBaseline && (
                         <button type="button" className="btn btn-secondary btn-sm" onClick={() => handleSetBaseline(entry)}>
-                          Set as Baseline
+                          {t('setAsBaseline')}
                         </button>
                       )}
                       <ConfirmButton
-                        label="Delete"
+                        label={t('delete')}
                         variant={entry.isBaseline ? 'danger' : 'secondary'}
                         disabled={entry.status === 'pending' || entry.status === 'running'}
-                        confirmLabel={entry.isBaseline ? 'Delete this Project’s Baseline Audit?' : 'Delete this Audit?'}
-                        confirmDescription={
-                          entry.isBaseline
-                            ? 'This Audit is the current Baseline for its Project. Deleting it permanently removes the Audit and clears the Project’s Baseline — a new one will need to be set manually.'
-                            : 'This permanently removes the Audit and everything derived from it (Findings, Signals, Entities, Knowledge Graph). This cannot be undone.'
-                        }
+                        confirmLabel={entry.isBaseline ? t('deleteBaselineConfirm') : t('deleteAuditConfirm')}
+                        confirmDescription={entry.isBaseline ? t('deleteBaselineDescription') : t('deleteAuditDescription')}
                         onConfirm={() => handleDelete(entry)}
                       />
                     </div>

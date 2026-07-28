@@ -5,9 +5,13 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import type { ClientMetadata, ProjectMetadata } from '@ai-visibility/contracts';
 import { createClient, listClients, listProjects } from '../../actions';
-import { Badge, Banner, Breadcrumbs, Card, EmptyState, PageHeader, SkeletonBlock } from '../../components/ui';
+import { Badge, Banner, Breadcrumbs, Card, EmptyState, PageHeader, SkeletonBlock, statusToVariant } from '../../components/ui';
+import { useTranslations } from '../../../lib/i18n/client';
 
 export default function ClientsPage() {
+  const t = useTranslations('clients');
+  const tNav = useTranslations('navigation');
+  const tCommon = useTranslations('common');
   const searchParams = useSearchParams();
   const query = (searchParams.get('q') ?? '').trim().toLowerCase();
 
@@ -37,7 +41,7 @@ export default function ClientsPage() {
 
     const { error } = await createClient(name, industry, primaryDomain);
     setFormError(error);
-    setCreatedMessage(error ? undefined : `Client "${name}" created.`);
+    setCreatedMessage(error ? undefined : t('clientCreated', { name }));
     if (!error) {
       refresh();
     }
@@ -47,25 +51,25 @@ export default function ClientsPage() {
 
   return (
     <main className="page">
-      <Breadcrumbs items={[{ label: 'Dashboard', href: '/workspace' }, { label: 'Clients' }]} />
-      <PageHeader title="Clients" description="Every agency Client audited on this platform." />
+      <Breadcrumbs items={[{ label: tNav('dashboard'), href: '/workspace' }, { label: t('title') }]} />
+      <PageHeader title={t('title')} description={t('description')} />
 
-      <Card title="Add a Client">
+      <Card title={t('addClient')}>
         <form action={handleCreateClient} className="form-row">
           <div className="field" style={{ flex: '1 1 180px' }}>
-            <label htmlFor="client-name">Client name</label>
+            <label htmlFor="client-name">{t('clientNameLabel')}</label>
             <input className="input" id="client-name" type="text" name="name" placeholder="Acme Digital" required />
           </div>
           <div className="field" style={{ flex: '1 1 140px' }}>
-            <label htmlFor="client-industry">Industry</label>
+            <label htmlFor="client-industry">{t('industryLabel')}</label>
             <input className="input" id="client-industry" type="text" name="industry" placeholder="Retail" required />
           </div>
           <div className="field" style={{ flex: '1 1 180px' }}>
-            <label htmlFor="client-domain">Primary domain</label>
+            <label htmlFor="client-domain">{t('primaryDomainLabel')}</label>
             <input className="input" id="client-domain" type="text" name="primaryDomain" placeholder="example.com" required />
           </div>
           <button className="btn btn-secondary" type="submit">
-            Create Client
+            {t('createClient')}
           </button>
         </form>
         {formError && <Banner variant="error">{formError}</Banner>}
@@ -79,7 +83,7 @@ export default function ClientsPage() {
       )}
 
       {!loading && visibleClients.length === 0 && (
-        <EmptyState title={query ? `No Clients match "${query}"` : 'No Clients yet'} />
+        <EmptyState title={query ? t('noClientsMatch', { query }) : t('noClientsYet')} />
       )}
 
       {!loading && visibleClients.length > 0 && (
@@ -87,11 +91,11 @@ export default function ClientsPage() {
           <table className="table">
             <thead>
               <tr>
-                <th>Client</th>
-                <th>Industry</th>
-                <th>Primary Domain</th>
-                <th>Status</th>
-                <th>Projects</th>
+                <th>{t('clientColumn')}</th>
+                <th>{t('industryColumn')}</th>
+                <th>{t('primaryDomainColumn')}</th>
+                <th>{tCommon('status')}</th>
+                <th>{tNav('projects')}</th>
               </tr>
             </thead>
             <tbody>
@@ -103,12 +107,10 @@ export default function ClientsPage() {
                     <td>{client.industry}</td>
                     <td className="text-mono">{client.primaryDomain}</td>
                     <td>
-                      <Badge>{client.status}</Badge>
+                      <Badge variant={statusToVariant(client.status)}>{tCommon(`statusValues.${client.status}`)}</Badge>
                     </td>
                     <td>
-                      <Link href={`/projects?clientId=${client.id}`}>
-                        {projectCount} Project{projectCount === 1 ? '' : 's'}
-                      </Link>
+                      <Link href={`/projects?clientId=${client.id}`}>{t('projectCount', { count: projectCount })}</Link>
                     </td>
                   </tr>
                 );

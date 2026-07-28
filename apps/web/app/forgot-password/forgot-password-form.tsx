@@ -6,8 +6,10 @@ import Link from 'next/link';
 import { forgotPassword } from '../auth-actions';
 import { AuthCard } from '../components/auth/AuthCard';
 import { Banner } from '../components/ui';
+import { useTranslations } from '../../lib/i18n/client';
 
 export function ForgotPasswordForm() {
+  const t = useTranslations('auth');
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [error, setError] = useState<string | undefined>(undefined);
@@ -30,10 +32,10 @@ export function ForgotPasswordForm() {
   };
 
   return (
-    <AuthCard title="Forgot your password?" description="Enter your email and we'll send you a code to reset it.">
+    <AuthCard title={t('forgotPasswordTitle')} description={t('forgotPasswordDescription')}>
       <form onSubmit={handleSubmit} className="stack">
         <div className="field">
-          <label htmlFor="email">Email</label>
+          <label htmlFor="email">{t('email')}</label>
           <input
             className="input"
             id="email"
@@ -48,11 +50,11 @@ export function ForgotPasswordForm() {
         {error && <Banner variant="error">{error}</Banner>}
 
         <button type="submit" className="btn btn-primary" disabled={submitting}>
-          {submitting ? 'Sending…' : 'Send Reset Code'}
+          {submitting ? t('sendingCode') : t('sendResetCode')}
         </button>
 
         <p className="text-secondary">
-          <Link href="/login">Back to sign in</Link>
+          <Link href="/login">{t('backToSignIn')}</Link>
         </p>
       </form>
     </AuthCard>

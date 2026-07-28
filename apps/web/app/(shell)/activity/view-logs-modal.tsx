@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { AuditMetadata, AuditProgressEvent } from '@ai-visibility/contracts';
 import { getAudit } from '../../actions';
+import { useTranslations } from '../../../lib/i18n/client';
 
 function isTerminal(status: AuditMetadata['status']): boolean {
   return status === 'completed' || status === 'failed' || status === 'cancelled';
@@ -29,6 +30,8 @@ function stepLine(event: Extract<AuditProgressEvent, { type: 'step' }>): string 
 // GET /audits/:id/events feed the Live Execution page uses, so lines appear as steps genuinely
 // happen.
 export function ViewLogsModal({ auditId, onClose }: { auditId: string; onClose: () => void }) {
+  const t = useTranslations('activity');
+  const tCommon = useTranslations('common');
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [lines, setLines] = useState<string[]>([]);
   const [status, setStatus] = useState<AuditMetadata['status'] | null>(null);
@@ -90,16 +93,16 @@ export function ViewLogsModal({ auditId, onClose }: { auditId: string; onClose: 
 
   return (
     <dialog ref={dialogRef} className="dialog" onClose={onClose}>
-      <p className="dialog__title">Logs — Audit {auditId.slice(0, 8)}</p>
+      <p className="dialog__title">{t('logsTitle', { id: auditId.slice(0, 8) })}</p>
       {status && (
         <p className="text-secondary">
-          Status: {status}
-          {!isTerminal(status) ? ' (live — updates as they happen)' : ''}
+          {t('statusLabel', { status: tCommon(`statusValues.${status}`) })}
+          {!isTerminal(status) ? t('liveUpdates') : ''}
         </p>
       )}
 
-      {loading && <p className="text-secondary">Loading…</p>}
-      {!loading && lines.length === 0 && <p className="text-secondary">No log lines yet.</p>}
+      {loading && <p className="text-secondary">{tCommon('loading')}</p>}
+      {!loading && lines.length === 0 && <p className="text-secondary">{t('noLogLinesYet')}</p>}
       {!loading && lines.length > 0 && (
         <pre className="text-mono" style={{ maxHeight: '320px', overflowY: 'auto', whiteSpace: 'pre-wrap' }}>
           {lines.join('\n')}
@@ -108,7 +111,7 @@ export function ViewLogsModal({ auditId, onClose }: { auditId: string; onClose: 
 
       <div className="cluster">
         <button type="button" className="btn btn-ghost" onClick={close}>
-          Close
+          {tCommon('close')}
         </button>
       </div>
     </dialog>

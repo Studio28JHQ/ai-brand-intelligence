@@ -1,17 +1,20 @@
 import Link from 'next/link';
 import { Card, EmptyState, PageHeader } from './components/ui';
+import { getTranslations } from '../lib/i18n/server';
 
-export default function NotFound() {
+export default async function NotFound() {
+  const t = await getTranslations('errors');
+
   return (
     <main className="page">
-      <PageHeader title="Page not found" />
+      <PageHeader title={t('pageNotFoundTitle')} />
       <Card>
         <EmptyState
-          title="We couldn't find that page"
-          description="It may have been moved, or the link may be incorrect."
+          title={t('notFoundCardTitle')}
+          description={t('notFoundDescription')}
           action={
             <Link href="/workspace" className="btn btn-primary">
-              Back to Workspace
+              {t('backToWorkspace')}
             </Link>
           }
         />
