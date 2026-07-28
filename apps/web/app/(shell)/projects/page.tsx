@@ -3,13 +3,13 @@
 import { useActionState, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import type { ClientMetadata, CreateAuditResponse, ProjectMetadata } from '@ai-visibility/contracts';
-import { createAudit, CreateAuditState, listClients, listProjects } from '../../actions';
+import type { ClientMetadata, ProjectMetadata } from '@ai-visibility/contracts';
+import { createAudit, AuditCompletionResult, CreateAuditState, listClients, listProjects } from '../../actions';
 import { Badge, Banner, Breadcrumbs, Card, EmptyState, PageHeader, SkeletonBlock } from '../../components/ui';
 
 const initialState: CreateAuditState = {};
 
-function AuditResultInspector({ result }: { result: CreateAuditResponse }) {
+function AuditResultInspector({ result }: { result: AuditCompletionResult }) {
   return (
     <Card title="Audit Created">
       <div className="cluster">
@@ -17,13 +17,16 @@ function AuditResultInspector({ result }: { result: CreateAuditResponse }) {
         <span className="text-tertiary text-mono">{result.id}</span>
       </div>
 
-      {result.progress && (
+      {result.executionHistory.length > 0 && (
         <div className="section">
           <h3>Workflow Progress</h3>
           <dl className="dl">
             <dt>Overall Progress</dt>
             <dd>
-              {Math.round((result.progress.filter((step) => step.status === 'success').length / result.progress.length) * 100)}%
+              {Math.round(
+                (result.executionHistory.filter((step) => step.status === 'success').length / result.executionHistory.length) * 100,
+              )}
+              %
             </dd>
           </dl>
           <div className="table-wrapper">
@@ -36,7 +39,7 @@ function AuditResultInspector({ result }: { result: CreateAuditResponse }) {
                 </tr>
               </thead>
               <tbody>
-                {result.progress.map((step) => (
+                {result.executionHistory.map((step) => (
                   <tr key={step.stepId}>
                     <td>{step.stepId}</td>
                     <td>
@@ -51,63 +54,59 @@ function AuditResultInspector({ result }: { result: CreateAuditResponse }) {
         </div>
       )}
 
-      {result.analysis && (
-        <div className="section">
-          <h3>Findings</h3>
-          {result.analysis.findings.length === 0 && <EmptyState title="No Findings for this Audit" />}
-          {result.analysis.findings.length > 0 && (
-            <div className="table-wrapper">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Rule</th>
-                    <th>Category</th>
-                    <th>Outcome</th>
-                    <th>Severity</th>
+      <div className="section">
+        <h3>Findings</h3>
+        {result.findings.length === 0 && <EmptyState title="No Findings for this Audit" />}
+        {result.findings.length > 0 && (
+          <div className="table-wrapper">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Rule</th>
+                  <th>Category</th>
+                  <th>Outcome</th>
+                  <th>Severity</th>
+                </tr>
+              </thead>
+              <tbody>
+                {result.findings.map((finding) => (
+                  <tr key={finding.id}>
+                    <td>{finding.ruleId}</td>
+                    <td>{finding.category}</td>
+                    <td>
+                      <Badge>{finding.outcome}</Badge>
+                    </td>
+                    <td>
+                      <Badge>{finding.severity}</Badge>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {result.analysis.findings.map((finding) => (
-                    <tr key={finding.id}>
-                      <td>{finding.ruleId}</td>
-                      <td>{finding.category}</td>
-                      <td>
-                        <Badge>{finding.outcome}</Badge>
-                      </td>
-                      <td>
-                        <Badge>{finding.severity}</Badge>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      )}
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
 
-      {result.optimizationPlan && (
-        <div className="section">
-          <h3>Optimization Plan</h3>
-          {result.optimizationPlan.items.length === 0 && <EmptyState title="No Optimization Items" />}
-          {result.optimizationPlan.items.map((item) => (
-            <Card key={item.title + item.supportingFindingIds.join(',')} muted>
-              <div className="card__header">
-                <h4>{item.title}</h4>
-                <Badge>{item.priority}</Badge>
-              </div>
-              <p>{item.description}</p>
-              <p className="text-secondary">{item.rationale}</p>
-              <dl className="dl">
-                <dt>Expected Impact</dt>
-                <dd>{item.expectedImpact}</dd>
-                <dt>Estimated Effort</dt>
-                <dd>{item.estimatedEffort}</dd>
-              </dl>
-            </Card>
-          ))}
-        </div>
-      )}
+      <div className="section">
+        <h3>Optimization Plan</h3>
+        {result.optimizationPlan.length === 0 && <EmptyState title="No Optimization Items" />}
+        {result.optimizationPlan.map((item) => (
+          <Card key={item.title + item.supportingFindingIds.join(',')} muted>
+            <div className="card__header">
+              <h4>{item.title}</h4>
+              <Badge>{item.priority}</Badge>
+            </div>
+            <p>{item.description}</p>
+            <p className="text-secondary">{item.rationale}</p>
+            <dl className="dl">
+              <dt>Expected Impact</dt>
+              <dd>{item.expectedImpact}</dd>
+              <dt>Estimated Effort</dt>
+              <dd>{item.estimatedEffort}</dd>
+            </dl>
+          </Card>
+        ))}
+      </div>
     </Card>
   );
 }

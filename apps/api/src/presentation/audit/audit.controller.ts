@@ -1,9 +1,24 @@
-import { BadRequestException, Body, ConflictException, Controller, Get, NotFoundException, Param, Post, Query, Req } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  ConflictException,
+  Controller,
+  Get,
+  MessageEvent,
+  NotFoundException,
+  Param,
+  Post,
+  Query,
+  Req,
+  Sse,
+} from '@nestjs/common';
 import type { Request } from 'express';
+import { Observable } from 'rxjs';
 import type {
   AuditAnalysisView,
   AuditComparisonResult,
   AuditMetadata,
+  AuditProgressEvent,
   CreateAuditResponse,
   PageComparisonResult,
 } from '@ai-visibility/contracts';
@@ -20,9 +35,10 @@ import {
   PageComparisonUrlMismatchError,
 } from '../../domain/audit/audit.errors';
 import { ClientNotFoundError } from '../../domain/client/client.errors';
+import { AuditProgressPublisher, isTerminalAuditStatus } from '../../infrastructure/audit/audit-progress-publisher';
+import { SkipTimeout } from '../../shared/decorators/skip-timeout.decorator';
 import { CreateAuditDto } from './dto/create-audit.dto';
 import { toAuditMetadata } from './audit-metadata.mapper';
-import { buildAuditSummary } from './audit-summary.view';
 
 @Controller('audits')
 export class AuditController {
@@ -32,6 +48,7 @@ export class AuditController {
     private readonly auditAnalysisQueryService: AuditAnalysisQueryService,
     private readonly auditComparisonService: AuditComparisonService,
     private readonly pageComparisonService: PageComparisonService,
+    private readonly progressPublisher: AuditProgressPublisher,
   ) {}
 
   @Get()
@@ -124,8 +141,11 @@ export class AuditController {
     }
 
     try {
-      const snapshot = await this.createAuditUseCase.execute(dto.url, req.correlationId, dto.clientId);
-      return buildAuditSummary(snapshot);
+      // Returns as soon as the Audit is queued — the Workflow Runtime itself now runs in the
+      // background (F10-S04B). Callers that need the finished results poll GET /audits/:id (and
+      // GET /audits/:id/analysis once completed), or watch GET /audits/:id/events for live progress.
+      const audit = await this.createAuditUseCase.execute(dto.url, req.correlationId, dto.clientId);
+      return { id: audit.id, status: audit.status };
     } catch (error) {
       if (error instanceof InvalidAuditUrlError) {
         throw new BadRequestException(error.message);
@@ -138,5 +158,69 @@ export class AuditController {
       }
       throw error;
     }
+  }
+
+  // Real-time Workflow Runtime progress (Live Audit Execution, F10-S04B) — never simulated: every
+  // emitted event mirrors a genuine step/audit status transition published by CreateAuditUseCase's
+  // background pipeline. On connect, replays whatever has genuinely already happened (from the
+  // persisted execution history plus any step currently mid-flight), then streams further real
+  // transitions as they occur, and ends the stream once the Audit reaches a terminal state.
+  @Sse(':id/events')
+  @SkipTimeout()
+  async streamProgress(@Param('id') id: string): Promise<Observable<MessageEvent>> {
+    const result = await this.auditQueryService.getById(id);
+    if (!result) {
+      throw new NotFoundException(`Audit not found: ${id}`);
+    }
+
+    const publisher = this.progressPublisher;
+
+    return new Observable<MessageEvent>((subscriber) => {
+      const knownStepIds = new Set<string>();
+
+      for (const record of result.executionHistory) {
+        knownStepIds.add(record.stepId);
+        const event: AuditProgressEvent = {
+          type: 'step',
+          stepId: record.stepId,
+          status: record.status === 'success' ? 'completed' : 'failed',
+          startedAt: record.startedAt,
+          completedAt: record.completedAt,
+          durationMs: record.durationMs,
+          errorCode: record.errorCode,
+          errorMessage: record.errorMessage,
+        };
+        subscriber.next({ data: JSON.stringify(event) });
+      }
+
+      const snapshot = publisher.getSnapshot(id);
+      for (const event of snapshot.steps) {
+        if (!knownStepIds.has(event.stepId)) {
+          subscriber.next({ data: JSON.stringify(event) });
+        }
+      }
+
+      subscriber.next({
+        data: JSON.stringify({
+          type: 'audit',
+          status: result.audit.status,
+          timestamp: new Date().toISOString(),
+        } satisfies AuditProgressEvent),
+      });
+
+      if (isTerminalAuditStatus(result.audit.status)) {
+        subscriber.complete();
+        return () => {};
+      }
+
+      const unsubscribe = publisher.subscribe(id, (event) => {
+        subscriber.next({ data: JSON.stringify(event) });
+        if (event.type === 'audit' && isTerminalAuditStatus(event.status)) {
+          subscriber.complete();
+        }
+      });
+
+      return () => unsubscribe();
+    });
   }
 }

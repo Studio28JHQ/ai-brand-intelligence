@@ -5,6 +5,7 @@ import type {
   AuditAnalysisView,
   AuditComparisonResult,
   AuditMetadata,
+  AuditStatus,
   BriefingModel,
   CampaignMetadata,
   ClientMetadata,
@@ -14,17 +15,39 @@ import type {
   CycleStatus,
   ExecutiveClientReport,
   ExecutiveDashboard,
+  Finding,
   ImpactAssessment,
   OptimizationCycleMetadata,
+  OptimizationItem,
   PageAuditHistoryEntry,
   PageComparisonResult,
   ProjectMetadata,
   ProjectPage,
+  VisibilityStatus,
+  WorkflowExecutionRecord,
 } from '@ai-visibility/contracts';
 
+// The Workflow Runtime now runs in the background rather than blocking POST /audits
+// (F10-S04B, see docs/04_PROJECT/DECISION_LOG.md#cto-104), so this shape — sourced from
+// GET /audits/:id plus GET /audits/:id/analysis once the Audit finishes — is what `createAudit`
+// below can honestly reconstruct, rather than the old all-optional CreateAuditResponse (which
+// described a single synchronous response that no longer exists).
+export interface AuditCompletionResult {
+  id: string;
+  status: AuditStatus;
+  executionHistory: WorkflowExecutionRecord[];
+  findings: Finding[];
+  optimizationPlan: OptimizationItem[];
+  aiVisibilityStatus: VisibilityStatus | null;
+}
+
 export interface CreateAuditState {
-  result?: CreateAuditResponse;
+  result?: AuditCompletionResult;
   error?: string;
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export async function listAudits(): Promise<AuditMetadata[]> {
@@ -312,6 +335,9 @@ export async function getAudit(id: string): Promise<AuditMetadata | null> {
   }
 }
 
+const AUDIT_POLL_INTERVAL_MS = 1500;
+const AUDIT_MAX_WAIT_MS = 5 * 60 * 1000;
+
 export async function createAudit(
   _prevState: CreateAuditState,
   formData: FormData,
@@ -325,6 +351,7 @@ export async function createAudit(
 
   const config = loadConfig();
 
+  let auditId: string;
   try {
     const response = await fetch(`${config.API_URL}/audits`, {
       method: 'POST',
@@ -341,10 +368,43 @@ export async function createAudit(
       return { error: body?.error?.message ?? 'Failed to create audit' };
     }
 
-    return { result: body as CreateAuditResponse };
+    auditId = (body as CreateAuditResponse).id;
   } catch {
     return { error: 'Failed to reach the backend' };
   }
+
+  // The Workflow Runtime now runs in the background (F10-S04B) instead of blocking the POST above,
+  // so this form waits here for it to reach a terminal state — preserving its original "submit and
+  // see the full result inline" UX without any change to this form's own markup/behavior.
+  const deadline = Date.now() + AUDIT_MAX_WAIT_MS;
+  while (Date.now() < deadline) {
+    const audit = await getAudit(auditId);
+    if (!audit) {
+      return { error: 'Audit not found after creation.' };
+    }
+
+    if (audit.status === 'completed') {
+      const analysis = await getAuditAnalysis(auditId);
+      return {
+        result: {
+          id: audit.id,
+          status: audit.status,
+          executionHistory: audit.executionHistory,
+          findings: analysis?.findings ?? [],
+          optimizationPlan: analysis?.optimizationPlan ?? [],
+          aiVisibilityStatus: audit.aiVisibilityStatus,
+        },
+      };
+    }
+
+    if (audit.status === 'failed') {
+      return { error: 'The Audit failed to complete. Check Audit History for details.' };
+    }
+
+    await sleep(AUDIT_POLL_INTERVAL_MS);
+  }
+
+  return { error: 'The Audit is taking longer than expected. Check Audit History for its current status.' };
 }
 
 export interface RunAuditResult {

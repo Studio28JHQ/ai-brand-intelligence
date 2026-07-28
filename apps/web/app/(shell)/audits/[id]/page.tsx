@@ -5,6 +5,7 @@ import { ScoresPanel } from '../../../components/scores-panel';
 import { RecommendationExplainability } from '../../../components/recommendation-explainability';
 import { findRuleExplanationForItem } from '../../../lib/recommendation-explainability';
 import { DetailSectionCard } from './detail-section-card';
+import { ExecutionTimeline } from './execution-timeline';
 import { buildDetailSections, externalLinksSignal, findRuleByRuleId, findSignalByKey } from './page-detail';
 
 export default async function AuditDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -67,35 +68,7 @@ export default async function AuditDetailPage({ params }: { params: Promise<{ id
             </dl>
           </Card>
 
-          <Card title="Execution Timeline">
-            {audit.executionHistory.length === 0 && <EmptyState title="No execution history recorded" />}
-            {audit.executionHistory.length > 0 && (
-              <div className="table-wrapper">
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th>Step</th>
-                      <th>Status</th>
-                      <th>Duration</th>
-                      <th>Error</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {audit.executionHistory.map((record, index) => (
-                      <tr key={`${record.stepId}-${index}`}>
-                        <td>{record.stepId}</td>
-                        <td>
-                          <Badge>{record.status}</Badge>
-                        </td>
-                        <td>{record.durationMs}ms</td>
-                        <td>{record.errorMessage ? `${record.errorCode}: ${record.errorMessage}` : '—'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </Card>
+          <ExecutionTimeline audit={audit} />
 
           {audit.status === 'completed' && (
             <>

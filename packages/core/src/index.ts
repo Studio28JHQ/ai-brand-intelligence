@@ -4,4 +4,4 @@ export type { ExecutionPlan } from './execution-plan';
 export type { WorkflowContext } from './workflow-context';
 export type { WorkflowStep } from './workflow-step';
 export { Workflow } from './workflow';
-export type { WorkflowProgressListener, WorkflowHistoryListener } from './workflow';
+export type { WorkflowProgressListener, WorkflowHistoryListener, WorkflowStepEventListener } from './workflow';

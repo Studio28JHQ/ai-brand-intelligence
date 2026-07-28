@@ -1,6 +1,6 @@
 import compression = require('compression');
 import { default as helmet } from 'helmet';
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { assertEmailProviderConfigured, assertProductionSecrets, loadConfig } from '@ai-visibility/config';
@@ -53,13 +53,23 @@ async function bootstrap() {
   app.getHttpAdapter().getInstance().set('trust proxy', 1);
 
   app.use(helmet());
-  app.use(compression());
+  // Server-Sent Events (Live Audit Execution, F10-S04B) must stream each event to the client as it
+  // happens — compression buffers output, which would defeat that. Everything else keeps the
+  // default compression behavior.
+  app.use(
+    compression({
+      filter: (req, res) => (req.path.endsWith('/events') ? false : compression.filter(req, res)),
+    }),
+  );
   app.enableCors({
     origin: config.CORS_ORIGIN.split(',').map((origin) => origin.trim()),
   });
 
   app.use(correlationIdMiddleware);
-  app.useGlobalInterceptors(new LoggingInterceptor(), new TimeoutInterceptor(config.REQUEST_TIMEOUT_MS));
+  app.useGlobalInterceptors(
+    new LoggingInterceptor(),
+    new TimeoutInterceptor(config.REQUEST_TIMEOUT_MS, app.get(Reflector)),
+  );
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }));
   app.enableShutdownHooks();

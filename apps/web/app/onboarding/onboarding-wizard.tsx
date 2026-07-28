@@ -104,9 +104,9 @@ export function OnboardingWizard() {
       return;
     }
 
-    const findings = auditState.result.analysis?.findings ?? [];
-    const planItems = auditState.result.optimizationPlan?.items ?? [];
-    setReport(summarizeFromAnalysis(auditState.result.aiVisibility?.status ?? null, findings, planItems));
+    const findings = auditState.result.findings;
+    const planItems = auditState.result.optimizationPlan;
+    setReport(summarizeFromAnalysis(auditState.result.aiVisibilityStatus, findings, planItems));
     setAuditHref(`/audits/${auditState.result.id}`);
 
     getAudit(auditState.result.id).then((audit) => {

@@ -1,4 +1,4 @@
-import type { WorkflowContext, WorkflowHistoryListener, WorkflowProgressListener } from '@ai-visibility/core';
+import type { WorkflowContext, WorkflowHistoryListener, WorkflowProgressListener, WorkflowStepEventListener } from '@ai-visibility/core';
 
 export const WORKFLOW_PORT = Symbol('WORKFLOW_PORT');
 
@@ -7,5 +7,6 @@ export interface WorkflowPort {
     context: WorkflowContext,
     onProgress?: WorkflowProgressListener,
     onHistory?: WorkflowHistoryListener,
+    onStepEvent?: WorkflowStepEventListener,
   ): Promise<WorkflowContext>;
 }

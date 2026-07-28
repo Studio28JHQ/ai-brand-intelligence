@@ -1,10 +1,11 @@
 import { emitTelemetryEvent } from '@ai-visibility/shared';
-import type { WorkflowExecutionRecord, WorkflowProgress } from '@ai-visibility/contracts';
+import type { AuditStepProgressEvent, WorkflowExecutionRecord, WorkflowProgress } from '@ai-visibility/contracts';
 import { ExecutionPlan } from './execution-plan';
 import { WorkflowContext } from './workflow-context';
 
 export type WorkflowProgressListener = (progress: WorkflowProgress) => void;
 export type WorkflowHistoryListener = (record: WorkflowExecutionRecord) => void;
+export type WorkflowStepEventListener = (event: AuditStepProgressEvent) => void;
 
 export class Workflow {
   constructor(private readonly plan: ExecutionPlan) {}
@@ -13,6 +14,7 @@ export class Workflow {
     context: WorkflowContext,
     onProgress?: WorkflowProgressListener,
     onHistory?: WorkflowHistoryListener,
+    onStepEvent?: WorkflowStepEventListener,
   ): Promise<WorkflowContext> {
     let current = context;
 
@@ -37,10 +39,19 @@ export class Workflow {
         data: { workflowId: context.workflowId, planId: this.plan.id, auditId: context.auditId },
       });
 
+      onStepEvent?.({
+        type: 'step',
+        stepId: step.name,
+        status: 'running',
+        startedAt: startedAt.toISOString(),
+      });
+
       try {
         current = await step.run(current);
       } catch (error) {
         const completedAt = new Date();
+        const errorCode = error instanceof Error ? error.name : 'UnknownError';
+        const errorMessage = error instanceof Error ? error.message : String(error);
         emitTelemetryEvent({
           name: 'workflow.step.failed',
           category: 'workflow',
@@ -52,7 +63,7 @@ export class Workflow {
             planId: this.plan.id,
             auditId: context.auditId,
             durationMs: completedAt.getTime() - startedAt.getTime(),
-            errorMessage: error instanceof Error ? error.message : String(error),
+            errorMessage,
           },
         });
         onHistory?.({
@@ -61,8 +72,18 @@ export class Workflow {
           startedAt: startedAt.toISOString(),
           completedAt: completedAt.toISOString(),
           durationMs: completedAt.getTime() - startedAt.getTime(),
-          errorCode: error instanceof Error ? error.name : 'UnknownError',
-          errorMessage: error instanceof Error ? error.message : String(error),
+          errorCode,
+          errorMessage,
+        });
+        onStepEvent?.({
+          type: 'step',
+          stepId: step.name,
+          status: 'failed',
+          startedAt: startedAt.toISOString(),
+          completedAt: completedAt.toISOString(),
+          durationMs: completedAt.getTime() - startedAt.getTime(),
+          errorCode,
+          errorMessage,
         });
         throw error;
       }
@@ -97,6 +118,15 @@ export class Workflow {
       onHistory?.({
         stepId: step.name,
         status: 'success',
+        startedAt: startedAt.toISOString(),
+        completedAt: completedAt.toISOString(),
+        durationMs: completedAt.getTime() - startedAt.getTime(),
+      });
+
+      onStepEvent?.({
+        type: 'step',
+        stepId: step.name,
+        status: 'completed',
         startedAt: startedAt.toISOString(),
         completedAt: completedAt.toISOString(),
         durationMs: completedAt.getTime() - startedAt.getTime(),

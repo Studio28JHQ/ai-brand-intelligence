@@ -15,6 +15,7 @@ import { AuditComparisonService } from '../../application/comparison/audit-compa
 import { PageComparisonService } from '../../application/page-audit/page-comparison.service';
 import { AiVisibilityStatusRepository } from '../../infrastructure/audit/ai-visibility-status.repository';
 import { WorkflowExecutionHistoryRepository } from '../../infrastructure/audit/workflow-execution-history.repository';
+import { AuditProgressPublisher } from '../../infrastructure/audit/audit-progress-publisher';
 import { FindingReadRepository } from '../../infrastructure/comparison/finding-read.repository';
 import { EntityReadRepository } from '../../infrastructure/comparison/entity-read.repository';
 import { AiVisibilityReadRepository } from '../../infrastructure/comparison/ai-visibility-read.repository';
@@ -61,6 +62,7 @@ import { AuditController } from './audit.controller';
     PageComparisonService,
     AiVisibilityStatusRepository,
     WorkflowExecutionHistoryRepository,
+    AuditProgressPublisher,
     EnsureActiveCycleUseCase,
     FindingReadRepository,
     EntityReadRepository,
